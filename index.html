@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#7c6a92" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Polyglot Reader" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Polyglot Story Reader</title>
+  <style>
+    :root {
+      --bg: #f8f2ec;
+      --paper: #fffaf4;
+      --ink: #31283b;
+      --muted: #756a7c;
+      --line: rgba(49, 40, 59, .14);
+      --accent: #7c6a92;
+      --accent2: #c98986;
+      --accent3: #cfb5a3;
+      --accent-text: #ffffff;
+      --good: #5b7f67;
+      --warn: #a86f3d;
+      --bad: #9b4d55;
+      --shadow: 0 20px 60px rgba(49, 40, 59, .10);
+      --radius: 22px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+      --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(201, 137, 134, .22), transparent 32rem),
+        radial-gradient(circle at 90% 8%, rgba(124, 106, 146, .18), transparent 26rem),
+        linear-gradient(135deg, #fbf5ee 0%, #f6efe9 50%, #f4edf2 100%);
+      min-height: 100vh;
+    }
+
+    body.dark {
+      --bg: #17121c;
+      --paper: #221b28;
+      --ink: #f7efe8;
+      --muted: #c7b8cf;
+      --line: rgba(247, 239, 232, .15);
+      --accent: #c7add6;
+      --accent2: #e3a7a1;
+      --accent3: #8a748f;
+      --accent-text: #201926;
+      --shadow: 0 24px 70px rgba(0, 0, 0, .28);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(201, 137, 134, .15), transparent 32rem),
+        radial-gradient(circle at 90% 8%, rgba(199, 173, 214, .15), transparent 26rem),
+        linear-gradient(135deg, #17121c 0%, #211928 100%);
+    }
+
+    a { color: inherit; }
+
+    .app {
+      width: min(1220px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 48px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 0 18px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: var(--accent-text, #fff);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 22px;
+    }
+
+    h1, h2, h3 { margin: 0; line-height: 1.12; }
+    h1 { font-size: clamp(24px, 4vw, 42px); letter-spacing: -0.04em; }
+    h2 { font-size: clamp(20px, 3vw, 30px); letter-spacing: -0.03em; }
+    h3 { font-size: 17px; }
+
+    .subtitle { color: var(--muted); font-size: 14px; margin-top: 5px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button, .file-label {
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: rgba(255, 250, 244, .72);
+      border-radius: 999px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      min-height: 42px;
+    }
+
+    body.dark button, body.dark .file-label { background: rgba(34, 27, 40, .72); }
+
+    button:hover, .file-label:hover { transform: translateY(-1px); border-color: rgba(124, 106, 146, .35); }
+    button.primary { background: var(--ink); color: var(--paper); border-color: transparent; }
+    button.accent { background: var(--accent); color: var(--accent-text, #fff); border-color: transparent; }
+    button.soft { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+    button.danger { color: var(--bad); }
+    button.small { min-height: 34px; padding: 7px 10px; font-size: 13px; }
+    button.square { width: 42px; padding: 0; display: grid; place-items: center; }
+    button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card.pad { padding: 18px; }
+
+    .sidebar {
+      position: sticky;
+      top: 88px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .lang-tabs, .nav-tabs {
+      display: grid;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      border-radius: 18px;
+      width: 100%;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 13px 14px;
+    }
+
+    .tab-btn.active {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: transparent;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255,255,255,.2);
+      white-space: nowrap;
+    }
+
+    .main {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1.25fr .75fr;
+      align-items: stretch;
+    }
+
+    .goal-box {
+      border-radius: var(--radius);
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(124, 106, 146, .16), rgba(201, 137, 134, .14));
+      border: 1px solid var(--line);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.32);
+      border: 1px solid var(--line);
+    }
+
+    .stat strong { display: block; font-size: 24px; }
+    .stat span { color: var(--muted); font-size: 12px; }
+
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 7px; }
+
+    input[type="text"], input[type="url"], textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.42);
+      color: var(--ink);
+      border-radius: 17px;
+      padding: 12px 13px;
+      outline: none;
+      min-height: 44px;
+    }
+
+    body.dark input[type="text"], body.dark input[type="url"], body.dark textarea, body.dark select {
+      background: rgba(255,255,255,.06);
+    }
+
+    textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .row > * { min-width: 0; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+    .reader-shell { display: grid; gap: 12px; }
+
+    .reader-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .reader {
+      min-height: 360px;
+      max-height: 68vh;
+      overflow: auto;
+      padding: clamp(18px, 4vw, 46px);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.46);
+      border: 1px solid var(--line);
+      font-family: var(--serif);
+      font-size: var(--reader-size, 19px);
+      line-height: 1.82;
+      user-select: text;
+      white-space: pre-wrap;
+    }
+
+    body.dark .reader { background: rgba(255,255,255,.05); }
+
+    .reader .empty {
+      font-family: var(--sans);
+      color: var(--muted);
+      text-align: center;
+      padding: 70px 12px;
+    }
+
+    .selection-bar {
+      display: none;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(124, 106, 146, .11);
+      border: 1px solid var(--line);
+    }
+    .selection-bar.visible { display: flex; }
+    .selected-preview {
+      flex: 1 1 220px;
+      color: var(--muted);
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .list { display: grid; gap: 10px; }
+    .item {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.32);
+      border-radius: 18px;
+      padding: 13px;
+      display: grid;
+      gap: 8px;
+    }
+    body.dark .item { background: rgba(255,255,255,.04); }
+    .item-head { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
+    .item-title { font-weight: 760; word-break: break-word; }
+    .item-meta { color: var(--muted); font-size: 12px; }
+    .item-body { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .tag { font-size: 12px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); padding: 4px 8px; border-radius: 999px; display: inline-flex; }
+
+    .roleplay-card {
+      border-left: 5px solid var(--accent2);
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(201, 137, 134, .10);
+      display: grid;
+      gap: 10px;
+    }
+
+    .feedback {
+      display: grid;
+      gap: 8px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.30);
+    }
+
+    .feedback.good { border-color: rgba(91,127,103,.35); }
+    .feedback.warn { border-color: rgba(168,111,61,.38); }
+    .feedback.bad { border-color: rgba(155,77,85,.38); }
+
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .score-chip {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 10px;
+      background: rgba(255,255,255,.30);
+    }
+
+    .score-chip strong { display: block; font-size: 18px; line-height: 1; }
+    .score-chip span { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
+
+    .feedback-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+
+    .ai-json-hint {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(0,0,0,.06);
+      border-radius: 14px;
+      padding: 10px;
+      overflow:auto;
+    }
+    body.dark .ai-json-hint { background: rgba(255,255,255,.07); }
+
+
+    .notice {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .kbd {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 7px;
+      background: rgba(0,0,0,.08);
+    }
+
+    .hidden { display: none !important; }
+    .right { margin-left: auto; }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 18, 28, .42);
+      backdrop-filter: blur(10px);
+      z-index: 50;
+      place-items: center;
+      padding: 16px;
+    }
+    .modal-backdrop.visible { display: grid; }
+    .modal {
+      width: min(620px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      border-radius: 28px;
+      background: var(--paper);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      box-shadow: 0 28px 90px rgba(0,0,0,.28);
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(18px);
+      opacity: 0;
+      background: var(--ink);
+      color: var(--paper);
+      padding: 12px 15px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      z-index: 80;
+      transition: all .2s ease;
+      pointer-events: none;
+      text-align: center;
+      max-width: calc(100% - 24px);
+    }
+    .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+
+    .mobile-langbar {
+      display: none;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 1px 2px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .mobile-langbar::-webkit-scrollbar { display: none; }
+
+    .cover-card {
+      margin-top: 18px;
+      overflow: hidden;
+    }
+
+    .cover-layout {
+      display: grid;
+      grid-template-columns: minmax(220px, 320px) 1fr;
+      gap: 16px;
+      align-items: stretch;
+      margin-top: 14px;
+    }
+
+    .cover-frame {
+      position: relative;
+      min-height: 260px;
+      border-radius: calc(var(--radius) + 2px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(160deg, color-mix(in srgb, var(--accent) 70%, #ffffff), color-mix(in srgb, var(--accent2) 78%, #ffffff));
+      box-shadow: var(--shadow);
+      display: grid;
+      align-items: end;
+    }
+
+    .cover-frame img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .cover-frame.has-image img { display: block; }
+
+    .cover-overlay {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 8px;
+      padding: 18px;
+      min-height: 100%;
+      align-content: end;
+      color: #fff;
+      background: linear-gradient(180deg, rgba(16, 12, 20, .04), rgba(16, 12, 20, .74));
+    }
+
+    .cover-kicker {
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .92;
+    }
+
+    .cover-title {
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      max-width: 12ch;
+    }
+
+    .cover-subtitle {
+      font-size: 14px;
+      opacity: .94;
+      max-width: 32ch;
+      line-height: 1.5;
+    }
+
+    .cover-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .cover-meta {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .palette-preview {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .swatch {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.35);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.04);
+    }
+
+    .cover-note {
+      padding: 12px 13px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.32);
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      z-index: 35;
+      padding: 8px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      backdrop-filter: blur(18px);
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    body.dark .mobile-bottom-nav { background: rgba(34, 27, 40, .90); }
+
+    .mobile-bottom-nav .tab-btn {
+      border-radius: 18px;
+      padding: 10px 8px;
+      min-height: 62px;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.1;
+    }
+
+    .mobile-bottom-nav .tab-btn strong {
+      font-size: 18px;
+      line-height: 1;
+      display: block;
+    }
+
+    .mobile-bottom-nav .tab-btn.active {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .app {
+      padding-bottom: calc(48px + env(safe-area-inset-bottom));
+    }
+
+
+    @media (max-width: 880px) {
+      .grid { grid-template-columns: 1fr; }
+      .sidebar { position: static; gap: 10px; }
+      #viewNavCard { display: none; }
+      .lang-tabs, .nav-tabs { grid-template-columns: repeat(3, 1fr); }
+      .nav-tabs { grid-template-columns: repeat(4, 1fr); }
+      .tab-btn { justify-content: center; text-align: center; padding: 11px 8px; font-size: 13px; }
+      .tab-btn span.pill { display: none; }
+      .hero { grid-template-columns: 1fr; }
+      .cover-layout { grid-template-columns: 1fr; }
+      header { grid-template-columns: 1fr; position: static; padding-top: calc(8px + env(safe-area-inset-top)); }
+      .toolbar { justify-content: flex-start; }
+      .mobile-langbar, .mobile-bottom-nav { display: grid; }
+      .mobile-langbar { grid-auto-flow: column; grid-auto-columns: minmax(92px, max-content); }
+      .app { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+    }
+
+    @media (max-width: 620px) {
+      .app { width: min(100% - 14px, 1220px); padding-top: 6px; }
+      .two, .three, .stats { grid-template-columns: 1fr; }
+      .nav-tabs { grid-template-columns: repeat(2, 1fr); }
+      .reader { max-height: 54vh; padding: 18px; font-size: 18px; border-radius: 20px; }
+      .brand { align-items: flex-start; }
+      .logo { width: 42px; height: 42px; border-radius: 15px; }
+      .toolbar { gap: 6px; }
+      button, .file-label { padding: 10px 12px; min-height: 44px; }
+      .mobile-bottom-nav { left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); }
+      .cover-frame { min-height: 360px; }
+      .cover-overlay { padding: 16px; }
+      .cover-title { font-size: 28px; }
+      .cover-subtitle { font-size: 13px; }
+      .selection-bar { padding: 9px; }
+      .score-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media print {
+      .sidebar, header, .selection-bar, .reader-top, button, .toolbar { display: none !important; }
+      .grid { display: block; }
+      .card { box-shadow: none; border: none; }
+      body { background: #fff; color: #000; }
+      .reader { max-height: none; overflow: visible; border: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">✦</div>
+        <div>
+          <h1>Polyglot Story Reader</h1>
+          <div class="subtitle">Reader + Chunks + Aussprache + Sprechtraining — lokal, ohne API-Key, für GitHub Pages</div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="small" id="installBtn" hidden>Zum Homebildschirm</button>
+        <button class="small" id="darkBtn" title="Dark Mode umschalten">☾</button>
+        <button class="small" id="backupBtn">Backup</button>
+      </div>
+    </header>
+
+    <div class="mobile-langbar" id="mobileLangTabs"></div>
+
+    <div class="grid">
+      <aside class="sidebar">
+        <section class="card pad">
+          <h3>Sprache</h3>
+          <p class="notice">Jede Sprache hat getrennte Karten, Ziele und Sprechübungen.</p>
+          <div class="lang-tabs" id="langTabs"></div>
+        </section>
+
+        <section class="card pad" id="viewNavCard">
+          <h3>Bereich</h3>
+          <div class="nav-tabs" id="navTabs">
+            <button class="tab-btn active" data-view="dashboard">Dashboard</button>
+            <button class="tab-btn" data-view="reader">Reader</button>
+            <button class="tab-btn" data-view="learn">Lernen</button>
+            <button class="tab-btn" data-view="speak">Sprechen</button>
+          </div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <section id="dashboard" class="panel active">
+          <div class="hero">
+            <div class="card pad goal-box">
+              <div class="row">
+                <span class="pill" id="goalPill">EN · B2 → C1</span>
+                <span class="pill">lokal gespeichert</span>
+              </div>
+              <h2 id="goalTitle" style="margin-top:12px">Natürliches Englisch trainieren</h2>
+              <p class="notice" id="goalText"></p>
+              <div class="row" style="margin-top:10px">
+                <button class="accent" data-jump="reader">Text öffnen</button>
+                <button class="soft" data-jump="speak">Freies Sprechen üben</button>
+              </div>
+            </div>
+            <div class="card pad">
+              <h3>Deine Sammlung</h3>
+              <div class="stats" style="margin-top:12px">
+                <div class="stat"><strong id="statAll">0</strong><span>Karten</span></div>
+                <div class="stat"><strong id="statSession">0</strong><span>heute</span></div>
+                <div class="stat"><strong id="statChunks">0</strong><span>Chunks</span></div>
+              </div>
+              <p class="notice" style="margin-bottom:0">Tipp: Speichere auf B2/C1 lieber ganze Satzbausteine als isolierte Wörter.</p>
+            </div>
+          </div>
+
+
+          <div class="card pad cover-card">
+            <div class="reader-top">
+              <div>
+                <h2>Webapp Cover & Farbwelt</h2>
+                <div class="notice">Lade ein Cover hoch. Die App extrahiert daraus automatisch ein Farbschema für Buttons, Tags und Akzente. Du kannst das Cover später jederzeit austauschen.</div>
+              </div>
+              <div class="row">
+                <label class="file-label" for="coverInput">Cover hochladen</label>
+                <button class="small danger" id="removeCoverBtn">Cover entfernen</button>
+              </div>
+            </div>
+            <div class="cover-layout">
+              <div class="cover-frame" id="coverFrame">
+                <img id="coverPreview" alt="App Cover" />
+                <div class="cover-overlay">
+                  <div class="cover-kicker">Polyglot Story Reader</div>
+                  <div class="cover-title" id="coverTitlePreview">Your reading companion</div>
+                  <div class="cover-subtitle">Mobil optimiert für dein iPhone: lesen, markieren, hören, sprechen und direkt lernen.</div>
+                  <div class="row">
+                    <span class="pill" id="coverLangPill">EN · Reader</span>
+                    <span class="pill">Farbschema automatisch</span>
+                  </div>
+                </div>
+              </div>
+              <div class="cover-meta">
+                <div class="cover-note">Die Farben werden lokal im Browser gespeichert. Ein anderes Bild überschreibt einfach das bisherige Theme. So bleibt die App optisch flexibel, ohne dass du Code ändern musst.</div>
+                <div>
+                  <label>Extrahierte Farben</label>
+                  <div class="palette-preview" id="palettePreview"></div>
+                </div>
+                <div>
+                  <label for="coverTitleInput">Titel auf dem Cover</label>
+                  <input id="coverTitleInput" type="text" placeholder="z.B. Natural English Reader" />
+                </div>
+                <div class="notice">Hinweis: Das Home-Screen-Icon bleibt separat. Das Cover steuert die Optik innerhalb der Webapp.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card pad" style="margin-top:18px">
+            <h2>So nutzt du die App</h2>
+            <div class="three" style="margin-top:14px">
+              <div class="item">
+                <div class="item-title">1. Lesen</div>
+                <div class="item-body">Text einfügen, TXT/PDF/EPUB laden oder eine URL versuchen. Bei Webseiten kann CORS blockieren; dann kopierst du den Kapiteltext manuell hinein.</div>
+              </div>
+              <div class="item">
+                <div class="item-title">2. Markieren</div>
+                <div class="item-body">Wörter, Chunks oder ganze Strukturstellen markieren. Die App speichert Kontext, Quelle und Sprache getrennt.</div>
+              </div>
+              <div class="item">
+                <div class="item-title">3. Aktivieren</div>
+                <div class="item-body">Aussprache anhören, Shadowing machen, Sprech-Prompts generieren und deine Karten als Anki-CSV exportieren.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="reader" class="panel">
+          <div class="card pad reader-shell">
+            <div class="reader-top">
+              <div>
+                <h2>Universal Reader</h2>
+                <div class="notice">Markiere Text im Reader und speichere ihn als Karte, Chunk, Grammatik-Notiz oder Strukturmuster.</div>
+              </div>
+              <div class="row">
+                <button class="small" id="decreaseText">A-</button>
+                <button class="small" id="increaseText">A+</button>
+              </div>
+            </div>
+
+            <div class="two">
+              <div>
+                <label for="sourceTitle">Titel / Quelle</label>
+                <input id="sourceTitle" type="text" placeholder="z.B. Kapitel 12 – Web Novel" />
+              </div>
+              <div>
+                <label for="sourceUrl">URL / Quellenlink optional</label>
+                <input id="sourceUrl" type="url" placeholder="https://…" />
+              </div>
+            </div>
+
+            <div class="row">
+              <label class="file-label" for="fileInput">Datei öffnen: TXT/PDF/EPUB</label>
+              <input id="fileInput" type="file" accept=".txt,.md,.pdf,.epub,application/epub+zip,application/pdf,text/plain" hidden />
+              <button id="loadUrlBtn" class="soft">URL laden (experimentell)</button>
+              <button id="pasteBtn" class="soft">Text einfügen</button>
+              <button id="clearReaderBtn" class="danger">Reader leeren</button>
+            </div>
+
+            <div class="selection-bar" id="selectionBar">
+              <div class="selected-preview" id="selectedPreview">Auswahl</div>
+              <button class="small accent" data-save-type="chunk">Chunk</button>
+              <button class="small" data-save-type="vocab">Vokabel</button>
+              <button class="small" data-save-type="grammar">Grammatik</button>
+              <button class="small" data-save-type="structure">Struktur</button>
+              <button class="small" id="speakSelectionBtn">▶︎</button>
+              <button class="small" id="speakSlowSelectionBtn">0.75×</button>
+            </div>
+
+            <div class="reader" id="readerBox" tabindex="0"><div class="empty">Noch kein Text geladen.<br>Füge Text ein oder lade eine Datei.</div></div>
+
+            <div class="row">
+              <button id="prevChapterBtn" class="small">← Voriges Kapitel</button>
+              <button id="nextChapterBtn" class="small">Nächstes Kapitel →</button>
+              <span class="notice" id="chapterHint">Kapitelnavigation funktioniert nur, wenn die App einen Link erkennt oder du URL-Muster nutzt.</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="learn" class="panel">
+          <div class="card pad">
+            <div class="reader-top">
+              <div>
+                <h2>Lernbereich</h2>
+                <div class="notice">Karten nach Sprache getrennt. Für Anki kannst du alles oder nur die aktuelle Sitzung exportieren.</div>
+              </div>
+              <div class="row">
+                <button class="small" id="exportAnkiBtn">Anki CSV</button>
+                <button class="small" id="exportSessionBtn">Session CSV</button>
+                <button class="small" id="exportJsonBtn">JSON</button>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:14px">
+              <select id="typeFilter" style="max-width:210px">
+                <option value="all">Alle Typen</option>
+                <option value="chunk">Chunks</option>
+                <option value="vocab">Vokabeln</option>
+                <option value="grammar">Grammatik</option>
+                <option value="structure">Struktur</option>
+              </select>
+              <input id="searchCards" type="text" placeholder="Karten durchsuchen…" style="flex:1 1 240px" />
+              <button id="deleteLanguageBtn" class="danger small">Sprache leeren</button>
+            </div>
+
+            <div id="cardsList" class="list" style="margin-top:14px"></div>
+          </div>
+        </section>
+
+        <section id="speak" class="panel">
+          <div class="card pad">
+            <h2>Output Trainer</h2>
+            <p class="notice">Trainiere freies Sprechen mit deinen gespeicherten Chunks. Die Web Speech API funktioniert je nach Browser unterschiedlich gut; auf iPhone/Safari kann sie eingeschränkt sein.</p>
+
+            <div class="roleplay-card" style="margin-top:12px">
+              <div class="row">
+                <span class="pill" id="speakModePill">EN · natürlich sprechen</span>
+                <button class="small right" id="newPromptBtn">Neuer Prompt</button>
+              </div>
+              <h3 id="speakPromptTitle">Prompt</h3>
+              <div id="speakPrompt" class="item-body">Speichere zuerst ein paar Chunks oder klicke auf „Neuer Prompt“.</div>
+              <div id="promptChunks" class="row"></div>
+              <div class="row">
+                <button id="speakPromptBtn" class="small">Prompt vorlesen</button>
+                <button id="startRecognitionBtn" class="small accent">Antwort diktieren</button>
+                <button id="stopRecognitionBtn" class="small" disabled>Stopp</button>
+              </div>
+            </div>
+
+            <div class="two" style="margin-top:14px">
+              <div>
+                <label for="freeAnswer">Deine Antwort / Transkript</label>
+                <textarea id="freeAnswer" placeholder="Schreibe oder sprich deine Antwort hier hinein…"></textarea>
+              </div>
+              <div>
+                <label>Feedback / Lernstoff</label>
+                <div id="ruleFeedback" class="feedback">
+                  <div class="item-title">Noch keine Analyse</div>
+                  <div class="item-body">Klicke auf „Antwort prüfen“, um lokale Muster zu prüfen. Für sehr gutes Feedback: „KI-Prompt kopieren“, Antwort der KI importieren, daraus Karten erzeugen.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px">
+              <button id="checkAnswerBtn" class="accent">Antwort prüfen</button>
+              <button id="languageToolBtn">LanguageTool online</button>
+              <button id="copyAiPromptBtn">KI-Prompt kopieren</button>
+              <button id="openAiImportBtn">KI-Feedback importieren</button>
+              <button id="saveAnswerChunkBtn">Als eigene Karte speichern</button>
+              <button id="clearAnswerBtn" class="danger">Antwort leeren</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+
+  <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="App Navigation mobil">
+    <button class="tab-btn active" data-view="dashboard"><strong>⌂</strong><span>Start</span></button>
+    <button class="tab-btn" data-view="reader"><strong>📖</strong><span>Reader</span></button>
+    <button class="tab-btn" data-view="learn"><strong>🗂</strong><span>Lernen</span></button>
+    <button class="tab-btn" data-view="speak"><strong>🎙</strong><span>Sprechen</span></button>
+  </nav>
+
+  <input id="coverInput" type="file" accept="image/*" class="hidden" />
+
+  <div class="modal-backdrop" id="pasteModal">
+    <div class="modal">
+      <div class="row">
+        <h2>Text einfügen</h2>
+        <button class="small right" data-close-modal="pasteModal">Schließen</button>
+      </div>
+      <p class="notice">Kopiere den Kapiteltext oder Website-Text hier hinein. Das ist der zuverlässigste Weg für Seiten, die CORS oder iframes blockieren.</p>
+      <textarea id="pasteArea" placeholder="Kapiteltext hier einfügen…" style="min-height:240px"></textarea>
+      <button id="loadPasteBtn" class="accent">In Reader laden</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="saveModal">
+    <div class="modal">
+      <div class="row">
+        <h2 id="saveModalTitle">Karte speichern</h2>
+        <button class="small right" data-close-modal="saveModal">Schließen</button>
+      </div>
+      <div>
+        <label for="cardFront">Vorderseite / Ausdruck</label>
+        <textarea id="cardFront" style="min-height:76px"></textarea>
+      </div>
+      <div>
+        <label for="cardBack">Rückseite / Bedeutung / bessere Formulierung</label>
+        <textarea id="cardBack" style="min-height:90px" placeholder="Übersetzung, Erklärung, natürlichere Alternative oder eigene Analyse…"></textarea>
+      </div>
+      <div class="two">
+        <div>
+          <label for="cardType">Typ</label>
+          <select id="cardType">
+            <option value="chunk">Chunk</option>
+            <option value="vocab">Vokabel</option>
+            <option value="grammar">Grammatik</option>
+            <option value="structure">Struktur</option>
+          </select>
+        </div>
+        <div>
+          <label for="cardTags">Tags</label>
+          <input id="cardTags" type="text" placeholder="z.B. collocation, romance, chapter12" />
+        </div>
+      </div>
+      <div>
+        <label for="cardContext">Kontextsatz / Absatz</label>
+        <textarea id="cardContext" style="min-height:90px"></textarea>
+      </div>
+      <button id="saveCardBtn" class="accent">Speichern</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="backupModal">
+    <div class="modal">
+      <div class="row">
+        <h2>Backup & Import</h2>
+        <button class="small right" data-close-modal="backupModal">Schließen</button>
+      </div>
+      <p class="notice">Alle Daten liegen nur in deinem Browser. Exportiere regelmäßig ein JSON-Backup, besonders vor Browser-Updates oder Gerätewechsel.</p>
+      <div class="row">
+        <button id="downloadAllBackup" class="accent">Gesamt-Backup JSON</button>
+        <button id="downloadSessionBackup">Letzte Session JSON</button>
+      </div>
+      <div>
+        <label for="importInput">Backup importieren</label>
+        <input id="importInput" type="file" accept="application/json,.json" />
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal-backdrop" id="aiImportModal">
+    <div class="modal">
+      <div class="row">
+        <h2>KI-Feedback importieren</h2>
+        <button class="small right" data-close-modal="aiImportModal">Schließen</button>
+      </div>
+      <p class="notice">Füge hier die strukturierte Antwort deiner KI ein. Die App sucht automatisch den JSON-Block zwischen <span class="kbd">APP_FEEDBACK_JSON_START</span> und <span class="kbd">APP_FEEDBACK_JSON_END</span> und macht daraus Lernkarten.</p>
+      <textarea id="aiFeedbackInput" placeholder="KI-Antwort hier einfügen…" style="min-height:240px"></textarea>
+      <div class="ai-json-hint">Erwartet: corrected, natural, issues[], new_cards[], mini_exercises[]. Die App erstellt daraus Chunks, Grammatik- und Übungskarten.</div>
+      <button id="importAiFeedbackBtn" class="accent">Feedback in Lernkarten umwandeln</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Gespeichert</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://unpkg.com/@mozilla/readability@0.5.0/Readability.js"></script>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const LANGS = {
+        en: {
+          label: 'Englisch', short: 'EN', voice: 'en-US', level: 'B2 → C1',
+          focus: 'Natürlichkeit, Kollokationen, idiomatische Satzbausteine',
+          title: 'Natürliches Englisch trainieren',
+          text: 'Speichere nicht nur Wörter, sondern Chunks: Formulierungen, die Muttersprachler wirklich benutzen. Für dich sind Naturalness, Präpositionen, Artikel und idiomatische Alternativen wichtiger als klassische Grammatiklisten.',
+          promptTitle: 'Use your new chunks naturally',
+          promptTemplates: [
+            'Tell a one-minute story about a small problem in daily life. Use the saved chunks below naturally.',
+            'Give your opinion on a topic you care about. Use the saved chunks and sound conversational, not school-like.',
+            'Describe a romantic or dramatic scene from a story. Use the chunks as natural building blocks.',
+            'Explain a recent decision you made and try to sound clear, fluent and natural.'
+          ]
+        },
+        fr: {
+          label: 'Französisch', short: 'FR', voice: 'fr-FR', level: 'A2/B1 → C1',
+          focus: 'Grammatik festigen, Satzbau automatisieren, flüssiger Ausdruck',
+          title: 'Französisch stabil und natürlich aufbauen',
+          text: 'Für Französisch solltest du Kontextkarten, kleine Grammatiknotizen und häufige Fehler sammeln. Ziel ist: weniger Sprachmischung, sicherere Konjugationen und mehr korrekte Satzmuster im aktiven Gebrauch.',
+          promptTitle: 'Réutilise tes expressions en parlant',
+          promptTemplates: [
+            'Raconte ce que tu as fait le week-end dernier. Utilise les expressions sauvegardées ci-dessous.',
+            'Décris une scène d’un livre ou d’une série en utilisant les chunks sauvegardés.',
+            'Explique pourquoi tu apprends le français. Essaie de parler lentement et correctement.',
+            'Donne ton avis sur les réseaux sociaux en utilisant les expressions ci-dessous.'
+          ]
+        },
+        de: {
+          label: 'Deutsch', short: 'DE', voice: 'de-DE', level: 'C1 → C2',
+          focus: 'Storytelling, Erzählstruktur, Nuancen, klare Gedankenführung',
+          title: 'Ausdruck und Storytelling verfeinern',
+          text: 'Für Deutsch geht es weniger um Vokabeln und mehr um Struktur: Übergänge, Spannungsaufbau, präzise Nuancen, klare Argumentation und Sätze, denen man gern zuhört.',
+          promptTitle: 'Erzähle klarer und interessanter',
+          promptTemplates: [
+            'Erzähle eine kurze Szene mit klarem Anfang, Spannungsaufbau und Schluss. Nutze die gespeicherten Strukturmuster.',
+            'Erkläre einen Gedanken so, dass man dir gerne zuhört. Achte auf Übergänge und klare Satzlogik.',
+            'Beschreibe eine romantische oder atmosphärische Szene und nutze mindestens zwei gespeicherte Formulierungen.',
+            'Fasse eine Meinung strukturiert zusammen: Einstieg, Begründung, Beispiel, Fazit.'
+          ]
+        }
+      };
+
+      const RULES = {
+        en: [
+          { re: /\ban benefit\b/i, label: 'Artikel', msg: '„benefit“ beginnt mit Konsonantenlaut: natürlicher ist „a benefit“.', fix: 'a benefit' },
+          { re: /\bthis you don.?t have to\b/i, label: 'Satzstruktur', msg: 'Nach „is“ brauchst du meist „that“: „is that you don’t have to …“.', fix: 'is that you don’t have to' },
+          { re: /\bto you working place\b/i, label: 'Possessiv + Wortwahl', msg: 'Natürlicher: „to your workplace“ oder „to work“.', fix: 'to your workplace' },
+          { re: /\bmake a party\b/i, label: 'Kollokation', msg: 'Nicht „make a party“: natürlicher ist „throw a party“ oder „have a party“.', fix: 'throw a party / have a party' },
+          { re: /\bI have (\d{1,3}) years old\b/i, label: 'Deutsch gedacht', msg: 'Alter wird mit „be“ gebildet: „I am … years old“.', fix: 'I am $1 years old' },
+          { re: /\bdo homeworks\b/i, label: 'Unzählbares Nomen', msg: '„homework“ ist unzählbar: „do homework“.', fix: 'do homework' },
+          { re: /\bI am since\b/i, label: 'Zeitangabe', msg: 'Bei „seit“ im Englischen oft Present Perfect: „I have been … for/since …“.', fix: 'I have been … for/since …' },
+          { re: /\bexclusively live a digital life\b/i, label: 'Naturalness', msg: 'Verständlich, aber steif. Natürlicher: „spend most of your time online“.', fix: 'spend most of your time online' },
+          { re: /\bI find it good\b/i, label: 'Germanism', msg: '„Ich finde es gut“ wird natürlicher mit „I think it’s good“ oder „I like it“.', fix: 'I think it’s good / I like it' },
+          { re: /\bmake (?:a )?photo\b/i, label: 'Kollokation', msg: 'Nicht „make a photo“: natürlicher ist „take a photo“.', fix: 'take a photo' },
+          { re: /\bdo a decision\b/i, label: 'Kollokation', msg: 'Nicht „do a decision“: richtig ist „make a decision“.', fix: 'make a decision' },
+          { re: /\bCan you borrow me\b/i, label: 'Wortwahl', msg: '„Borrow“ heißt ausleihen/nehmen. Wenn dir jemand etwas geben soll: „lend me“.', fix: 'Can you lend me …?' },
+          { re: /\bI am agree\b/i, label: 'Verbstruktur', msg: '„Agree“ ist ein Vollverb: „I agree“, nicht „I am agree“.', fix: 'I agree' },
+          { re: /\bdiscuss about\b/i, label: 'Präposition', msg: 'Nach „discuss“ braucht man normalerweise kein „about“.', fix: 'discuss the topic' },
+          { re: /\bmore better\b/i, label: 'Vergleich', msg: 'Doppelte Steigerung: entweder „better“ oder „much better“.', fix: 'better / much better' }
+        ],
+        fr: [
+          { re: /\btrentre\b/i, label: 'Rechtschreibung', msg: 'Gemeint ist wahrscheinlich „trente“.', fix: 'trente' },
+          { re: /\band\b/i, label: 'Sprachmischung', msg: 'Für Alter im Französischen: „ans“, nicht „and“.', fix: 'ans' },
+          { re: /\ben trains de\b/i, label: 'Ausdruck', msg: 'Richtig ist „en train de“ ohne -s.', fix: 'en train de' },
+          { re: /\bje suis en train de changer l.?université\b/i, label: 'Natürlichkeit', msg: 'Natürlicher: „je suis en train de changer d’université“.', fix: 'changer d’université' },
+          { re: /\bdes pomme\b/i, label: 'Plural', msg: 'Nach „des“ braucht es den Plural: „des pommes“.', fix: 'des pommes' },
+          { re: /\bse rencontrer\b/i, label: 'Konjugation', msg: 'Bei „ils“: „ils se rencontrent“.', fix: 'ils se rencontrent' },
+          { re: /\bpas des sports\b/i, label: 'Verneinung', msg: 'Nach Verneinung oft „de“: „pas de sport“.', fix: 'pas de sport' },
+          { re: /\bpractiquable\b/i, label: 'Wortwahl', msg: 'Für „praktisch/nützlich“ eher „utile“, „pratique“ oder „important“.', fix: 'utile / pratique / important' },
+          { re: /\blangue mondiale\b/i, label: 'Wortwahl', msg: 'Natürlicher: „langue internationale“.', fix: 'langue internationale' },
+          { re: /\bbeaucoup des\b/i, label: 'Mengenangabe', msg: 'Nach „beaucoup“ steht meist „de“: „beaucoup de“.', fix: 'beaucoup de' },
+          { re: /\bje suis \d{1,3} ans\b/i, label: 'Alter', msg: 'Alter bildet man im Französischen mit „avoir“: „j’ai … ans“.', fix: 'j’ai … ans' },
+          { re: /\bà le\b/i, label: 'Zusammenziehung', msg: '„à + le“ wird zu „au“.', fix: 'au' },
+          { re: /\bde les\b/i, label: 'Zusammenziehung', msg: '„de + les“ wird zu „des“.', fix: 'des' }
+        ],
+        de: [
+          { re: /\beinen Café\b/i, label: 'Genus/Wortwahl', msg: 'Im Deutschen trinkt man „einen Kaffee“. „Café“ ist der Ort.', fix: 'einen Kaffee' },
+          { re: /\bromantische Aufmache\b/i, label: 'Stil', msg: 'Stilistisch runder: „romantische Aufmachung“ oder „romantische Anlage“.', fix: 'romantische Aufmachung' },
+          { re: /\binteressanter und klarer werden\b/i, label: 'Präzisierung', msg: 'Für C2 kannst du präziser formulieren: „prägnanter, nuancierter und nachvollziehbarer formulieren“.', fix: 'prägnanter, nuancierter und nachvollziehbarer formulieren' },
+          { re: /\bum zusammen einen Kaffee zu trinken\b/i, label: 'Redundanz', msg: 'Schlanker: „und trinken gemeinsam Kaffee“ oder „um gemeinsam Kaffee zu trinken“.', fix: 'um gemeinsam Kaffee zu trinken' },
+          { re: /\bdadurch sich mein Storytelling\b/i, label: 'Satzstellung', msg: 'Besser: „dadurch auch mein Storytelling verbessert wird“.', fix: 'dadurch auch mein Storytelling verbessert wird' },
+          { re: /\bSinn machen\b/i, label: 'Stil', msg: 'In gehobenerem Deutsch oft präziser: „sinnvoll sein“, „schlüssig sein“ oder „ergeben“.', fix: 'sinnvoll sein / schlüssig sein' },
+          { re: /\bauf jeden Fall\b/i, label: 'Füllphrase', msg: 'Wenn du prägnanter klingen willst, prüfe, ob „auf jeden Fall“ wirklich nötig ist.', fix: 'streichen oder präziser begründen' },
+          { re: /\bquasi\b/i, label: 'Füllwort', msg: '„Quasi“ wirkt mündlich und weich. Für klare Texte oft durch eine präzisere Formulierung ersetzen.', fix: 'präzise Aussage statt Füllwort' }
+        ]
+      };
+
+      const STORAGE_KEY = 'polyglotStoryReader.v1';
+      const SESSION_KEY = 'polyglotStoryReader.sessionId';
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+      let state = loadState();
+      let currentLang = state.settings.currentLang || 'en';
+      let currentView = 'dashboard';
+      let selectedText = '';
+      let selectedContext = '';
+      let nextUrl = null;
+      let prevUrl = null;
+      let recognition = null;
+      let currentPrompt = null;
+      let deferredPrompt = null;
+
+      function newSessionId() {
+        const existing = sessionStorage.getItem(SESSION_KEY);
+        if (existing) return existing;
+        const id = 'session_' + new Date().toISOString().slice(0, 10) + '_' + Math.random().toString(36).slice(2, 8);
+        sessionStorage.setItem(SESSION_KEY, id);
+        return id;
+      }
+
+      const sessionId = newSessionId();
+
+      function defaultState() {
+        return {
+          cards: [],
+          reader: { text: '', title: '', url: '', size: 19 },
+          settings: { currentLang: 'en', dark: false, coverImage: '', coverTitle: 'Your reading companion', themePalette: null },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return defaultState();
+          const parsed = JSON.parse(raw);
+          return { ...defaultState(), ...parsed, settings: { ...defaultState().settings, ...(parsed.settings || {}) } };
+        } catch (error) {
+          console.warn(error);
+          return defaultState();
+        }
+      }
+
+      function saveState() {
+        state.updatedAt = new Date().toISOString();
+        state.settings.currentLang = currentLang;
+        if ($('#coverTitleInput')) state.settings.coverTitle = $('#coverTitleInput').value.trim() || 'Your reading companion';
+        state.reader.title = $('#sourceTitle').value.trim();
+        state.reader.url = $('#sourceUrl').value.trim();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        renderStats();
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
+      }
+
+      function normalizeText(text) {
+        return String(text || '')
+          .replace(/\r\n/g, '\n')
+          .replace(/\u00a0/g, ' ')
+          .replace(/[ \t]+/g, ' ')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+      }
+
+
+      function baseFromThirdPerson(verb) {
+        const v = String(verb || '').toLowerCase();
+        const irregular = { has: 'have', does: 'do', goes: 'go', is: 'be' };
+        if (irregular[v]) return irregular[v];
+        if (v.endsWith('ies') && v.length > 4) return v.slice(0, -3) + 'y';
+        if (/(ches|shes|sses|xes|zes)$/.test(v)) return v.slice(0, -2);
+        if (v.endsWith('es') && ['goes', 'does'].includes(v)) return v.slice(0, -2);
+        if (v.endsWith('s') && v.length > 3) return v.slice(0, -1);
+        return v;
+      }
+
+      function displayFix(issue, originalText = '') {
+        if (!issue.fix) return '';
+        if (typeof issue.fix === 'function') return issue.fix(originalText);
+        if (issue.re && String(issue.fix).includes('$')) {
+          try { return normalizeText(originalText).replace(issue.re, issue.fix); }
+          catch (error) { return String(issue.fix); }
+        }
+        return String(issue.fix);
+      }
+
+      function dedupeIssues(issues) {
+        const seen = new Set();
+        return issues.filter(issue => {
+          const key = [issue.label, issue.msg, issue.fix].join('|').toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+
+      function smartAnalyze(text, lang) {
+        const clean = normalizeText(text).replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+        if (!clean) return [{ label: 'Keine Antwort', msg: 'Schreibe oder sprich zuerst eine Antwort.', fix: 'Eine vollständige Antwort formulieren', severity: 3 }];
+        const issues = [];
+        const add = (label, msg, fix, severity = 2) => issues.push({ label, msg, fix, severity });
+
+        if (lang === 'en') {
+          const third = '(he|she|it|this|that)';
+          const baseVerbs = '(work|go|make|do|have|live|feel|seem|look|sound|cost|take|want|need|like|learn|read|write|speak|say|tell|think|believe|become|watch|listen|use|study|travel|play|try|mean|help|start|finish|choose|happen|matter|fit)';
+          let m = clean.match(new RegExp('^\\s*do\\s+' + third + '\\s+(?:really\\s+|actually\\s+|usually\\s+|always\\s+|often\\s+|still\\s+)?([a-z]+)\\b', 'i'));
+          if (m) {
+            const verb = m[2];
+            if (/s$/i.test(verb) || new RegExp('^' + baseVerbs + '$', 'i').test(verb)) {
+              add('Fragebildung / do-support', `Bei „${m[1]}“ brauchst du in Fragen „does“, nicht „do“. Nach „does“ steht die Grundform des Verbs.`, `Does ${m[1].toLowerCase()} ${baseFromThirdPerson(verb)}?`, 4);
+            }
+          }
+          m = clean.match(new RegExp('^\\s*does\\s+' + third + '\\s+(?:really\\s+|actually\\s+|usually\\s+|always\\s+|often\\s+|still\\s+)?([a-z]+s|has)\\b', 'i'));
+          if (m) add('Grundform nach does', 'Nach „does“ steht das Verb in der Grundform, also ohne -s.', `Does ${m[1].toLowerCase()} ${baseFromThirdPerson(m[2])}?`, 3);
+          m = clean.match(/^\s*do\s+(i|you|we|they|these|those)\s+([a-z]+s|has)\b/i);
+          if (m) add('Grundform nach do', 'Nach „do“ steht das Verb in der Grundform, also ohne -s.', `Do ${m[1].toLowerCase()} ${baseFromThirdPerson(m[2])}?`, 3);
+          m = clean.match(/^\s*did\s+([a-z\s]+?)\s+([a-z]+ed|went|saw|had|made|did)\b/i);
+          if (m) add('Grundform nach did', 'Nach „did“ steht die Grundform. Die Vergangenheit steckt schon in „did“.', 'Did + Subjekt + Grundform des Verbs', 3);
+
+          if (/\bthis are\b/i.test(clean)) add('this/these', '„This“ ist Singular und braucht „is“. Für Plural nutzt du „these are“.', 'this is / these are', 3);
+          if (/\bthese is\b/i.test(clean)) add('these/this', '„These“ ist Plural und braucht „are“. Für Singular nutzt du „this is“.', 'these are / this is', 3);
+          if (/\b(he|she|it|this|that) have\b/i.test(clean)) add('3. Person Singular', 'Bei he/she/it/this/that heißt es im Präsens „has“, nicht „have“.', 'has', 3);
+          if (/\b(i|you|we|they|these|those) has\b/i.test(clean)) add('have/has', 'Bei I/you/we/they steht „have“, nicht „has“.', 'have', 3);
+          if (/\b(a)\s+(apple|idea|answer|example|opportunity|interesting|old|English)\b/i.test(clean)) add('Artikel a/an', 'Vor einem Vokallaut steht meistens „an“, nicht „a“.', 'an …', 2);
+          if (/\b(an)\s+(benefit|book|car|good|big|small|person|problem|story|language|word|sentence)\b/i.test(clean)) add('Artikel a/an', 'Vor einem Konsonantenlaut steht meistens „a“, nicht „an“.', 'a …', 2);
+          if (/\bdo\s+(a\s+)?decision\b/i.test(clean)) add('Kollokation', 'Im Englischen sagt man „make a decision“, nicht „do a decision“.', 'make a decision', 2);
+          if (/\bstrong rain\b/i.test(clean)) add('Kollokation', 'Natürlicher ist „heavy rain“, nicht „strong rain“.', 'heavy rain', 2);
+          if (/\bdependant on\b/i.test(clean)) add('Rechtschreibung', 'Die häufigere Schreibweise ist „dependent on“.', 'dependent on', 1);
+        }
+
+        if (lang === 'fr') {
+          if (/\bje\s+vais\s+au\s+cin[eé]ma\s+demain\b/i.test(clean)) add('Wortstellung', '„Demain“ klingt am Satzanfang oder Satzende natürlicher.', 'Demain, je vais au cinéma…', 1);
+          if (/\bje\s+\w+er\b/i.test(clean) && !/\bje\s+(vais|peux|veux|dois)\s+\w+er\b/i.test(clean)) add('Konjugation', 'Nach „je“ steht normalerweise eine konjugierte Verbform, nicht der Infinitiv.', 'je + konjugiertes Verb', 3);
+          if (/\bdes\s+\w+[^s]\b/i.test(clean)) add('Plural nach des prüfen', 'Nach „des“ steht häufig ein Plural-Nomen. Prüfe, ob ein -s fehlt.', 'des + Plural', 1);
+        }
+
+        if (lang === 'de') {
+          if (/\bwegen dem\b/i.test(clean)) add('Kasus', 'Standardsprachlich: „wegen des“ oder umgangssprachlich akzeptiert „wegen dem“. Für gehobenen Ausdruck besser Genitiv.', 'wegen des …', 1);
+          if (/\bwo\s+ich\b/i.test(clean)) add('Relativsatz', 'Für präzisen schriftlichen Ausdruck besser „in dem/bei dem ich“ statt „wo ich“, wenn kein Ort gemeint ist.', 'in dem ich / bei dem ich', 1);
+          if (/\bund\s*,\s*um\b/i.test(clean)) add('Zeichensetzung/Stil', 'Vor „um … zu“ steht normalerweise kein „und,“. Der Satz wirkt schlanker ohne diese Dopplung.', '…, um … zu …', 1);
+        }
+
+        const wordCount = clean.split(/\s+/).filter(Boolean).length;
+        if (wordCount < 4) add('Sehr kurze Antwort', 'Die Antwort ist sehr kurz. Für sinnvolles Feedback braucht die App meist einen ganzen Satz oder mehrere Sätze.', 'Eine vollständige Antwort schreiben', 1);
+        return issues;
+      }
+
+      function showToast(message) {
+        const toast = $('#toast');
+        toast.textContent = message;
+        toast.classList.add('visible');
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove('visible'), 1900);
+      }
+
+      function download(filename, content, type = 'text/plain;charset=utf-8') {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function renderLangTabs() {
+        const markup = Object.entries(LANGS).map(([key, lang]) => {
+          const count = state.cards.filter(c => c.lang === key).length;
+          return `<button class="tab-btn ${key === currentLang ? 'active' : ''}" data-lang="${key}">
+            <span>${lang.short} · ${lang.label}</span><span class="pill">${count}</span>
+          </button>`;
+        }).join('');
+        $('#langTabs').innerHTML = markup;
+        $('#mobileLangTabs').innerHTML = markup;
+      }
+
+      function renderDashboard() {
+        const lang = LANGS[currentLang];
+        $('#goalPill').textContent = `${lang.short} · ${lang.level}`;
+        $('#goalTitle').textContent = lang.title;
+        $('#goalText').textContent = lang.text;
+        $('#speakModePill').textContent = `${lang.short} · ${lang.focus}`;
+        renderCover();
+        renderStats();
+      }
+
+      function renderStats() {
+        const cards = state.cards.filter(c => c.lang === currentLang);
+        $('#statAll').textContent = cards.length;
+        $('#statSession').textContent = cards.filter(c => c.sessionId === sessionId).length;
+        $('#statChunks').textContent = cards.filter(c => c.type === 'chunk').length;
+        renderLangTabs();
+      }
+
+      function switchLang(lang) {
+        currentLang = lang;
+        saveState();
+        renderAll();
+      }
+
+      function switchView(view) {
+        currentView = view;
+        $$('.panel').forEach(p => p.classList.toggle('active', p.id === view));
+        $$('#navTabs .tab-btn, #mobileBottomNav .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+        if (view === 'learn') renderCards();
+        if (view === 'speak' && !currentPrompt) generatePrompt();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function setReaderText(text, meta = {}) {
+        const cleaned = normalizeText(text);
+        state.reader.text = cleaned;
+        if (meta.title) $('#sourceTitle').value = meta.title;
+        if (meta.url) $('#sourceUrl').value = meta.url;
+        $('#readerBox').textContent = cleaned || '';
+        if (!cleaned) $('#readerBox').innerHTML = '<div class="empty">Noch kein Text geladen.<br>Füge Text ein oder lade eine Datei.</div>';
+        selectedText = '';
+        selectedContext = '';
+        $('#selectionBar').classList.remove('visible');
+        saveState();
+        showToast(cleaned ? 'Text geladen' : 'Reader geleert');
+      }
+
+      function renderReader() {
+        $('#sourceTitle').value = state.reader.title || '';
+        $('#sourceUrl').value = state.reader.url || '';
+        document.documentElement.style.setProperty('--reader-size', (state.reader.size || 19) + 'px');
+        setReaderText(state.reader.text || '', { title: state.reader.title, url: state.reader.url });
+      }
+
+      async function loadFile(file) {
+        if (!file) return;
+        const name = file.name || 'Datei';
+        const lower = name.toLowerCase();
+        $('#sourceTitle').value = name.replace(/\.[^.]+$/, '');
+
+        try {
+          if (lower.endsWith('.pdf')) {
+            await loadPdf(file);
+          } else if (lower.endsWith('.epub')) {
+            await loadEpub(file);
+          } else {
+            const text = await file.text();
+            setReaderText(text, { title: $('#sourceTitle').value });
+          }
+        } catch (error) {
+          console.error(error);
+          showToast('Datei konnte nicht gelesen werden');
+        }
+      }
+
+      async function loadPdf(file) {
+        if (!window.pdfjsLib) throw new Error('pdf.js wurde nicht geladen');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const data = new Uint8Array(await file.arrayBuffer());
+        const pdf = await pdfjsLib.getDocument({ data }).promise;
+        let text = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += '\n\n— Seite ' + i + ' —\n' + content.items.map(item => item.str).join(' ');
+        }
+        setReaderText(text, { title: $('#sourceTitle').value });
+      }
+
+      async function loadEpub(file) {
+        if (!window.JSZip) throw new Error('JSZip wurde nicht geladen');
+        const zip = await JSZip.loadAsync(await file.arrayBuffer());
+        const files = Object.values(zip.files).filter(f => /\.(xhtml|html|htm)$/i.test(f.name) && !f.dir);
+        let text = '';
+        for (const f of files) {
+          const html = await f.async('text');
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const title = doc.querySelector('h1,h2,title')?.textContent?.trim();
+          text += '\n\n' + (title ? '— ' + title + ' —\n' : '') + (doc.body?.innerText || doc.documentElement?.innerText || '');
+        }
+        setReaderText(text, { title: $('#sourceTitle').value });
+      }
+
+      async function loadUrl() {
+        const url = $('#sourceUrl').value.trim();
+        if (!url) return showToast('Bitte URL einfügen');
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const html = await res.text();
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          detectChapterLinks(doc, url);
+          let title = doc.title || url;
+          let content = '';
+          if (window.Readability) {
+            const article = new Readability(doc.cloneNode(true)).parse();
+            if (article) {
+              title = article.title || title;
+              content = article.textContent || '';
+            }
+          }
+          if (!content) content = doc.body?.innerText || '';
+          $('#sourceTitle').value = title;
+          setReaderText(content, { title, url });
+        } catch (error) {
+          console.warn(error);
+          showToast('URL blockiert. Bitte Text manuell einfügen.');
+          $('#pasteModal').classList.add('visible');
+        }
+      }
+
+      function detectChapterLinks(doc, baseUrl) {
+        const links = Array.from(doc.querySelectorAll('a[href]'));
+        const nextWords = /(next|nächste|weiter|suivant|chapitre suivant|next chapter|›|»)/i;
+        const prevWords = /(previous|prev|vorige|zurück|précédent|chapter previous|‹|«)/i;
+        const makeAbs = href => {
+          try { return new URL(href, baseUrl).href; } catch { return null; }
+        };
+        nextUrl = links.map(a => ({ text: a.textContent.trim(), href: makeAbs(a.getAttribute('href')) })).find(l => l.href && nextWords.test(l.text))?.href || null;
+        prevUrl = links.map(a => ({ text: a.textContent.trim(), href: makeAbs(a.getAttribute('href')) })).find(l => l.href && prevWords.test(l.text))?.href || null;
+        $('#chapterHint').textContent = nextUrl ? 'Nächstes Kapitel erkannt.' : 'Kein Kapitel-Link erkannt. Du kannst die neue URL manuell einfügen.';
+      }
+
+      function getSelectionData() {
+        const sel = window.getSelection();
+        const text = normalizeText(sel?.toString() || '');
+        if (!text || !$('#readerBox').contains(sel.anchorNode)) return null;
+        const all = state.reader.text || $('#readerBox').innerText || '';
+        const index = all.indexOf(text.slice(0, 80));
+        let context = text;
+        if (index >= 0) {
+          const start = Math.max(0, all.lastIndexOf('.', index - 2), all.lastIndexOf('\n', index - 1));
+          const endCandidates = ['.', '!', '?', '\n'].map(ch => all.indexOf(ch, index + text.length)).filter(i => i > -1);
+          const end = endCandidates.length ? Math.min(...endCandidates) + 1 : Math.min(all.length, index + text.length + 220);
+          context = normalizeText(all.slice(Math.max(0, start + 1), end));
+        }
+        return { text, context };
+      }
+
+      function updateSelectionBar() {
+        const data = getSelectionData();
+        if (!data) return;
+        selectedText = data.text;
+        selectedContext = data.context;
+        $('#selectedPreview').textContent = selectedText.length > 180 ? selectedText.slice(0, 180) + '…' : selectedText;
+        $('#selectionBar').classList.add('visible');
+      }
+
+      function openSaveModal(type) {
+        if (!selectedText) return showToast('Erst Text markieren');
+        $('#saveModalTitle').textContent = typeLabel(type) + ' speichern';
+        $('#cardType').value = type;
+        $('#cardFront').value = selectedText;
+        $('#cardBack').value = suggestBack(type, selectedText);
+        $('#cardContext').value = selectedContext || selectedText;
+        $('#cardTags').value = defaultTags(type);
+        $('#saveModal').classList.add('visible');
+      }
+
+      function typeLabel(type) {
+        return ({ chunk: 'Chunk', vocab: 'Vokabel', grammar: 'Grammatik-Notiz', structure: 'Strukturmuster' })[type] || 'Karte';
+      }
+
+      function defaultTags(type) {
+        const lang = LANGS[currentLang].short.toLowerCase();
+        if (currentLang === 'en' && type === 'chunk') return `${lang},collocation,naturalness`;
+        if (currentLang === 'fr' && type === 'grammar') return `${lang},grammar,accuracy`;
+        if (currentLang === 'de' && type === 'structure') return `${lang},storytelling,structure`;
+        return `${lang},${type}`;
+      }
+
+      function suggestBack(type, text) {
+        if (type === 'structure') return currentLang === 'de'
+          ? 'Welche Funktion hat diese Stelle? z.B. Einstieg, Übergang, Spannungsaufbau, Perspektivwechsel, Pointe.'
+          : 'Why is this structure useful? When could I reuse it?';
+        if (type === 'grammar') return currentLang === 'fr'
+          ? 'Regel / Korrektur / eigenes Beispiel ergänzen.'
+          : 'Regel / Korrektur / natürlichere Alternative ergänzen.';
+        if (type === 'chunk') return 'Bedeutung, natürlicher Einsatz und eigener Beispielsatz ergänzen.';
+        return 'Übersetzung / Bedeutung / Kontext ergänzen.';
+      }
+
+      function saveCardFromModal() {
+        const front = normalizeText($('#cardFront').value);
+        if (!front) return showToast('Vorderseite fehlt');
+        const card = {
+          id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          lang: currentLang,
+          type: $('#cardType').value,
+          front,
+          back: normalizeText($('#cardBack').value),
+          context: normalizeText($('#cardContext').value),
+          sourceTitle: $('#sourceTitle').value.trim(),
+          sourceUrl: $('#sourceUrl').value.trim(),
+          tags: $('#cardTags').value.split(',').map(t => t.trim()).filter(Boolean),
+          sessionId,
+          createdAt: new Date().toISOString(),
+          review: { status: 'new', ease: 2.5, interval: 0 }
+        };
+        state.cards.unshift(card);
+        saveState();
+        $('#saveModal').classList.remove('visible');
+        renderCards();
+        showToast('Karte gespeichert');
+      }
+
+      function renderCards() {
+        const type = $('#typeFilter')?.value || 'all';
+        const query = normalizeText($('#searchCards')?.value || '').toLowerCase();
+        const cards = state.cards
+          .filter(c => c.lang === currentLang)
+          .filter(c => type === 'all' || c.type === type)
+          .filter(c => !query || [c.front, c.back, c.context, c.sourceTitle, ...(c.tags || [])].join(' ').toLowerCase().includes(query));
+        const root = $('#cardsList');
+        if (!cards.length) {
+          root.innerHTML = '<div class="item"><div class="item-title">Noch keine Karten</div><div class="item-body">Markiere im Reader einen Text und speichere ihn als Chunk, Vokabel, Grammatik oder Struktur.</div></div>';
+          return;
+        }
+        root.innerHTML = cards.map(c => `
+          <div class="item" data-card-id="${escapeHtml(c.id)}">
+            <div class="item-head">
+              <div>
+                <span class="tag">${escapeHtml(typeLabel(c.type))}</span>
+                <div class="item-title" style="margin-top:7px">${escapeHtml(c.front)}</div>
+                <div class="item-meta">${escapeHtml(c.sourceTitle || 'ohne Quelle')} · ${new Date(c.createdAt).toLocaleDateString('de-DE')}</div>
+              </div>
+              <div class="row">
+                <button class="small" data-card-speak="${escapeHtml(c.id)}">▶︎</button>
+                <button class="small danger" data-card-delete="${escapeHtml(c.id)}">×</button>
+              </div>
+            </div>
+            ${c.back ? `<div class="item-body"><strong>Rückseite:</strong> ${escapeHtml(c.back)}</div>` : ''}
+            ${c.context ? `<div class="item-body"><strong>Kontext:</strong> ${escapeHtml(c.context)}</div>` : ''}
+            <div class="row">${(c.tags || []).map(t => `<span class="pill">${escapeHtml(t)}</span>`).join('')}</div>
+          </div>
+        `).join('');
+      }
+
+      function speak(text, rate = 1) {
+        if (!('speechSynthesis' in window)) return showToast('Text-to-Speech nicht verfügbar');
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = LANGS[currentLang].voice;
+        utterance.rate = rate;
+        utterance.pitch = 1;
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function generatePrompt() {
+        const lang = LANGS[currentLang];
+        const useful = state.cards.filter(c => c.lang === currentLang && ['chunk', 'structure', 'vocab'].includes(c.type));
+        const shuffled = useful.sort(() => Math.random() - .5).slice(0, 3);
+        const template = lang.promptTemplates[Math.floor(Math.random() * lang.promptTemplates.length)];
+        currentPrompt = { template, chunks: shuffled };
+        $('#speakPromptTitle').textContent = lang.promptTitle;
+        $('#speakPrompt').textContent = template;
+        $('#promptChunks').innerHTML = shuffled.length
+          ? shuffled.map(c => `<span class="pill">${escapeHtml(c.front)}</span>`).join('')
+          : '<span class="pill">Noch keine Chunks gespeichert</span>';
+      }
+
+      function initRecognition() {
+        const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Rec) return null;
+        const rec = new Rec();
+        rec.lang = LANGS[currentLang].voice;
+        rec.interimResults = true;
+        rec.continuous = true;
+        rec.onresult = event => {
+          let finalText = '';
+          let interim = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) finalText += transcript + ' ';
+            else interim += transcript;
+          }
+          const box = $('#freeAnswer');
+          if (finalText) box.value = normalizeText(box.value + ' ' + finalText);
+          if (interim) $('#ruleFeedback').innerHTML = `<div class="item-title">höre zu…</div><div class="item-body">${escapeHtml(interim)}</div>`;
+        };
+        rec.onend = () => {
+          $('#startRecognitionBtn').disabled = false;
+          $('#stopRecognitionBtn').disabled = true;
+        };
+        rec.onerror = e => {
+          console.warn(e);
+          showToast('Spracherkennung nicht verfügbar oder blockiert');
+          $('#startRecognitionBtn').disabled = false;
+          $('#stopRecognitionBtn').disabled = true;
+        };
+        return rec;
+      }
+
+
+      function currentAnswerText() {
+        return normalizeText($('#freeAnswer').value);
+      }
+
+      function issueKind(label = '') {
+        const l = label.toLowerCase();
+        if (/natural|germanism|kollokation|wortwahl|register|stil|idiom/.test(l)) return 'naturalness';
+        if (/klar|struktur|satzstellung|redundanz|füll/.test(l)) return 'clarity';
+        if (/vokab|wortwahl|kollokation/.test(l)) return 'vocabulary';
+        return 'grammar';
+      }
+
+      function buildFeedbackReport(text) {
+        const clean = normalizeText(text);
+        const checks = RULES[currentLang] || [];
+        const patternIssues = checks
+          .filter(rule => {
+            rule.re.lastIndex = 0;
+            return rule.re.test(clean);
+          })
+          .map(rule => ({ ...rule, severity: rule.severity || 2, source: 'local' }));
+        const found = dedupeIssues([...patternIssues, ...smartAnalyze(clean, currentLang)])
+          .map(issue => ({ ...issue, kind: issueKind(issue.label), fixText: displayFix(issue, clean) }));
+        const targetChunks = (currentPrompt?.chunks || []).filter(c => clean.toLowerCase().includes(c.front.toLowerCase().slice(0, Math.min(18, c.front.length))));
+        const words = clean.split(/\s+/).filter(Boolean);
+        if (words.length > 42 && !/[.!?]\s+\S/.test(clean)) {
+          found.push({ label: 'Klarheit', msg: 'Der Satz ist sehr lang. Für flüssiges Sprechen und klare Texte besser in zwei Gedanken aufteilen.', fixText: 'In zwei kürzere Sätze teilen', severity: 2, kind: 'clarity', source: 'local' });
+        }
+        const penalty = found.reduce((sum, issue) => sum + (issue.severity || 2), 0);
+        let overall = Math.max(1, 10 - penalty + Math.min(targetChunks.length, 2));
+        if (found.some(issue => (issue.severity || 0) >= 4)) overall = Math.min(overall, 6);
+        if (!clean) overall = 0;
+        const grammarPenalty = found.filter(i => i.kind === 'grammar').reduce((s, i) => s + (i.severity || 2), 0);
+        const naturalPenalty = found.filter(i => i.kind === 'naturalness' || i.kind === 'vocabulary').reduce((s, i) => s + (i.severity || 2), 0);
+        const clarityPenalty = found.filter(i => i.kind === 'clarity').reduce((s, i) => s + (i.severity || 2), 0);
+        const scores = {
+          overall,
+          grammar: clean ? Math.max(1, 10 - grammarPenalty) : 0,
+          naturalness: clean ? Math.max(1, 10 - naturalPenalty) : 0,
+          clarity: clean ? Math.max(1, 10 - clarityPenalty) : 0,
+          activeUse: clean ? (targetChunks.length ? Math.min(10, 6 + targetChunks.length * 2) : 4) : 0
+        };
+        const exercises = found.slice(0, 3).map(issue => ({
+          front: `${issue.label}: Formuliere korrekt/natürlicher: ${issue.fixText || issue.msg}`,
+          back: `${issue.msg}${issue.fixText ? '<br><br>Lösung/Vorschlag: ' + issue.fixText : ''}`,
+          tags: [currentLang, 'exercise', issue.kind]
+        }));
+        return { clean, found, targetChunks, scores, exercises };
+      }
+
+      function renderFeedbackReport(report, extraHtml = '') {
+        const found = report.found;
+        let cls = found.length ? 'warn' : 'good';
+        if (found.some(issue => (issue.severity || 0) >= 4) || report.scores.overall <= 5) cls = 'bad';
+        const scoreHtml = `
+          <div class="score-grid">
+            <div class="score-chip"><strong>${report.scores.overall}/10</strong><span>Gesamt</span></div>
+            <div class="score-chip"><strong>${report.scores.grammar}/10</strong><span>Grammatik</span></div>
+            <div class="score-chip"><strong>${report.scores.naturalness}/10</strong><span>Natürlichkeit</span></div>
+            <div class="score-chip"><strong>${report.scores.clarity}/10</strong><span>Klarheit</span></div>
+          </div>`;
+        const issueHtml = found.length
+          ? found.map(f => `<div class="item-body"><strong>${escapeHtml(f.label)}:</strong> ${escapeHtml(f.msg)}${f.fixText ? `<br><span class="pill">Vorschlag: ${escapeHtml(f.fixText)}</span>` : ''}</div>`).join('')
+          : '<div class="item-body">Keine lokale Regel wurde ausgelöst. Für C1-Feedback nutze zusätzlich den KI-Prompt oder LanguageTool.</div>';
+        const chunkHtml = report.targetChunks.length
+          ? `<div class="item-body"><strong>Aktiv genutzt:</strong> ${report.targetChunks.map(c => escapeHtml(c.front)).join(', ')}</div>`
+          : '<div class="item-body">Versuche, mindestens einen gespeicherten Chunk aktiv einzubauen.</div>';
+        const exerciseHtml = report.exercises.length
+          ? `<div class="item-body"><strong>Übungen, die daraus entstehen können:</strong><br>${report.exercises.map(e => '• ' + escapeHtml(e.front)).join('<br>')}</div>`
+          : '';
+        $('#ruleFeedback').className = 'feedback ' + cls;
+        $('#ruleFeedback').innerHTML = [
+          `<div class="item-title">Lokales Feedback · ${found.length ? 'Fehler/Feinschliff gefunden' : 'offline unauffällig'}</div>`,
+          scoreHtml,
+          issueHtml,
+          chunkHtml,
+          exerciseHtml,
+          extraHtml
+        ].join('');
+      }
+
+      function makeAiPrompt() {
+        const answer = currentAnswerText();
+        if (!answer) return '';
+        const lang = LANGS[currentLang];
+        const savedChunks = state.cards
+          .filter(c => c.lang === currentLang && ['chunk', 'vocab', 'grammar', 'structure'].includes(c.type))
+          .slice(0, 18)
+          .map(c => `- [${c.type}] ${c.front}${c.back ? ' = ' + c.back : ''}`)
+          .join('\n');
+        const levelGoal = currentLang === 'en'
+          ? 'Ich bin etwa B2/B2+ und will natürliches, idiomatisches C1-Englisch. Achte besonders auf Germanisms, Collocations, Artikel, Präpositionen und natürlichere Alternativen.'
+          : currentLang === 'fr'
+            ? 'Ich bin etwa A2/B1 in Französisch und will langfristig C1. Achte besonders auf Konjugation, Genus, Präpositionen, Satzbau, falsche Freunde und natürliche Formulierungen.'
+            : 'Deutsch ist meine Muttersprache, aber ich will klarer, interessanter und strukturierter Richtung C2 formulieren. Achte auf Prägnanz, Erzählstruktur, Satzlogik, Stil und Füllwörter.';
+        return `Du bist mein präziser Sprachcoach für ${lang.label}.
+
+Zielprofil:
+${levelGoal}
+
+Aufgabe:
+Analysiere meinen Text streng, aber lernorientiert. Ich möchte danach in meiner eigenen Webapp weiterlernen. Gib mir daher zuerst kurzes normales Feedback und dann unbedingt einen maschinenlesbaren JSON-Block im unten definierten Format.
+
+Bitte liefere:
+1. korrigierte Version
+2. natürlichere/fortgeschrittenere Version
+3. kurze Erklärung der wichtigsten Fehler
+4. konkrete Chunks, die ich lernen sollte
+5. Mini-Übungen aus meinen Fehlern
+
+Meine gespeicherten Chunks/Karten, die du berücksichtigen kannst:
+${savedChunks || '- noch keine gespeicherten Chunks'}
+
+Mein Text:
+"""
+${answer}
+"""
+
+WICHTIG: Gib am Ende exakt diesen JSON-Block zurück. Kein Markdown im JSON. Keine Kommentare im JSON. Nutze nur type-Werte: chunk, vocab, grammar, structure.
+
+APP_FEEDBACK_JSON_START
+{
+  "language": "${currentLang}",
+  "corrected": "korrigierte Version meines Textes",
+  "natural": "natürlichere oder fortgeschrittenere Version meines Textes",
+  "summary": "kurzes Gesamtfeedback auf Deutsch",
+  "issues": [
+    {
+      "category": "grammar | naturalness | vocabulary | clarity | register",
+      "original": "fehlerhafte Stelle",
+      "correction": "Korrektur oder bessere Alternative",
+      "explanation": "kurze Erklärung auf Deutsch",
+      "severity": 1,
+      "tags": ["relevanter_tag"]
+    }
+  ],
+  "new_cards": [
+    {
+      "type": "chunk",
+      "front": "lernenswerter Ausdruck oder Satzbaustein",
+      "back": "Bedeutung, Einsatz und ggf. deutsche Erklärung",
+      "context": "Kontext oder Beispielsatz",
+      "tags": ["ai_feedback", "naturalness"]
+    }
+  ],
+  "mini_exercises": [
+    {
+      "front": "Übungsfrage oder Lückensatz",
+      "back": "Lösung und kurze Erklärung",
+      "tags": ["ai_exercise"]
+    }
+  ]
+}
+APP_FEEDBACK_JSON_END`;
+      }
+
+      async function copyAiPrompt() {
+        const prompt = makeAiPrompt();
+        if (!prompt) return showToast('Keine Antwort vorhanden');
+        try {
+          await navigator.clipboard.writeText(prompt);
+          showToast('KI-Prompt kopiert');
+        } catch (error) {
+          console.warn(error);
+          $('#aiFeedbackInput').value = prompt;
+          $('#aiImportModal').classList.add('visible');
+          showToast('Kopieren blockiert – Prompt im Feld angezeigt');
+        }
+      }
+
+      function extractAiJson(raw) {
+        const text = String(raw || '').trim();
+        const block = text.match(/APP_FEEDBACK_JSON_START\s*([\s\S]*?)\s*APP_FEEDBACK_JSON_END/i);
+        const jsonText = block ? block[1] : text;
+        try { return JSON.parse(jsonText); }
+        catch (error) {
+          const first = jsonText.indexOf('{');
+          const last = jsonText.lastIndexOf('}');
+          if (first >= 0 && last > first) return JSON.parse(jsonText.slice(first, last + 1));
+          throw error;
+        }
+      }
+
+      function cardFromAi(raw, fallbackType = 'grammar') {
+        const type = ['chunk', 'vocab', 'grammar', 'structure'].includes(raw.type) ? raw.type : fallbackType;
+        return {
+          id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          lang: currentLang,
+          type,
+          front: normalizeText(raw.front || raw.original || raw.correction || raw.category || 'KI-Feedback'),
+          back: normalizeText(raw.back || [raw.correction, raw.explanation].filter(Boolean).join('\n\n')),
+          context: normalizeText(raw.context || currentAnswerText()),
+          sourceTitle: 'KI-Feedback',
+          sourceUrl: '',
+          tags: Array.from(new Set(['ai_feedback', ...(raw.tags || []), raw.category].filter(Boolean))).map(String),
+          sessionId,
+          createdAt: new Date().toISOString(),
+          review: { status: 'new', ease: 2.5, interval: 0 }
+        };
+      }
+
+      function importAiFeedback() {
+        try {
+          const data = extractAiJson($('#aiFeedbackInput').value);
+          const cards = [];
+          if (data.corrected || data.natural || data.summary) {
+            cards.push(cardFromAi({
+              type: 'grammar',
+              front: 'KI-Korrektur meiner Antwort',
+              back: [
+                data.summary ? '<strong>Feedback:</strong> ' + data.summary : '',
+                data.corrected ? '<strong>Korrigiert:</strong> ' + data.corrected : '',
+                data.natural ? '<strong>Natürlicher:</strong> ' + data.natural : ''
+              ].filter(Boolean).join('<br><br>'),
+              tags: ['ai_summary']
+            }, 'grammar'));
+          }
+          (data.issues || []).forEach(issue => cards.push(cardFromAi({
+            type: issue.category === 'clarity' || issue.category === 'register' ? 'structure' : 'grammar',
+            front: issue.original || issue.category || 'Fehleranalyse',
+            back: [issue.correction ? 'Besser: ' + issue.correction : '', issue.explanation || ''].filter(Boolean).join('\n\n'),
+            context: currentAnswerText(),
+            tags: ['issue', issue.category, ...(issue.tags || [])]
+          }, 'grammar')));
+          (data.new_cards || []).forEach(card => cards.push(cardFromAi(card, card.type || 'chunk')));
+          (data.mini_exercises || []).forEach(ex => cards.push(cardFromAi({
+            type: 'grammar',
+            front: ex.front || 'Mini-Übung',
+            back: ex.back || '',
+            context: currentAnswerText(),
+            tags: ['exercise', 'ai_exercise', ...(ex.tags || [])]
+          }, 'grammar')));
+          if (!cards.length) return showToast('Keine importierbaren Karten gefunden');
+          state.cards.unshift(...cards);
+          saveState();
+          renderCards();
+          $('#aiImportModal').classList.remove('visible');
+          $('#ruleFeedback').className = 'feedback good';
+          $('#ruleFeedback').innerHTML = `<div class="item-title">KI-Feedback importiert</div><div class="item-body">${cards.length} neue Lernkarten wurden angelegt. Du findest sie im Lernbereich unter ${LANGS[currentLang].short}.</div>`;
+          showToast(`${cards.length} Karten aus KI-Feedback erstellt`);
+        } catch (error) {
+          console.error(error);
+          showToast('KI-JSON konnte nicht gelesen werden');
+        }
+      }
+
+      async function checkLanguageTool() {
+        const text = currentAnswerText();
+        if (!text) return showToast('Keine Antwort vorhanden');
+        const language = currentLang === 'en' ? 'en-US' : currentLang === 'fr' ? 'fr-FR' : 'de-DE';
+        $('#ruleFeedback').className = 'feedback warn';
+        $('#ruleFeedback').innerHTML = '<div class="item-title">LanguageTool prüft…</div><div class="item-body">Der Text wird an LanguageTool gesendet. Das kann je nach Verbindung kurz dauern.</div>';
+        try {
+          const body = new URLSearchParams({ text, language });
+          const res = await fetch('https://api.languagetool.org/v2/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+          });
+          if (!res.ok) throw new Error('LanguageTool HTTP ' + res.status);
+          const data = await res.json();
+          const matches = (data.matches || []).slice(0, 10);
+          const report = buildFeedbackReport(text);
+          const ltHtml = matches.length
+            ? `<div class="item-title">LanguageTool · ${matches.length} Hinweis(e)</div>` + matches.map(m => {
+                const replacement = (m.replacements || []).slice(0, 3).map(r => r.value).join(' / ');
+                const original = text.slice(m.offset, m.offset + m.length);
+                return `<div class="item-body"><strong>${escapeHtml(m.rule?.category?.name || m.rule?.issueType || 'Hinweis')}:</strong> ${escapeHtml(m.message)}<br><span class="pill">Stelle: ${escapeHtml(original)}</span>${replacement ? `<span class="pill">Vorschlag: ${escapeHtml(replacement)}</span>` : ''}</div>`;
+              }).join('')
+            : '<div class="item-title">LanguageTool</div><div class="item-body">Keine zusätzlichen Hinweise gefunden.</div>';
+          renderFeedbackReport(report, ltHtml);
+        } catch (error) {
+          console.warn(error);
+          const report = buildFeedbackReport(text);
+          renderFeedbackReport(report, '<div class="item-body"><strong>LanguageTool nicht erreichbar.</strong> Nutze stattdessen den KI-Prompt oder die lokale Analyse.</div>');
+        }
+      }
+
+      function analyzeAnswer(text) {
+        const report = buildFeedbackReport(text);
+        renderFeedbackReport(report);
+      }
+
+      function ankiCsv(cards) {
+        const sep = ';';
+        const rows = cards.map(c => {
+          const tags = [LANGS[c.lang]?.short || c.lang, c.type, ...(c.tags || [])].join(' ');
+          const front = c.front;
+          const back = [c.back, c.context ? '<br><br><em>Kontext:</em> ' + c.context : '', c.sourceTitle ? '<br><br><small>Quelle: ' + c.sourceTitle + '</small>' : ''].join('');
+          return [front, back, tags].map(csvCell).join(sep);
+        });
+        return '\ufeff' + rows.join('\n');
+      }
+
+      function csvCell(value) {
+        const clean = String(value || '').replace(/\r?\n/g, '<br>').replace(/"/g, '""');
+        return '"' + clean + '"';
+      }
+
+      function exportCards(sessionOnly = false) {
+        const cards = state.cards.filter(c => c.lang === currentLang && (!sessionOnly || c.sessionId === sessionId));
+        if (!cards.length) return showToast('Keine Karten zum Exportieren');
+        const date = new Date().toISOString().slice(0, 10);
+        download(`anki_${currentLang}_${sessionOnly ? 'session' : 'all'}_${date}.csv`, ankiCsv(cards), 'text/csv;charset=utf-8');
+      }
+
+      function exportJson(sessionOnly = false) {
+        const data = sessionOnly ? { ...state, cards: state.cards.filter(c => c.sessionId === sessionId), exportType: 'session' } : state;
+        const date = new Date().toISOString().slice(0, 10);
+        download(`polyglot_reader_${sessionOnly ? 'session' : 'backup'}_${date}.json`, JSON.stringify(data, null, 2), 'application/json;charset=utf-8');
+      }
+
+      function deleteCard(id) {
+        state.cards = state.cards.filter(c => c.id !== id);
+        saveState();
+        renderCards();
+        showToast('Karte gelöscht');
+      }
+
+      function importBackup(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const data = JSON.parse(reader.result);
+            if (!Array.isArray(data.cards)) throw new Error('Ungültiges Backup');
+            const merge = confirm('Backup importieren? OK = mit bestehenden Karten zusammenführen. Abbrechen = ersetzen.');
+            if (merge) {
+              const existing = new Set(state.cards.map(c => c.id));
+              const incoming = data.cards.filter(c => !existing.has(c.id));
+              state.cards = [...incoming, ...state.cards];
+            } else {
+              state = { ...defaultState(), ...data };
+            }
+            saveState();
+            applyThemePalette();
+            renderAll();
+            showToast('Backup importiert');
+          } catch (error) {
+            console.error(error);
+            showToast('Backup konnte nicht importiert werden');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function bindEvents() {
+        $('#langTabs').addEventListener('click', e => {
+          const btn = e.target.closest('[data-lang]');
+          if (btn) switchLang(btn.dataset.lang);
+        });
+        $('#mobileLangTabs').addEventListener('click', e => {
+          const btn = e.target.closest('[data-lang]');
+          if (btn) switchLang(btn.dataset.lang);
+        });
+
+        $('#navTabs').addEventListener('click', e => {
+          const btn = e.target.closest('[data-view]');
+          if (btn) switchView(btn.dataset.view);
+        });
+        $('#mobileBottomNav').addEventListener('click', e => {
+          const btn = e.target.closest('[data-view]');
+          if (btn) switchView(btn.dataset.view);
+        });
+
+        $$('[data-jump]').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.jump)));
+
+        $('#darkBtn').addEventListener('click', () => {
+          state.settings.dark = !state.settings.dark;
+          document.body.classList.toggle('dark', state.settings.dark);
+          applyThemePalette();
+          saveState();
+        });
+
+        $('#backupBtn').addEventListener('click', () => $('#backupModal').classList.add('visible'));
+        $('#downloadAllBackup').addEventListener('click', () => exportJson(false));
+        $('#downloadSessionBackup').addEventListener('click', () => exportJson(true));
+        $('#importInput').addEventListener('change', e => importBackup(e.target.files[0]));
+        $('#coverInput').addEventListener('change', e => handleCoverUpload(e.target.files[0]));
+        $('#removeCoverBtn').addEventListener('click', () => {
+          state.settings.coverImage = '';
+          state.settings.themePalette = null;
+          saveState();
+          applyThemePalette();
+          renderCover();
+          showToast('Cover entfernt');
+        });
+        $('#coverTitleInput').addEventListener('input', () => {
+          state.settings.coverTitle = $('#coverTitleInput').value.trim() || 'Your reading companion';
+          renderCover();
+          saveState();
+        });
+
+        $$('[data-close-modal]').forEach(btn => btn.addEventListener('click', () => $('#' + btn.dataset.closeModal).classList.remove('visible')));
+        $$('.modal-backdrop').forEach(modal => modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('visible'); }));
+
+        $('#fileInput').addEventListener('change', e => loadFile(e.target.files[0]));
+        $('#pasteBtn').addEventListener('click', () => $('#pasteModal').classList.add('visible'));
+        $('#loadPasteBtn').addEventListener('click', () => {
+          setReaderText($('#pasteArea').value, { title: $('#sourceTitle').value, url: $('#sourceUrl').value });
+          $('#pasteModal').classList.remove('visible');
+        });
+        $('#loadUrlBtn').addEventListener('click', loadUrl);
+        $('#clearReaderBtn').addEventListener('click', () => setReaderText(''));
+        $('#nextChapterBtn').addEventListener('click', () => {
+          if (!nextUrl) return showToast('Kein nächster Link erkannt');
+          $('#sourceUrl').value = nextUrl;
+          loadUrl();
+        });
+        $('#prevChapterBtn').addEventListener('click', () => {
+          if (!prevUrl) return showToast('Kein vorheriger Link erkannt');
+          $('#sourceUrl').value = prevUrl;
+          loadUrl();
+        });
+
+        $('#sourceTitle').addEventListener('input', saveState);
+        $('#sourceUrl').addEventListener('input', saveState);
+
+        $('#readerBox').addEventListener('mouseup', () => setTimeout(updateSelectionBar, 30));
+        $('#readerBox').addEventListener('touchend', () => setTimeout(updateSelectionBar, 250));
+        document.addEventListener('selectionchange', () => {
+          if (document.activeElement === $('#readerBox')) updateSelectionBar();
+        });
+
+        $$('[data-save-type]').forEach(btn => btn.addEventListener('click', () => openSaveModal(btn.dataset.saveType)));
+        $('#speakSelectionBtn').addEventListener('click', () => selectedText && speak(selectedText, 1));
+        $('#speakSlowSelectionBtn').addEventListener('click', () => selectedText && speak(selectedText, .75));
+        $('#saveCardBtn').addEventListener('click', saveCardFromModal);
+
+        $('#increaseText').addEventListener('click', () => {
+          state.reader.size = Math.min(28, (state.reader.size || 19) + 1);
+          document.documentElement.style.setProperty('--reader-size', state.reader.size + 'px');
+          saveState();
+        });
+        $('#decreaseText').addEventListener('click', () => {
+          state.reader.size = Math.max(15, (state.reader.size || 19) - 1);
+          document.documentElement.style.setProperty('--reader-size', state.reader.size + 'px');
+          saveState();
+        });
+
+        $('#typeFilter').addEventListener('change', renderCards);
+        $('#searchCards').addEventListener('input', renderCards);
+        $('#cardsList').addEventListener('click', e => {
+          const del = e.target.closest('[data-card-delete]');
+          if (del) return deleteCard(del.dataset.cardDelete);
+          const sp = e.target.closest('[data-card-speak]');
+          if (sp) {
+            const card = state.cards.find(c => c.id === sp.dataset.cardSpeak);
+            if (card) speak(card.front, 1);
+          }
+        });
+
+        $('#exportAnkiBtn').addEventListener('click', () => exportCards(false));
+        $('#exportSessionBtn').addEventListener('click', () => exportCards(true));
+        $('#exportJsonBtn').addEventListener('click', () => exportJson(false));
+        $('#deleteLanguageBtn').addEventListener('click', () => {
+          if (!confirm('Alle Karten dieser Sprache löschen?')) return;
+          state.cards = state.cards.filter(c => c.lang !== currentLang);
+          saveState();
+          renderCards();
+        });
+
+        $('#newPromptBtn').addEventListener('click', generatePrompt);
+        $('#speakPromptBtn').addEventListener('click', () => {
+          const text = [currentPrompt?.template || $('#speakPrompt').textContent, ...(currentPrompt?.chunks || []).map(c => c.front)].join('. ');
+          speak(text, .92);
+        });
+        $('#startRecognitionBtn').addEventListener('click', () => {
+          recognition = initRecognition();
+          if (!recognition) return showToast('Spracherkennung in diesem Browser nicht verfügbar');
+          $('#startRecognitionBtn').disabled = true;
+          $('#stopRecognitionBtn').disabled = false;
+          recognition.start();
+        });
+        $('#stopRecognitionBtn').addEventListener('click', () => recognition?.stop());
+        $('#checkAnswerBtn').addEventListener('click', () => analyzeAnswer($('#freeAnswer').value));
+        $('#languageToolBtn').addEventListener('click', checkLanguageTool);
+        $('#copyAiPromptBtn').addEventListener('click', copyAiPrompt);
+        $('#openAiImportBtn').addEventListener('click', () => $('#aiImportModal').classList.add('visible'));
+        $('#importAiFeedbackBtn').addEventListener('click', importAiFeedback);
+        $('#clearAnswerBtn').addEventListener('click', () => { $('#freeAnswer').value = ''; $('#ruleFeedback').innerHTML = '<div class="item-title">Noch keine Analyse</div><div class="item-body">Antwort wurde geleert.</div>'; });
+        $('#saveAnswerChunkBtn').addEventListener('click', () => {
+          const answer = normalizeText($('#freeAnswer').value);
+          if (!answer) return showToast('Keine Antwort vorhanden');
+          selectedText = answer;
+          selectedContext = answer;
+          openSaveModal('chunk');
+        });
+
+        window.addEventListener('beforeinstallprompt', e => {
+          e.preventDefault();
+          deferredPrompt = e;
+          $('#installBtn').hidden = false;
+        });
+        $('#installBtn').addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          $('#installBtn').hidden = true;
+        });
+      }
+
+      function renderAll() {
+        document.body.classList.toggle('dark', !!state.settings.dark);
+        applyThemePalette();
+        renderLangTabs();
+        renderDashboard();
+        renderCards();
+        generatePrompt();
+      }
+
+      function init() {
+        bindEvents();
+        renderReader();
+        renderAll();
+        switchView(currentView);
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+          navigator.serviceWorker.register('./sw.js').catch(() => {
+            // Die App funktioniert auch ohne Service Worker.
+          });
+        }
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
