@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#4f683d" />
+  <title>Natural Language Flow</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <style>
+    :root {
+      --bg: #f7f2eb;
+      --paper: #fffdf9;
+      --paper-2: rgba(255,255,255,.78);
+      --ink: #241d26;
+      --muted: #6c6170;
+      --line: rgba(36, 29, 38, .10);
+      --accent: #4f683d;
+      --accent-2: #7b2f39;
+      --accent-3: #d6cec2;
+      --accent-text: #ffffff;
+      --radius: 28px;
+      --shadow: 0 28px 72px rgba(39, 24, 28, .12);
+      --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --reader-size: 20px;
+      --app-bg-image: url('./default-cover.jpg');
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: var(--sans);
+      color: var(--ink);
+      background: linear-gradient(180deg, rgba(249,245,239,.92) 0%, rgba(244,238,231,.96) 100%);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: var(--app-bg-image);
+      background-size: cover;
+      background-position: center;
+      opacity: .18;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(123,47,57,.12), transparent 28rem),
+        radial-gradient(circle at 88% 6%, rgba(79,104,61,.14), transparent 30rem),
+        linear-gradient(180deg, rgba(250,247,241,.88) 0%, rgba(245,239,233,.93) 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body.dark {
+      --bg: #17121c;
+      --paper: #211923;
+      --paper-2: rgba(33,25,35,.84);
+      --ink: #f7efe8;
+      --muted: #c8b8cb;
+      --line: rgba(247,239,232,.14);
+      --accent: #8da17a;
+      --accent-2: #c17d85;
+      --accent-3: #5c4f61;
+      --accent-text: #1f1822;
+      --shadow: 0 28px 72px rgba(0,0,0,.28);
+    }
+
+    body.dark::before { opacity: .16; }
+    body.dark::after {
+      background:
+        radial-gradient(circle at 8% 0%, rgba(123,47,57,.15), transparent 28rem),
+        radial-gradient(circle at 88% 6%, rgba(79,104,61,.16), transparent 30rem),
+        linear-gradient(180deg, rgba(25,19,30,.88) 0%, rgba(17,13,21,.94) 100%);
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 88%, transparent);
+      color: var(--ink);
+      padding: 14px 16px;
+      outline: none;
+    }
+
+    textarea { resize: vertical; min-height: 120px; }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: var(--paper);
+      color: var(--ink);
+      padding: 12px 18px;
+      min-height: 46px;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.06);
+    }
+
+    button.soft { background: color-mix(in srgb, var(--paper) 80%, transparent); border-color: var(--line); }
+    button.small { min-height: 40px; padding: 9px 14px; }
+    button.accent { background: var(--accent); color: var(--accent-text); }
+    button.danger { background: transparent; border-color: color-mix(in srgb, var(--accent-2) 45%, var(--line)); color: var(--accent-2); }
+    button.ghost { background: transparent; border-color: var(--line); box-shadow: none; }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 18px 16px calc(120px + env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      letter-spacing: -.03em;
+    }
+
+    .title-wrap p {
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+
+    .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 82%, transparent);
+      color: var(--muted);
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .card {
+      background: color-mix(in srgb, var(--paper) 82%, transparent);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .pad { padding: 20px; }
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-title h2 { margin: 0; font-size: clamp(22px, 3vw, 30px); }
+    .notice { color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .cover-frame {
+      position: relative;
+      min-height: 360px;
+      overflow: hidden;
+      border-radius: calc(var(--radius) + 6px);
+      background: linear-gradient(135deg, rgba(79,104,61,.24), rgba(123,47,57,.22));
+      border: 1px solid var(--line);
+    }
+
+    .cover-frame img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(.95) contrast(1.02);
+    }
+
+    .cover-overlay {
+      position: relative;
+      min-height: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px;
+      background: linear-gradient(180deg, rgba(17,16,18,.12), rgba(17,16,18,.46));
+      color: #fffdf8;
+    }
+
+    .cover-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+      font-size: 14px;
+    }
+
+    .cover-title {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: .95;
+      max-width: 560px;
+      letter-spacing: -.05em;
+    }
+
+    .cover-subtitle {
+      margin: 10px 0 0;
+      max-width: 520px;
+      color: rgba(255,255,255,.88);
+      line-height: 1.6;
+    }
+
+    .settings-panel { display: grid; gap: 14px; }
+
+    .swatches { display: flex; gap: 10px; }
+    .swatch {
+      width: 28px; height: 28px; border-radius: 999px; border: 1px solid rgba(0,0,0,.08);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      border-radius: 22px;
+      padding: 14px;
+      background: color-mix(in srgb, var(--paper) 74%, transparent);
+      border: 1px solid var(--line);
+    }
+
+    .stat small { color: var(--muted); display: block; margin-bottom: 4px; }
+    .stat strong { font-size: 28px; }
+
+    .reader-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .reader-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .reader-tabs::-webkit-scrollbar { display: none; }
+
+    .reader-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.36);
+      white-space: nowrap;
+      max-width: 210px;
+    }
+
+    .reader-tab.active { background: var(--ink); color: var(--paper); border-color: transparent; }
+    .reader-tab-label { overflow: hidden; text-overflow: ellipsis; }
+    .reader-tab-close { background: transparent; border: none; min-height: auto; padding: 0; color: inherit; box-shadow: none; }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .row.spread { justify-content: space-between; }
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 46px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 80%, transparent);
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.06);
+    }
+
+    .reader-stage {
+      margin-top: 14px;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      padding: 18px clamp(18px, 4vw, 52px) 28px;
+      overflow: hidden;
+    }
+
+    .reader-box {
+      min-height: calc(100vh - 290px);
+      width: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+      word-break: normal;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      font-family: var(--serif);
+      font-size: var(--reader-size);
+      line-height: 1.86;
+      color: var(--ink);
+      background: transparent;
+      border: none;
+      outline: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .reader-empty {
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      min-height: 280px;
+      text-align: center;
+    }
+
+    .selection-bar {
+      display: none;
+      margin-top: 14px;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 12px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+    }
+
+    .selection-bar.visible { display: flex; }
+    .selected-preview {
+      flex: 1 1 240px;
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--accent-3) 58%, transparent);
+      color: var(--ink);
+    }
+
+    .chapter-note { margin-top: 12px; }
+
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-chip.active { background: var(--accent); color: var(--accent-text); }
+
+    .cards {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .learn-card {
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 86%, transparent);
+      padding: 16px;
+    }
+
+    .learn-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .learn-card .meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .learn-card .context {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--accent-3) 52%, transparent);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .learn-card .tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .learn-card .tag {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .speak-box {
+      display: grid;
+      gap: 12px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: min(860px, calc(100% - 20px));
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      padding: 10px;
+      border-radius: 32px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 86%, transparent);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      z-index: 40;
+    }
+
+    .nav-btn {
+      display: grid;
+      place-items: center;
+      gap: 6px;
+      min-height: 74px;
+      border-radius: 24px;
+      background: transparent;
+      border: 1px solid transparent;
+      box-shadow: none;
+      color: var(--muted);
+    }
+
+    .nav-btn.active { background: var(--ink); color: var(--paper); }
+    .nav-btn .ico { font-size: 26px; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(10,10,12,.35);
+      z-index: 80;
+    }
+
+    .modal-backdrop.visible { display: grid; }
+    .modal {
+      width: min(760px, 100%);
+      max-height: min(86vh, 820px);
+      overflow: auto;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      padding: 18px;
+    }
+
+    .book-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: none;
+      flex-direction: column;
+      padding: calc(12px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));
+      background: color-mix(in srgb, var(--paper) 98%, transparent);
+    }
+
+    .book-overlay.visible { display: flex; }
+    .book-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .book-pill {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.72);
+      color: var(--muted);
+      box-shadow: 0 8px 26px rgba(0,0,0,.08);
+    }
+
+    .book-reader {
+      flex: 1;
+      width: min(760px, 100%);
+      margin: 0 auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+      word-break: normal;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      font-family: var(--serif);
+      font-size: calc(var(--reader-size) + 1px);
+      line-height: 1.88;
+      color: var(--ink);
+      padding: 8px 10px 26px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 820px) {
+      .grid-2, .grid-3, .stats { grid-template-columns: 1fr; }
+      .reader-head { flex-direction: column; }
+      .reader-stage { padding: 16px 12px 24px; }
+      .reader-box { min-height: calc(100vh - 350px); }
+      .cover-frame { min-height: 420px; }
+      .cover-title { font-size: 42px; }
+      .bottom-nav { gap: 8px; padding: 8px; }
+      .nav-btn { min-height: 68px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>Natural Language Flow</h1>
+        <p>Lesen, sammeln, lernen und sprechen – alles in einem Reader.</p>
+      </div>
+      <div class="chip-row">
+        <span class="chip" id="langPill">EN · English</span>
+        <button class="ghost small" id="darkModeBtn">Dark</button>
+      </div>
+    </div>
+
+    <section id="homeView" class="view active">
+      <div class="grid-2">
+        <div class="card pad">
+          <div class="cover-frame" id="coverFrame">
+            <img id="coverPreview" src="./default-cover.jpg" alt="Cover" />
+            <div class="cover-overlay">
+              <div class="cover-eyebrow" id="coverLangPill">EN · English</div>
+              <div>
+                <h2 class="cover-title" id="coverTitlePreview">Natural Language Flow</h2>
+                <p class="cover-subtitle">Ein Reader im Stil deiner grün-roten Collage – mit ruhigen Buchflächen, Lernkarten und schnellem Foto-Import.</p>
+              </div>
+              <div class="chip-row">
+                <span class="chip">Reader-Tabs</span>
+                <span class="chip">PDF · EPUB · Web</span>
+                <span class="chip">Foto → Lernen</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card pad settings-panel">
+          <div class="section-title">
+            <h2>Design & Setup</h2>
+          </div>
+          <div>
+            <label for="coverTitleInput">Titel auf dem Cover</label>
+            <input id="coverTitleInput" type="text" value="Natural Language Flow" />
+          </div>
+          <div>
+            <label for="langSelect">Lernsprache</label>
+            <select id="langSelect">
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+            </select>
+          </div>
+          <div class="row">
+            <label class="file-label" for="coverInput">Eigenes Cover</label>
+            <input id="coverInput" class="hidden" type="file" accept="image/*" />
+            <button class="soft" id="resetCoverBtn">Standard-Cover</button>
+          </div>
+          <div>
+            <div class="notice">Palette der App</div>
+            <div class="swatches">
+              <span class="swatch" style="background:#4f683d"></span>
+              <span class="swatch" style="background:#7b2f39"></span>
+              <span class="swatch" style="background:#d6cec2"></span>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><small>Karten</small><strong id="statCards">0</strong></div>
+            <div class="stat"><small>Reader-Tabs</small><strong id="statTabs">1</strong></div>
+            <div class="stat"><small>Zeichen im Reader</small><strong id="statChars">0</strong></div>
+          </div>
+          <div class="row">
+            <button class="soft" id="exportBtn">Backup exportieren</button>
+            <label class="file-label" for="importInput">Backup importieren</label>
+            <input id="importInput" class="hidden" type="file" accept="application/json" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="readerView" class="view">
+      <div class="card pad">
+        <div class="reader-head">
+          <div>
+            <h2 style="margin:0 0 6px">Library Reader</h2>
+            <div class="notice">Mehrere Tabs für Bücher oder Websites. Buchmodus macht das Lesen deutlich ruhiger und rahmenloser.</div>
+          </div>
+          <div class="row">
+            <button class="small" id="decreaseTextBtn">A-</button>
+            <button class="small" id="increaseTextBtn">A+</button>
+            <button class="small accent" id="bookModeBtn">Buchmodus</button>
+          </div>
+        </div>
+
+        <div class="row spread" style="margin-bottom:10px">
+          <div class="reader-tabs" id="readerTabs"></div>
+          <button class="small soft" id="newTabBtn">+ Tab</button>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="sourceTitleInput">Titel / Quelle</label>
+            <input id="sourceTitleInput" type="text" placeholder="z.B. The_Truth_Untold" />
+          </div>
+          <div>
+            <label for="sourceUrlInput">URL / Quellenlink optional</label>
+            <input id="sourceUrlInput" type="url" placeholder="https://…" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <label class="file-label" for="fileInput">Datei öffnen: TXT/PDF/EPUB</label>
+          <input id="fileInput" class="hidden" type="file" accept=".txt,.md,.pdf,.epub,application/epub+zip,application/pdf,text/plain" />
+          <label class="file-label" for="cameraInput">Kamera / OCR</label>
+          <input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment" />
+          <button class="soft" id="loadUrlBtn">URL laden</button>
+          <button class="soft" id="pasteBtn">Text einfügen</button>
+          <button class="danger" id="clearReaderBtn">Reader leeren</button>
+        </div>
+
+        <div class="selection-bar" id="selectionBar">
+          <div class="selected-preview" id="selectedPreview">Auswahl</div>
+          <button class="small accent" data-save-type="chunk">Chunk</button>
+          <button class="small" data-save-type="vocab">Vokabel</button>
+          <button class="small" data-save-type="grammar">Grammatik</button>
+          <button class="small" data-save-type="structure">Struktur</button>
+          <button class="small" id="speakSelectionBtn">▶︎</button>
+          <button class="small" id="speakSlowSelectionBtn">0.75×</button>
+        </div>
+
+        <div class="reader-stage">
+          <div id="readerBox" class="reader-box" tabindex="0"></div>
+        </div>
+
+        <div class="row" style="margin-top:14px">
+          <button class="small" id="prevChapterBtn">← Voriges Kapitel</button>
+          <button class="small" id="nextChapterBtn">Nächstes Kapitel →</button>
+        </div>
+        <div class="notice chapter-note" id="chapterHint">Kapitelnavigation funktioniert am besten bei nummerierten Kapitel-URLs.</div>
+      </div>
+    </section>
+
+    <section id="learnView" class="view">
+      <div class="card pad">
+        <div class="section-title">
+          <div>
+            <h2>Lernbereich</h2>
+            <div class="notice">Alles, was du markierst oder fotografierst, landet hier als Lernmaterial.</div>
+          </div>
+          <button class="soft small" id="clearCardsBtn">Alle Karten löschen</button>
+        </div>
+        <div class="filters" id="filters"></div>
+        <div class="cards" id="cardsList"></div>
+      </div>
+    </section>
+
+    <section id="speakView" class="view">
+      <div class="card pad speak-box">
+        <div class="section-title">
+          <div>
+            <h2>Sprechen</h2>
+            <div class="notice">Lass dir Text oder Karten mit der gewählten Sprache vorlesen.</div>
+          </div>
+        </div>
+        <textarea id="speakInput" placeholder="Text eingeben oder aus einer Karte übernehmen …"></textarea>
+        <div class="row">
+          <button class="accent" id="speakBtn">Vorlesen</button>
+          <button class="soft" id="speakSlowBtn">Langsam</button>
+          <button class="ghost" id="stopSpeakBtn">Stop</button>
+        </div>
+        <div class="notice">Tipp: Im Lernbereich kannst du jede Karte direkt mit ▶︎ anhören.</div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="homeView"><span class="ico">⌂</span><span>Start</span></button>
+    <button class="nav-btn" data-view="readerView"><span class="ico">📖</span><span>Reader</span></button>
+    <button class="nav-btn" data-view="learnView"><span class="ico">🗂️</span><span>Lernen</span></button>
+    <button class="nav-btn" data-view="speakView"><span class="ico">🎙️</span><span>Sprechen</span></button>
+  </nav>
+
+  <div class="modal-backdrop" id="pasteModal">
+    <div class="modal">
+      <div class="section-title"><h2>Text einfügen</h2><button class="small ghost" data-close="pasteModal">Schließen</button></div>
+      <textarea id="pasteArea" placeholder="Text hier einfügen …"></textarea>
+      <div class="row" style="margin-top:12px">
+        <button class="accent" id="loadPasteBtn">In Reader laden</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="saveModal">
+    <div class="modal">
+      <div class="section-title"><h2>Zur Lernliste hinzufügen</h2><button class="small ghost" data-close="saveModal">Schließen</button></div>
+      <div class="grid-2">
+        <div>
+          <label for="saveType">Typ</label>
+          <select id="saveType">
+            <option value="chunk">Chunk</option>
+            <option value="vocab">Vokabel</option>
+            <option value="grammar">Grammatik</option>
+            <option value="structure">Struktur</option>
+          </select>
+        </div>
+        <div>
+          <label for="saveTags">Tags</label>
+          <input id="saveTags" type="text" placeholder="z.B. chapter-3, quote" />
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <label for="saveFront">Vorderseite</label>
+        <textarea id="saveFront"></textarea>
+      </div>
+      <div style="margin-top:12px">
+        <label for="saveBack">Notiz / Rückseite</label>
+        <textarea id="saveBack"></textarea>
+      </div>
+      <div style="margin-top:12px">
+        <label for="saveContext">Kontext</label>
+        <textarea id="saveContext"></textarea>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="accent" id="saveCardBtn">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="ocrModal">
+    <div class="modal">
+      <div class="section-title"><h2>Foto zu Lernkarte</h2><button class="small ghost" data-close="ocrModal">Schließen</button></div>
+      <div class="notice" id="ocrStatus">Noch kein Bild verarbeitet.</div>
+      <div style="margin-top:12px">
+        <label for="ocrText">Erkannter Text</label>
+        <textarea id="ocrText" placeholder="Erkannter Text erscheint hier …"></textarea>
+      </div>
+      <div class="grid-2" style="margin-top:12px">
+        <div>
+          <label for="ocrType">Typ</label>
+          <select id="ocrType">
+            <option value="chunk">Chunk</option>
+            <option value="vocab">Vokabel</option>
+            <option value="grammar">Grammatik</option>
+            <option value="structure">Struktur</option>
+          </select>
+        </div>
+        <div>
+          <label for="ocrTags">Tags</label>
+          <input id="ocrTags" type="text" placeholder="photo, ocr" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="accent" id="saveOcrBtn">Zum Lernbereich hinzufügen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="book-overlay" id="bookOverlay">
+    <div class="book-topbar">
+      <div class="book-pill" id="bookMeta">Buchmodus</div>
+      <button class="ghost" id="closeBookBtn">✕</button>
+    </div>
+    <div class="book-reader" id="bookReader"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://unpkg.com/@mozilla/readability@0.5.0/Readability.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script>
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+    const STORAGE_KEY = 'nlf_reader_state_v2';
+    const DEFAULT_COVER = './default-cover.jpg';
+    const LANGS = {
+      en: { short: 'EN', label: 'English', voice: 'en-US', ocr: 'eng' },
+      de: { short: 'DE', label: 'Deutsch', voice: 'de-DE', ocr: 'deu' },
+      fr: { short: 'FR', label: 'Français', voice: 'fr-FR', ocr: 'fra' }
+    };
+    const FILTERS = [
+      { id: 'all', label: 'Alle' },
+      { id: 'chunk', label: 'Chunks' },
+      { id: 'vocab', label: 'Vokabeln' },
+      { id: 'grammar', label: 'Grammatik' },
+      { id: 'structure', label: 'Struktur' }
+    ];
+
+    let selectedText = '';
+    let selectedContext = '';
+    let pendingSaveType = 'chunk';
+    let activeFilter = 'all';
+
+    function makeTab(seed = {}) {
+      return {
+        id: 'tab_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        title: seed.title || '',
+        url: seed.url || '',
+        text: seed.text || '',
+        sourceType: seed.sourceType || 'text',
+        chapterPrev: seed.chapterPrev || '',
+        chapterNext: seed.chapterNext || ''
+      };
+    }
+
+    function defaultState() {
+      const firstTab = makeTab();
+      return {
+        settings: {
+          lang: 'en',
+          dark: false,
+          coverTitle: 'Natural Language Flow',
+          coverImage: ''
+        },
+        reader: {
+          tabs: [firstTab],
+          currentTabId: firstTab.id,
+          size: 20
+        },
+        cards: []
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        const base = defaultState();
+        const state = {
+          ...base,
+          ...parsed,
+          settings: { ...base.settings, ...(parsed.settings || {}) },
+          reader: { ...base.reader, ...(parsed.reader || {}) }
+        };
+        if (!Array.isArray(state.reader.tabs) || !state.reader.tabs.length) {
+          state.reader.tabs = [makeTab({ title: parsed.reader?.title || '', url: parsed.reader?.url || '', text: parsed.reader?.text || '' })];
+        }
+        if (!state.reader.currentTabId || !state.reader.tabs.some(tab => tab.id === state.reader.currentTabId)) {
+          state.reader.currentTabId = state.reader.tabs[0].id;
+        }
+        return state;
+      } catch (error) {
+        console.warn(error);
+        return defaultState();
+      }
+    }
+
+    let state = loadState();
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderStats();
+    }
+
+    function activeTab() {
+      return state.reader.tabs.find(tab => tab.id === state.reader.currentTabId) || state.reader.tabs[0];
+    }
+
+    function normalizeText(text) {
+      return String(text || '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\u00A0/g, ' ')
+        .replace(/[ \t]+/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+    }
+
+    function applyTheme() {
+      document.body.classList.toggle('dark', !!state.settings.dark);
+      const cover = state.settings.coverImage || DEFAULT_COVER;
+      document.documentElement.style.setProperty('--app-bg-image', `url("${cover}")`);
+      document.documentElement.style.setProperty('--reader-size', `${state.reader.size || 20}px`);
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', state.settings.dark ? '#211923' : '#4f683d');
+    }
+
+    function updateLanguagePills() {
+      const lang = LANGS[state.settings.lang];
+      $('#langPill').textContent = `${lang.short} · ${lang.label}`;
+      $('#coverLangPill').textContent = `${lang.short} · ${lang.label}`;
+      $('#langSelect').value = state.settings.lang;
+    }
+
+    function renderCover() {
+      const cover = state.settings.coverImage || DEFAULT_COVER;
+      $('#coverPreview').src = cover;
+      $('#coverTitlePreview').textContent = state.settings.coverTitle || 'Natural Language Flow';
+      $('#coverTitleInput').value = state.settings.coverTitle || 'Natural Language Flow';
+    }
+
+    function renderStats() {
+      $('#statCards').textContent = state.cards.length;
+      $('#statTabs').textContent = state.reader.tabs.length;
+      const chars = state.reader.tabs.reduce((sum, tab) => sum + (tab.text || '').length, 0);
+      $('#statChars').textContent = chars.toLocaleString('de-DE');
+    }
+
+    function renderViews(viewId = 'homeView') {
+      $$('.view').forEach(view => view.classList.toggle('active', view.id === viewId));
+      $$('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewId));
+    }
+
+    function renderReaderTabs() {
+      $('#readerTabs').innerHTML = state.reader.tabs.map(tab => {
+        const active = tab.id === state.reader.currentTabId;
+        const label = escapeHtml(tab.title || tab.url || 'Neuer Reader');
+        return `<button class="reader-tab ${active ? 'active' : ''}" data-tab-id="${escapeHtml(tab.id)}"><span class="reader-tab-label">${label}</span><span class="reader-tab-close" data-close-tab="${escapeHtml(tab.id)}">×</span></button>`;
+      }).join('');
+    }
+
+    function renderReader() {
+      const tab = activeTab();
+      $('#sourceTitleInput').value = tab.title || '';
+      $('#sourceUrlInput').value = tab.url || '';
+      $('#readerBox').innerHTML = tab.text ? escapeHtml(tab.text).replace(/\n/g, '<br>') : '<div class="reader-empty">Noch kein Text geladen.<br>Füge Text ein oder lade eine Datei.</div>';
+      $('#bookReader').innerHTML = tab.text ? escapeHtml(tab.text).replace(/\n/g, '<br>') : '<div class="reader-empty">Noch kein Text geladen.</div>';
+      $('#bookMeta').textContent = tab.title || tab.url || 'Buchmodus';
+      renderReaderTabs();
+      updateChapterHint();
+    }
+
+    function syncTabMeta() {
+      const tab = activeTab();
+      tab.title = $('#sourceTitleInput').value.trim();
+      tab.url = $('#sourceUrlInput').value.trim();
+      saveState();
+      renderReaderTabs();
+    }
+
+    function createTab() {
+      syncTabMeta();
+      const tab = makeTab();
+      state.reader.tabs.push(tab);
+      state.reader.currentTabId = tab.id;
+      saveState();
+      renderReader();
+    }
+
+    function switchTab(id) {
+      syncTabMeta();
+      state.reader.currentTabId = id;
+      saveState();
+      renderReader();
+    }
+
+    function closeTab(id) {
+      if (state.reader.tabs.length <= 1) return alert('Mindestens ein Reader-Tab muss offen bleiben.');
+      const idx = state.reader.tabs.findIndex(tab => tab.id === id);
+      if (idx < 0) return;
+      const wasCurrent = state.reader.currentTabId === id;
+      state.reader.tabs.splice(idx, 1);
+      if (wasCurrent) {
+        state.reader.currentTabId = state.reader.tabs[Math.max(0, idx - 1)].id;
+      }
+      saveState();
+      renderReader();
+    }
+
+    function setReaderText(text, meta = {}) {
+      const tab = activeTab();
+      tab.text = normalizeText(text);
+      if (meta.title !== undefined) tab.title = meta.title || '';
+      if (meta.url !== undefined) tab.url = meta.url || '';
+      if (meta.sourceType) tab.sourceType = meta.sourceType;
+      if (meta.chapterPrev !== undefined) tab.chapterPrev = meta.chapterPrev || '';
+      if (meta.chapterNext !== undefined) tab.chapterNext = meta.chapterNext || '';
+      saveState();
+      renderReader();
+      clearSelectionBar();
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('visible'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('visible'); }
+
+    function suggestBack(type, front) {
+      if (type === 'vocab') return 'Bedeutung / Übersetzung';
+      if (type === 'grammar') return 'Warum ist diese Struktur so?';
+      if (type === 'structure') return 'Formel oder Muster notieren';
+      return 'Worum geht es in diesem Chunk?';
+    }
+
+    function openSaveModal(type) {
+      pendingSaveType = type;
+      $('#saveType').value = type;
+      $('#saveFront').value = selectedText;
+      $('#saveBack').value = suggestBack(type, selectedText);
+      $('#saveContext').value = selectedContext || selectedText;
+      $('#saveTags').value = `${LANGS[state.settings.lang].short.toLowerCase()},reader`;
+      openModal('saveModal');
+    }
+
+    function saveCardFromModal() {
+      const front = normalizeText($('#saveFront').value);
+      if (!front) return;
+      state.cards.unshift({
+        id: 'card_' + Date.now() + Math.random().toString(36).slice(2, 6),
+        lang: state.settings.lang,
+        type: $('#saveType').value,
+        front,
+        back: normalizeText($('#saveBack').value),
+        context: normalizeText($('#saveContext').value),
+        sourceTitle: activeTab().title || '',
+        sourceUrl: activeTab().url || '',
+        tags: $('#saveTags').value.split(',').map(tag => tag.trim()).filter(Boolean),
+        createdAt: new Date().toISOString()
+      });
+      saveState();
+      renderCards();
+      closeModal('saveModal');
+      clearSelectionBar();
+      renderViews('learnView');
+    }
+
+    function renderFilters() {
+      $('#filters').innerHTML = FILTERS.map(filter => `<button class="small filter-chip ${activeFilter === filter.id ? 'active accent' : 'soft'}" data-filter="${filter.id}">${filter.label}</button>`).join('');
+    }
+
+    function renderCards() {
+      renderFilters();
+      const items = activeFilter === 'all' ? state.cards : state.cards.filter(card => card.type === activeFilter);
+      if (!items.length) {
+        $('#cardsList').innerHTML = '<div class="learn-card"><div class="notice">Noch keine Lernkarten vorhanden.</div></div>';
+        return;
+      }
+      $('#cardsList').innerHTML = items.map(card => `
+        <article class="learn-card">
+          <div class="row spread">
+            <div>
+              <h3>${escapeHtml(card.front)}</h3>
+              <div class="meta">${escapeHtml(card.type)} · ${escapeHtml(card.sourceTitle || 'Reader')}</div>
+            </div>
+            <div class="row">
+              <button class="small soft" data-speak-card="${escapeHtml(card.id)}">▶︎</button>
+              <button class="small danger" data-delete-card="${escapeHtml(card.id)}">Löschen</button>
+            </div>
+          </div>
+          <div>${escapeHtml(card.back || '')}</div>
+          ${card.context ? `<div class="context">${escapeHtml(card.context)}</div>` : ''}
+          ${card.tags?.length ? `<div class="tags">${card.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+        </article>`).join('');
+    }
+
+    function removeCard(id) {
+      state.cards = state.cards.filter(card => card.id !== id);
+      saveState();
+      renderCards();
+    }
+
+    function clearAllCards() {
+      if (!confirm('Alle Lernkarten löschen?')) return;
+      state.cards = [];
+      saveState();
+      renderCards();
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleCoverUpload(file) {
+      if (!file) return;
+      state.settings.coverImage = await readFileAsDataURL(file);
+      saveState();
+      applyTheme();
+      renderCover();
+    }
+
+    function chapterLinksFromUrl(url) {
+      const match = String(url || '').match(/(.*?)(\d+)([^\d]*)$/);
+      if (!match) return { prev: '', next: '' };
+      const base = match[1];
+      const number = match[2];
+      const suffix = match[3] || '';
+      const n = parseInt(number, 10);
+      const width = number.length;
+      const fmt = val => String(val).padStart(width, '0');
+      return {
+        prev: n > 1 ? `${base}${fmt(n - 1)}${suffix}` : '',
+        next: `${base}${fmt(n + 1)}${suffix}`
+      };
+    }
+
+    function updateChapterHint() {
+      const tab = activeTab();
+      $('#chapterHint').textContent = tab.chapterPrev || tab.chapterNext
+        ? 'Kapitelnavigation erkannt. Du kannst mit den Buttons weiterblättern.'
+        : 'Kapitelnavigation funktioniert am besten bei nummerierten Kapitel-URLs.';
+    }
+
+    async function loadUrl(urlOverride = '') {
+      const url = (urlOverride || $('#sourceUrlInput').value).trim();
+      if (!url) return alert('Bitte eine URL eingeben.');
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const raw = await res.text();
+        const doc = new DOMParser().parseFromString(raw, 'text/html');
+        let title = doc.title || url;
+        let text = '';
+        try {
+          const article = new Readability(doc.cloneNode(true)).parse();
+          if (article) {
+            title = article.title || title;
+            text = article.textContent || '';
+          }
+        } catch {}
+        if (!text) text = doc.body?.innerText || '';
+        const links = chapterLinksFromUrl(url);
+        $('#sourceUrlInput').value = url;
+        $('#sourceTitleInput').value = title;
+        setReaderText(text, { title, url, sourceType: 'url', chapterPrev: links.prev, chapterNext: links.next });
+      } catch (error) {
+        console.warn(error);
+        alert('URL konnte nicht geladen werden. Falls die Seite CORS blockiert, bitte Text einfügen.');
+      }
+    }
+
+    async function loadFile(file) {
+      if (!file) return;
+      const name = file.name || 'Datei';
+      const lower = name.toLowerCase();
+      const title = name.replace(/\.[^.]+$/, '');
+      $('#sourceTitleInput').value = title;
+      if (lower.endsWith('.pdf')) return loadPdf(file, title);
+      if (lower.endsWith('.epub')) return loadEpub(file, title);
+      const text = await file.text();
+      setReaderText(text, { title, sourceType: 'text', url: '' });
+    }
+
+    async function loadPdf(file, title) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const data = new Uint8Array(await file.arrayBuffer());
+      const pdf = await pdfjsLib.getDocument({ data }).promise;
+      let text = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += '\n\n' + content.items.map(item => item.str).join(' ');
+      }
+      setReaderText(text, { title, sourceType: 'pdf', url: '' });
+    }
+
+    async function loadEpub(file, title) {
+      const zip = await JSZip.loadAsync(await file.arrayBuffer());
+      const files = Object.values(zip.files).filter(item => /\.(xhtml|html|htm)$/i.test(item.name) && !item.dir);
+      let text = '';
+      for (const item of files) {
+        const raw = await item.async('text');
+        const doc = new DOMParser().parseFromString(raw, 'text/html');
+        const head = doc.querySelector('h1,h2,title')?.textContent?.trim();
+        const bodyText = normalizeText(doc.body?.innerText || doc.documentElement?.innerText || '');
+        if (!bodyText) continue;
+        text += '\n\n' + (head ? head + '\n\n' : '') + bodyText;
+      }
+      setReaderText(text, { title, sourceType: 'epub', url: '' });
+    }
+
+    function currentSelectionData() {
+      const sel = window.getSelection();
+      const text = normalizeText(sel?.toString() || '');
+      if (!text || !$('#readerBox').contains(sel.anchorNode)) return null;
+      const full = activeTab().text || '';
+      const anchor = full.indexOf(text.slice(0, 80));
+      let context = text;
+      if (anchor >= 0) {
+        const start = Math.max(0, Math.max(full.lastIndexOf('.', anchor), full.lastIndexOf('\n', anchor)) + 1);
+        const stopDot = full.indexOf('.', anchor + text.length);
+        const stopBr = full.indexOf('\n', anchor + text.length);
+        const end = [stopDot, stopBr].filter(num => num > -1).sort((a, b) => a - b)[0] || Math.min(full.length, anchor + text.length + 220);
+        context = normalizeText(full.slice(start, end + 1));
+      }
+      return { text, context };
+    }
+
+    function updateSelectionBar() {
+      const data = currentSelectionData();
+      if (!data) return;
+      selectedText = data.text;
+      selectedContext = data.context;
+      $('#selectedPreview').textContent = selectedText.length > 180 ? selectedText.slice(0, 180) + '…' : selectedText;
+      $('#selectionBar').classList.add('visible');
+    }
+
+    function clearSelectionBar() {
+      selectedText = '';
+      selectedContext = '';
+      $('#selectionBar').classList.remove('visible');
+    }
+
+    function speak(text, rate = 1) {
+      const clean = normalizeText(text);
+      if (!clean) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.lang = LANGS[state.settings.lang].voice;
+      utterance.rate = rate;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function ocrDefaultType(text) {
+      return normalizeText(text).split(/\s+/).filter(Boolean).length <= 3 ? 'vocab' : 'chunk';
+    }
+
+    async function handleCameraFile(file) {
+      if (!file) return;
+      $('#ocrStatus').textContent = 'Bild wird analysiert …';
+      $('#ocrText').value = '';
+      $('#ocrType').value = 'chunk';
+      $('#ocrTags').value = `${LANGS[state.settings.lang].short.toLowerCase()},photo,ocr`;
+      openModal('ocrModal');
+      try {
+        const result = await Tesseract.recognize(file, LANGS[state.settings.lang].ocr);
+        const text = normalizeText(result?.data?.text || '');
+        $('#ocrText').value = text;
+        $('#ocrType').value = ocrDefaultType(text);
+        $('#ocrStatus').textContent = text
+          ? 'Text erkannt. Du kannst ihn jetzt korrigieren und speichern.'
+          : 'Es wurde kaum Text erkannt. Bitte probiere ein schärferes Foto.';
+      } catch (error) {
+        console.error(error);
+        $('#ocrStatus').textContent = 'Die OCR konnte nicht ausgeführt werden.';
+      }
+    }
+
+    function saveOcrCard() {
+      const text = normalizeText($('#ocrText').value);
+      if (!text) return;
+      state.cards.unshift({
+        id: 'card_' + Date.now() + Math.random().toString(36).slice(2, 6),
+        lang: state.settings.lang,
+        type: $('#ocrType').value,
+        front: text,
+        back: suggestBack($('#ocrType').value, text),
+        context: text,
+        sourceTitle: activeTab().title || 'Foto/OCR',
+        sourceUrl: activeTab().url || '',
+        tags: $('#ocrTags').value.split(',').map(tag => tag.trim()).filter(Boolean),
+        createdAt: new Date().toISOString()
+      });
+      saveState();
+      renderCards();
+      closeModal('ocrModal');
+      renderViews('learnView');
+    }
+
+    function exportBackup() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'natural-language-flow-backup.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function importBackup(file) {
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        state = { ...defaultState(), ...data, settings: { ...defaultState().settings, ...(data.settings || {}) }, reader: { ...defaultState().reader, ...(data.reader || {}) } };
+        if (!Array.isArray(state.reader.tabs) || !state.reader.tabs.length) state.reader.tabs = [makeTab()];
+        if (!state.reader.currentTabId || !state.reader.tabs.some(tab => tab.id === state.reader.currentTabId)) state.reader.currentTabId = state.reader.tabs[0].id;
+        applyTheme();
+        updateLanguagePills();
+        renderCover();
+        renderReader();
+        renderCards();
+        saveState();
+      } catch (error) {
+        console.error(error);
+        alert('Backup konnte nicht importiert werden.');
+      }
+    }
+
+    function bindEvents() {
+      $$('.nav-btn').forEach(btn => btn.addEventListener('click', () => renderViews(btn.dataset.view)));
+      $('#darkModeBtn').addEventListener('click', () => {
+        state.settings.dark = !state.settings.dark;
+        saveState();
+        applyTheme();
+      });
+      $('#langSelect').addEventListener('change', event => {
+        state.settings.lang = event.target.value;
+        saveState();
+        updateLanguagePills();
+      });
+      $('#coverTitleInput').addEventListener('input', event => {
+        state.settings.coverTitle = event.target.value || 'Natural Language Flow';
+        saveState();
+        renderCover();
+      });
+      $('#coverInput').addEventListener('change', event => handleCoverUpload(event.target.files[0]));
+      $('#resetCoverBtn').addEventListener('click', () => {
+        state.settings.coverImage = '';
+        saveState();
+        applyTheme();
+        renderCover();
+      });
+      $('#exportBtn').addEventListener('click', exportBackup);
+      $('#importInput').addEventListener('change', event => importBackup(event.target.files[0]));
+
+      $('#newTabBtn').addEventListener('click', createTab);
+      $('#readerTabs').addEventListener('click', event => {
+        const closeBtn = event.target.closest('[data-close-tab]');
+        if (closeBtn) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeTab(closeBtn.dataset.closeTab);
+          return;
+        }
+        const tabBtn = event.target.closest('[data-tab-id]');
+        if (tabBtn) switchTab(tabBtn.dataset.tabId);
+      });
+      $('#sourceTitleInput').addEventListener('input', syncTabMeta);
+      $('#sourceUrlInput').addEventListener('input', syncTabMeta);
+      $('#loadUrlBtn').addEventListener('click', () => loadUrl());
+      $('#fileInput').addEventListener('change', event => loadFile(event.target.files[0]));
+      $('#cameraInput').addEventListener('change', event => handleCameraFile(event.target.files[0]));
+      $('#pasteBtn').addEventListener('click', () => openModal('pasteModal'));
+      $('#loadPasteBtn').addEventListener('click', () => {
+        setReaderText($('#pasteArea').value, { title: $('#sourceTitleInput').value.trim(), url: $('#sourceUrlInput').value.trim(), sourceType: 'text' });
+        closeModal('pasteModal');
+      });
+      $('#clearReaderBtn').addEventListener('click', () => setReaderText('', { title: $('#sourceTitleInput').value.trim(), url: $('#sourceUrlInput').value.trim() }));
+      $('#decreaseTextBtn').addEventListener('click', () => {
+        state.reader.size = Math.max(15, (state.reader.size || 20) - 1);
+        saveState();
+        applyTheme();
+      });
+      $('#increaseTextBtn').addEventListener('click', () => {
+        state.reader.size = Math.min(28, (state.reader.size || 20) + 1);
+        saveState();
+        applyTheme();
+      });
+      $('#bookModeBtn').addEventListener('click', () => $('#bookOverlay').classList.add('visible'));
+      $('#closeBookBtn').addEventListener('click', () => $('#bookOverlay').classList.remove('visible'));
+      $('#prevChapterBtn').addEventListener('click', () => activeTab().chapterPrev ? loadUrl(activeTab().chapterPrev) : alert('Kein voriges Kapitel erkannt.'));
+      $('#nextChapterBtn').addEventListener('click', () => activeTab().chapterNext ? loadUrl(activeTab().chapterNext) : alert('Kein nächstes Kapitel erkannt.'));
+
+      ['mouseup', 'keyup', 'touchend'].forEach(evt => $('#readerBox').addEventListener(evt, () => setTimeout(updateSelectionBar, 30)));
+      document.addEventListener('selectionchange', () => {
+        const sel = window.getSelection();
+        if (!sel || !sel.toString()) return;
+        if ($('#readerBox').contains(sel.anchorNode)) updateSelectionBar();
+      });
+      document.addEventListener('click', event => {
+        if (!event.target.closest('#selectionBar') && !event.target.closest('#readerBox')) {
+          clearSelectionBar();
+        }
+      });
+      $$('#selectionBar [data-save-type]').forEach(btn => btn.addEventListener('click', () => openSaveModal(btn.dataset.saveType)));
+      $('#speakSelectionBtn').addEventListener('click', () => speak(selectedText, 1));
+      $('#speakSlowSelectionBtn').addEventListener('click', () => speak(selectedText, .75));
+      $('#saveCardBtn').addEventListener('click', saveCardFromModal);
+      $('#saveOcrBtn').addEventListener('click', saveOcrCard);
+
+      $('#filters').addEventListener('click', event => {
+        const button = event.target.closest('[data-filter]');
+        if (!button) return;
+        activeFilter = button.dataset.filter;
+        renderCards();
+      });
+      $('#cardsList').addEventListener('click', event => {
+        const speakBtn = event.target.closest('[data-speak-card]');
+        if (speakBtn) {
+          const card = state.cards.find(item => item.id === speakBtn.dataset.speakCard);
+          if (card) speak(card.front, 1);
+          return;
+        }
+        const deleteBtn = event.target.closest('[data-delete-card]');
+        if (deleteBtn) removeCard(deleteBtn.dataset.deleteCard);
+      });
+      $('#clearCardsBtn').addEventListener('click', clearAllCards);
+
+      $('#speakBtn').addEventListener('click', () => speak($('#speakInput').value, 1));
+      $('#speakSlowBtn').addEventListener('click', () => speak($('#speakInput').value, .75));
+      $('#stopSpeakBtn').addEventListener('click', () => speechSynthesis.cancel());
+
+      $$('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+      $$('.modal-backdrop').forEach(backdrop => backdrop.addEventListener('click', event => {
+        if (event.target === backdrop) backdrop.classList.remove('visible');
+      }));
+    }
+
+    function init() {
+      applyTheme();
+      updateLanguagePills();
+      renderCover();
+      renderReader();
+      renderCards();
+      renderStats();
+      bindEvents();
+      if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+        navigator.serviceWorker.register('./sw.js').catch(console.warn);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
