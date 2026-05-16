@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#4d693f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Fluent." />
+  <title>Fluent.</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <style>
+    :root {
+      --bg: #f6f1e9;
+      --paper: rgba(255, 251, 246, .76);
+      --paper-strong: rgba(255, 251, 246, .92);
+      --ink: #241d22;
+      --muted: #6d6267;
+      --line: rgba(36, 29, 34, .11);
+      --green: #4d693f;
+      --green-soft: #738667;
+      --red: #6f1f28;
+      --red-soft: #8f4650;
+      --sand: #d7cfc1;
+      --shadow: 0 18px 48px rgba(38, 25, 29, .12);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --reader-size: 20px;
+      --dock-offset: 112px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+    }
+
+    body {
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url('./fluent-collage.jpg') center/cover no-repeat;
+      opacity: .17;
+      filter: saturate(.92) contrast(1.02);
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(111,31,40,.12), transparent 30rem),
+        radial-gradient(circle at 92% 12%, rgba(77,105,63,.13), transparent 34rem),
+        linear-gradient(180deg, rgba(248,244,238,.90), rgba(244,238,231,.95));
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body.dark {
+      --bg: #181418;
+      --paper: rgba(33, 27, 31, .78);
+      --paper-strong: rgba(33, 27, 31, .94);
+      --ink: #f8f0ea;
+      --muted: #cabcc0;
+      --line: rgba(248, 240, 234, .12);
+      --green: #8ca07d;
+      --green-soft: #a5b397;
+      --red: #b86b73;
+      --red-soft: #c98b92;
+      --sand: #645860;
+      --shadow: 0 22px 58px rgba(0,0,0,.26);
+    }
+
+    body.dark::before { opacity: .15; }
+    body.dark::after {
+      background:
+        radial-gradient(circle at 8% 0%, rgba(111,31,40,.16), transparent 32rem),
+        radial-gradient(circle at 92% 12%, rgba(77,105,63,.18), transparent 34rem),
+        linear-gradient(180deg, rgba(23,19,23,.92), rgba(20,16,20,.95));
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: var(--paper-strong);
+      color: var(--ink);
+      min-height: 44px;
+      padding: 10px 16px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.05);
+      cursor: pointer;
+    }
+    button.small { min-height: 38px; padding: 8px 12px; }
+    button.ghost { background: transparent; border-color: var(--line); box-shadow: none; }
+    button.soft { background: color-mix(in srgb, var(--paper-strong) 78%, transparent); border-color: var(--line); }
+    button.accent { background: var(--green); color: #fff; }
+    button.wine { background: var(--red); color: #fff; }
+    button.active { background: var(--ink); color: var(--paper-strong); border-color: transparent; }
+
+    input, textarea, select {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      padding: 13px 14px;
+      background: color-mix(in srgb, var(--paper-strong) 82%, transparent);
+      color: var(--ink);
+      outline: none;
+    }
+
+    textarea { resize: vertical; min-height: 120px; }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 18px 16px calc(env(safe-area-inset-bottom) + var(--dock-offset));
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-tile {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      object-fit: cover;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.16);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 46px);
+      letter-spacing: -.06em;
+      line-height: .9;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 80%, transparent);
+      color: var(--muted);
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .hero,
+    .card {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 88%, transparent);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero {
+      overflow: hidden;
+      position: relative;
+      min-height: 320px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.4fr .9fr;
+      gap: 18px;
+      padding: 22px;
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.14);
+      color: rgba(255,255,255,.9);
+      backdrop-filter: blur(8px);
+      width: fit-content;
+    }
+
+    .hero h2 {
+      margin: 0;
+      color: #fffaf4;
+      font-size: clamp(34px, 6vw, 58px);
+      line-height: .95;
+      letter-spacing: -.06em;
+      max-width: 540px;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: rgba(255,255,255,.86);
+      line-height: 1.65;
+      max-width: 560px;
+      font-size: 15px;
+    }
+
+    .hero-canvas {
+      border-radius: 24px;
+      padding: 14px;
+      background: rgba(250,248,245,.78);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #261d23;
+      display: grid;
+      gap: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+    }
+
+    .hero-canvas .tile-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 210px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(77,105,63,.10), rgba(111,31,40,.12));
+    }
+
+    .hero-canvas img {
+      width: min(210px, 100%);
+      aspect-ratio: 1 / 1;
+      border-radius: 24px;
+      object-fit: cover;
+      box-shadow: 0 14px 36px rgba(36,29,34,.18);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .pad { padding: 20px; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+      margin: 0 0 4px;
+      font-size: clamp(22px, 3.5vw, 30px);
+      letter-spacing: -.04em;
+    }
+
+    .note {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      border-radius: 22px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 78%, transparent);
+    }
+
+    .stat small { display: block; color: var(--muted); margin-bottom: 6px; }
+    .stat strong { font-size: 28px; }
+
+    .stack { display: grid; gap: 14px; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .row.spread { justify-content: space-between; }
+    .hidden { display: none !important; }
+
+    .reader-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .reader-tabs::-webkit-scrollbar { display: none; }
+
+    .reader-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.30);
+      white-space: nowrap;
+      max-width: 220px;
+      flex: 0 0 auto;
+    }
+
+    .reader-tab.active {
+      background: var(--ink);
+      color: var(--paper-strong);
+      border-color: transparent;
+    }
+
+    .reader-tab span.label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
+    }
+
+    .reader-stage {
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
+      padding: 18px clamp(18px, 5vw, 56px) 26px;
+      overflow: hidden;
+    }
+
+    .reader-box {
+      min-height: calc(100vh - 340px);
+      max-height: none;
+      overflow-y: auto;
+      overflow-x: hidden;
+      width: 100%;
+      white-space: pre-wrap;
+      word-break: normal;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      font-family: var(--serif);
+      font-size: var(--reader-size);
+      line-height: 1.86;
+      color: var(--ink);
+      background: transparent;
+      border: none;
+      outline: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .reader-empty {
+      min-height: 250px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .selection-bar {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 90%, transparent);
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .selection-bar.visible { display: flex; }
+
+    .selected-preview {
+      flex: 1 1 240px;
+      min-height: 42px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--sand) 54%, transparent);
+    }
+
+    .helper-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .helper-card {
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 78%, transparent);
+    }
+
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .learn-toolbar {
+      display: grid;
+      grid-template-columns: 1.2fr .9fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini {
+      border-radius: 18px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 78%, transparent);
+    }
+
+    .mini strong { display: block; font-size: 24px; }
+    .mini span { color: var(--muted); font-size: 13px; }
+
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .cards-list { display: grid; gap: 12px; }
+
+    .learn-card {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 84%, transparent);
+      padding: 16px;
+    }
+
+    .learn-card h3 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .learn-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 32px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 76%, transparent);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pill.starred { border-color: rgba(111,31,40,.25); color: var(--red); }
+    .pill.session { border-color: rgba(77,105,63,.25); color: var(--green); }
+
+    .learn-card .back,
+    .learn-card .context {
+      border-radius: 18px;
+      padding: 12px;
+      background: color-mix(in srgb, var(--sand) 48%, transparent);
+      line-height: 1.55;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .learn-card .context { color: var(--muted); }
+
+    .srs-edit {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .study-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      display: none;
+      background: color-mix(in srgb, var(--paper-strong) 96%, transparent);
+      padding: calc(12px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    body.dark .study-overlay { background: rgba(24, 20, 24, .98); }
+    .study-overlay.visible { display: flex; }
+
+    .overlay-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .overlay-pill {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 82%, transparent);
+      color: var(--muted);
+    }
+
+    .study-card {
+      flex: 1;
+      width: min(780px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .study-face {
+      border-radius: 34px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 90%, transparent);
+      padding: 28px 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .study-face .front {
+      font-family: var(--serif);
+      font-size: clamp(30px, 6vw, 46px);
+      line-height: 1.18;
+      letter-spacing: -.03em;
+    }
+
+    .study-face .answer,
+    .study-face .context {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      line-height: 1.6;
+    }
+
+    .grade-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .grade-row button { border-radius: 20px; min-height: 60px; }
+
+    .book-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      flex-direction: column;
+      padding: calc(12px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));
+      background: color-mix(in srgb, var(--paper-strong) 98%, transparent);
+    }
+
+    body.dark .book-overlay { background: rgba(24, 20, 24, .98); }
+    .book-overlay.visible { display: flex; }
+
+    .book-reader {
+      flex: 1;
+      width: min(760px, 100%);
+      margin: 0 auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      word-break: normal;
+      font-family: var(--serif);
+      font-size: calc(var(--reader-size) + 1px);
+      line-height: 1.9;
+      color: var(--ink);
+      padding: 6px 8px 24px;
+    }
+
+    .speak-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .prompt-box,
+    .export-box {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 82%, transparent);
+      padding: 16px;
+    }
+
+    .prompt-text {
+      min-height: 120px;
+      padding: 14px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--sand) 48%, transparent);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .session-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(10, 10, 12, .38);
+      z-index: 90;
+    }
+
+    .modal-backdrop.visible { display: grid; }
+
+    .modal {
+      width: min(780px, 100%);
+      max-height: min(88vh, 900px);
+      overflow: auto;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 96%, transparent);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .dock-wrap {
+      position: fixed;
+      left: 50%;
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: min(720px, calc(100% - 22px));
+    }
+
+    .dock-toggle {
+      min-height: 34px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
+      box-shadow: var(--shadow);
+      color: var(--muted);
+    }
+
+    .dock {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      padding: 10px;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper-strong) 90%, transparent);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      transition: .2s ease;
+    }
+
+    .dock.collapsed {
+      transform: translateY(120%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .dock button {
+      min-height: 54px;
+      border-radius: 18px;
+      background: transparent;
+      border: 1px solid transparent;
+      box-shadow: none;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .dock button.active {
+      background: var(--ink);
+      color: var(--paper-strong);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(96px + env(safe-area-inset-bottom));
+      z-index: 100;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--paper-strong) 92%, transparent);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      color: var(--ink);
+      opacity: 0;
+      pointer-events: none;
+      transition: .18s ease;
+    }
+
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 860px) {
+      .hero-grid,
+      .grid-2,
+      .learn-toolbar,
+      .speak-grid,
+      .helper-grid,
+      .stats { grid-template-columns: 1fr; }
+      .mini-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .reader-stage { padding: 16px 12px 22px; }
+      .reader-box { min-height: calc(100vh - 420px); }
+      .grade-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .srs-edit { grid-template-columns: 1fr; }
+      .dock { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .brand h1 { font-size: 34px; }
+      .brand-tile { width: 50px; height: 50px; }
+      .hero { min-height: unset; }
+      .hero h2 { font-size: 40px; }
+      .overlay-top { flex-wrap: wrap; }
+      .step-grid { grid-template-columns: 1fr; }
+      .mini-stats { grid-template-columns: 1fr 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <img class="brand-tile" src="./app-tile.png" alt="Fluent App Icon" />
+        <div>
+          <h1>Fluent.</h1>
+          <p>Ruhiger Reader, SRS-Lernen und Sprech-/Schreibprompts in einem.</p>
+        </div>
+      </div>
+      <div class="chip-row">
+        <span class="chip" id="langPill">EN · English</span>
+        <button class="ghost small" id="themeToggleBtn">Dark</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="screen active" id="homeView">
+        <div class="hero" style="background: linear-gradient(160deg, rgba(77,105,63,.52), rgba(111,31,40,.62));">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <div>
+                <div class="eyebrow">Reader · Review · Speak</div>
+                <h2>Lesen ohne Ballast. Lernen mit System.</h2>
+                <p>Die App orientiert sich jetzt dauerhaft an deiner rot-grünen Collage. Der Reader bleibt ruhig, der Buchmodus ist klarer und der Lernbereich arbeitet mit Spaced Repetition, Session-Fokus und markierbaren Karten.</p>
+              </div>
+              <div class="chip-row">
+                <span class="chip">PDF · EPUB · Web</span>
+                <span class="chip">SRS mit Again / Hard / Good / Easy</span>
+                <span class="chip">Foto → Lernkarte</span>
+              </div>
+            </div>
+            <div class="hero-canvas">
+              <div class="tile-wrap"><img src="./app-tile.png" alt="App Cover" /></div>
+              <div>
+                <strong style="font-size:18px">Effizient, mobil, schön.</strong>
+                <div class="note">Kein Cover-Wechsel mehr, keine unnötigen Doppelungen – stattdessen ein einheitliches Design und klarere Wege durch Reader, Lernen und Speaking.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <section class="card pad">
+            <div class="section-head">
+              <div>
+                <h2>Überblick</h2>
+                <div class="note">Schneller Status deiner aktuellen Nutzung.</div>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat"><small>Reader-Tabs</small><strong id="statTabs">1</strong></div>
+              <div class="stat"><small>Fällige Karten</small><strong id="statDue">0</strong></div>
+              <div class="stat"><small>Session-Karten</small><strong id="statSession">0</strong></div>
+            </div>
+          </section>
+
+          <section class="card pad stack">
+            <div class="section-head">
+              <div>
+                <h2>App-Einstellungen</h2>
+                <div class="note">Wenige, aber sinnvolle Optionen.</div>
+              </div>
+            </div>
+            <div class="helper-grid">
+              <div class="helper-card">
+                <label for="langSelect">Lernsprache</label>
+                <select id="langSelect">
+                  <option value="en">English</option>
+                  <option value="de">Deutsch</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
+              <div class="helper-card">
+                <div class="note" style="margin-bottom:8px">Design</div>
+                <div class="row"><span class="pill">Light / Dark</span><span class="pill">fester Collage-Look</span></div>
+              </div>
+            </div>
+            <div class="row">
+              <button class="soft" id="exportBackupBtn">Backup exportieren</button>
+              <label class="soft" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:10px 16px;border-radius:999px;border:1px solid var(--line);">Backup importieren<input id="importBackupInput" type="file" accept="application/json" class="hidden" /></label>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen" id="readerView">
+        <section class="card pad stack">
+          <div class="section-head">
+            <div>
+              <h2>Reader</h2>
+              <div class="note">Mehrere Tabs, breiterer Satz und ein ruhiger Buchmodus. Der enge Rahmen ist entfernt.</div>
+            </div>
+            <div class="row">
+              <button class="small" id="readerFontDownBtn">A-</button>
+              <button class="small" id="readerFontUpBtn">A+</button>
+              <button class="small accent" id="openBookModeBtn">Buchmodus</button>
+            </div>
+          </div>
+
+          <div class="row spread">
+            <div class="reader-tabs" id="readerTabs"></div>
+            <div class="row">
+              <button class="small soft" id="addTabBtn">+ Tab</button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <label for="readerTitleInput">Titel / Quelle</label>
+              <input id="readerTitleInput" type="text" placeholder="z. B. Kapitel 12" />
+            </div>
+            <div>
+              <label for="readerUrlInput">URL optional</label>
+              <input id="readerUrlInput" type="url" placeholder="https://…" />
+            </div>
+          </div>
+
+          <div class="row">
+            <label class="soft" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:10px 16px;border-radius:999px;border:1px solid var(--line);">Datei öffnen<input id="readerFileInput" type="file" accept=".txt,.md,.pdf,.epub,application/pdf,application/epub+zip,text/plain" class="hidden" /></label>
+            <label class="soft" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:10px 16px;border-radius:999px;border:1px solid var(--line);">Kamera / OCR<input id="cameraInput" type="file" accept="image/*" capture="environment" class="hidden" /></label>
+            <button class="soft" id="loadUrlBtn">URL laden</button>
+            <button class="soft" id="openPasteBtn">Text einfügen</button>
+            <button class="ghost" id="clearReaderBtn">Reader leeren</button>
+          </div>
+
+          <div class="selection-bar" id="selectionBar">
+            <div class="selected-preview" id="selectedPreview">Auswahl</div>
+            <button class="small accent" data-save-type="chunk">Chunk</button>
+            <button class="small" data-save-type="vocab">Vokabel</button>
+            <button class="small" data-save-type="grammar">Grammatik</button>
+            <button class="small" data-save-type="structure">Struktur</button>
+            <button class="small" id="speakSelectionBtn">Vorlesen</button>
+          </div>
+
+          <div class="reader-stage">
+            <div id="readerBox" class="reader-box" tabindex="0"></div>
+          </div>
+
+          <div class="row spread">
+            <div class="note" id="chapterHint">Kapitelnavigation funktioniert gut mit nummerierten Kapitel-Links.</div>
+            <div class="row">
+              <button class="small ghost" id="prevChapterBtn">← Voriges Kapitel</button>
+              <button class="small ghost" id="nextChapterBtn">Nächstes Kapitel →</button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="screen" id="learnView">
+        <section class="card pad">
+          <div class="section-head">
+            <div>
+              <h2>Lernbereich</h2>
+              <div class="note">Spaced Repetition mit Again / Hard / Good / Easy, markierbaren Karten und Session-Review.</div>
+            </div>
+            <div class="row">
+              <button class="small accent" id="studyDueBtn">Fällige lernen</button>
+              <button class="small soft" id="studySessionBtn">Session lernen</button>
+              <button class="small soft" id="studyStarredBtn">Markierte lernen</button>
+            </div>
+          </div>
+
+          <div class="learn-toolbar">
+            <div class="stack">
+              <div class="mini-stats">
+                <div class="mini"><strong id="dueCardsCount">0</strong><span>fällig</span></div>
+                <div class="mini"><strong id="sessionCardsCount">0</strong><span>Session</span></div>
+                <div class="mini"><strong id="starredCardsCount">0</strong><span>markiert</span></div>
+              </div>
+              <div class="row">
+                <button class="small soft" id="clearSessionBtn">Session leeren</button>
+                <button class="small ghost" id="clearAllCardsBtn">Alle Karten löschen</button>
+              </div>
+            </div>
+            <div class="helper-card stack">
+              <div>
+                <strong>SRS-Schritte</strong>
+                <div class="note">Du kannst die Standardabstände jederzeit anpassen.</div>
+              </div>
+              <div class="step-grid">
+                <div><label for="stepAgainInput">Again (Min.)</label><input id="stepAgainInput" type="number" min="1" /></div>
+                <div><label for="stepHardInput">Hard (Tage)</label><input id="stepHardInput" type="number" min="1" /></div>
+                <div><label for="stepGoodInput">Good (Tage)</label><input id="stepGoodInput" type="number" min="1" /></div>
+                <div><label for="stepEasyInput">Easy (Tage)</label><input id="stepEasyInput" type="number" min="1" /></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filters" id="learnFilters"></div>
+          <div class="cards-list" id="cardsList" style="margin-top:14px"></div>
+        </section>
+      </section>
+
+      <section class="screen" id="speakView">
+        <section class="card pad stack">
+          <div class="section-head">
+            <div>
+              <h2>Sprechen & Schreiben</h2>
+              <div class="note">Erzeuge spontane Prompts, binde Karten aus deinem Lernbereich ein und wandle Korrekturen direkt wieder in Lernkarten um.</div>
+            </div>
+            <div class="row">
+              <button class="small accent" id="generatePromptBtn">Prompt generieren</button>
+              <button class="small soft" id="exportSpeakingBtn">Exportieren</button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <label for="promptCategorySelect">Thema</label>
+              <select id="promptCategorySelect">
+                <option value="mixed">Gemischt</option>
+                <option value="story">Story</option>
+                <option value="opinion">Meinung</option>
+                <option value="daily">Alltag</option>
+                <option value="description">Beschreibung</option>
+                <option value="debate">Mini-Debatte</option>
+              </select>
+            </div>
+            <div>
+              <label for="promptCardCountInput">Wie viele Lernkarten einbauen?</label>
+              <input id="promptCardCountInput" type="number" min="1" max="6" value="3" />
+            </div>
+          </div>
+
+          <div class="prompt-box stack">
+            <div><strong>Prompt</strong></div>
+            <div id="promptText" class="prompt-text">Noch kein Prompt generiert.</div>
+            <div>
+              <div class="note">Verwendete Lernkarten</div>
+              <div id="promptCards" class="session-links"></div>
+            </div>
+          </div>
+
+          <div class="speak-grid">
+            <div class="stack">
+              <div>
+                <label for="speakingDraftInput">Deine Antwort / Notizen</label>
+                <textarea id="speakingDraftInput" placeholder="Sprich frei oder schreibe hier deine Antwort …"></textarea>
+              </div>
+              <div class="row">
+                <button class="small soft" id="speakPromptBtn">Prompt vorlesen</button>
+                <button class="small ghost" id="stopSpeakingBtn">Stop</button>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div>
+                <label for="speakingCorrectedInput">Korrigierte Version / Feedback</label>
+                <textarea id="speakingCorrectedInput" placeholder="Hier kannst du die korrigierte Version oder Feedback einfügen …"></textarea>
+              </div>
+              <div class="row">
+                <button class="small accent" id="saveCorrectionsBtn">Korrekturen zu Lernkarten</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="book-overlay" id="bookOverlay">
+    <div class="overlay-top">
+      <div class="row">
+        <span class="overlay-pill" id="bookMeta">Buchmodus</span>
+      </div>
+      <div class="row">
+        <button class="small" id="bookFontDownBtn">A-</button>
+        <button class="small" id="bookFontUpBtn">A+</button>
+        <button class="small ghost" id="closeBookModeBtn">Schließen</button>
+      </div>
+    </div>
+    <div id="bookReader" class="book-reader"></div>
+  </div>
+
+  <div class="study-overlay" id="studyOverlay">
+    <div class="overlay-top">
+      <div class="row">
+        <span class="overlay-pill" id="studyModePill">Review</span>
+        <span class="overlay-pill" id="studyProgressPill">0 / 0</span>
+      </div>
+      <div class="row">
+        <button class="small ghost" id="closeStudyBtn">Beenden</button>
+      </div>
+    </div>
+    <div class="study-card">
+      <div class="study-face" id="studyFace"></div>
+      <div class="row spread">
+        <div class="note">Zuerst zeigen, dann bewerten.</div>
+        <button class="soft" id="revealStudyBtn">Antwort zeigen</button>
+      </div>
+      <div class="grade-row" id="gradeButtons">
+        <button class="wine" data-grade="again">Again</button>
+        <button class="soft" data-grade="hard">Hard</button>
+        <button class="accent" data-grade="good">Good</button>
+        <button class="soft" data-grade="easy">Easy</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="pasteModal">
+    <div class="modal stack">
+      <div class="section-head"><div><h2>Text einfügen</h2></div><button class="small ghost" data-close="pasteModal">Schließen</button></div>
+      <textarea id="pasteArea" placeholder="Text hier einfügen …"></textarea>
+      <div class="row"><button class="accent" id="loadPasteBtn">In Reader laden</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="saveCardModal">
+    <div class="modal stack">
+      <div class="section-head"><div><h2>Zur Lernliste hinzufügen</h2></div><button class="small ghost" data-close="saveCardModal">Schließen</button></div>
+      <div class="grid-2">
+        <div><label for="saveTypeSelect">Typ</label><select id="saveTypeSelect"><option value="chunk">Chunk</option><option value="vocab">Vokabel</option><option value="grammar">Grammatik</option><option value="structure">Struktur</option></select></div>
+        <div><label for="saveTagsInput">Tags</label><input id="saveTagsInput" type="text" placeholder="reader, quote" /></div>
+      </div>
+      <div><label for="saveFrontInput">Vorderseite</label><textarea id="saveFrontInput"></textarea></div>
+      <div><label for="saveBackInput">Rückseite / Notiz</label><textarea id="saveBackInput"></textarea></div>
+      <div><label for="saveContextInput">Kontext</label><textarea id="saveContextInput"></textarea></div>
+      <div class="row"><button class="accent" id="saveCardBtn">Speichern</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="ocrModal">
+    <div class="modal stack">
+      <div class="section-head"><div><h2>Foto zu Lernkarte</h2><div class="note" id="ocrStatusText">Noch kein Bild verarbeitet.</div></div><button class="small ghost" data-close="ocrModal">Schließen</button></div>
+      <div><label for="ocrTextArea">Erkannter Text</label><textarea id="ocrTextArea"></textarea></div>
+      <div class="grid-2">
+        <div><label for="ocrTypeSelect">Typ</label><select id="ocrTypeSelect"><option value="chunk">Chunk</option><option value="vocab">Vokabel</option><option value="grammar">Grammatik</option><option value="structure">Struktur</option></select></div>
+        <div><label for="ocrTagsInput">Tags</label><input id="ocrTagsInput" type="text" placeholder="photo, ocr" /></div>
+      </div>
+      <div class="row"><button class="accent" id="saveOcrBtn">Zum Lernbereich hinzufügen</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="editCardModal">
+    <div class="modal stack">
+      <div class="section-head"><div><h2>Karte bearbeiten</h2></div><button class="small ghost" data-close="editCardModal">Schließen</button></div>
+      <div class="grid-2">
+        <div><label for="editTypeSelect">Typ</label><select id="editTypeSelect"><option value="chunk">Chunk</option><option value="vocab">Vokabel</option><option value="grammar">Grammatik</option><option value="structure">Struktur</option></select></div>
+        <div><label for="editTagsInput">Tags</label><input id="editTagsInput" type="text" /></div>
+      </div>
+      <div><label for="editFrontInput">Vorderseite</label><textarea id="editFrontInput"></textarea></div>
+      <div><label for="editBackInput">Rückseite</label><textarea id="editBackInput"></textarea></div>
+      <div><label for="editContextInput">Kontext</label><textarea id="editContextInput"></textarea></div>
+      <div class="grid-2">
+        <div><label for="editDueInput">Fällig am</label><input id="editDueInput" type="datetime-local" /></div>
+        <div><label for="editIntervalInput">Intervall (Tage)</label><input id="editIntervalInput" type="number" min="0" step="0.5" /></div>
+      </div>
+      <div class="row">
+        <label class="row" style="gap:6px"><input id="editStarredInput" type="checkbox" style="width:auto" /> markiert</label>
+        <label class="row" style="gap:6px"><input id="editSessionInput" type="checkbox" style="width:auto" /> Session</label>
+      </div>
+      <div class="row spread">
+        <button class="ghost" id="deleteEditedCardBtn">Löschen</button>
+        <button class="accent" id="saveEditedCardBtn">Änderungen speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dock-wrap">
+    <button class="dock-toggle" id="dockToggleBtn">Menü einklappen</button>
+    <nav class="dock" id="dockNav">
+      <button class="active" data-view="homeView">Start</button>
+      <button data-view="readerView">Reader</button>
+      <button data-view="learnView">Lernen</button>
+      <button data-view="speakView">Sprechen</button>
+    </nav>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://unpkg.com/@mozilla/readability@0.5.0/Readability.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script>
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+    const STORAGE_KEY = 'fluent_state_v3';
+    const LANGS = {
+      en: { short: 'EN', label: 'English', voice: 'en-US', ocr: 'eng' },
+      de: { short: 'DE', label: 'Deutsch', voice: 'de-DE', ocr: 'deu' },
+      fr: { short: 'FR', label: 'Français', voice: 'fr-FR', ocr: 'fra' }
+    };
+    const LEARN_FILTERS = [
+      { id: 'all', label: 'Alle' },
+      { id: 'due', label: 'Fällig' },
+      { id: 'session', label: 'Session' },
+      { id: 'starred', label: 'Markiert' },
+      { id: 'vocab', label: 'Vokabeln' },
+      { id: 'grammar', label: 'Grammatik' },
+      { id: 'chunk', label: 'Chunks' },
+      { id: 'structure', label: 'Struktur' }
+    ];
+    const PROMPT_TEMPLATES = {
+      mixed: [
+        'Verbinde die folgenden Ausdrücke in einer spontanen Mini-Erzählung: {cards}. Stelle am Ende eine kleine Reflexion an.',
+        'Sprich 2 Minuten frei über ein Thema deiner Wahl und baue diese Karten bewusst ein: {cards}.',
+        'Schreibe oder sprich einen flüssigen Absatz, in dem du diese Elemente unterbringst: {cards}.'
+      ],
+      story: [
+        'Erzähle eine kurze Geschichte mit Anfang, Wendepunkt und Ende. Diese Ausdrücke sollen vorkommen: {cards}.',
+        'Stell dir vor, du beschreibst ein seltsames Erlebnis. Nutze dabei: {cards}.'
+      ],
+      opinion: [
+        'Nimm zu einem aktuellen Thema Stellung und verwende dabei möglichst natürlich: {cards}.',
+        'Erkläre, womit du zustimmst oder nicht zustimmst. Nutze bewusst: {cards}.'
+      ],
+      daily: [
+        'Beschreibe deinen Tag oder deine Woche und verwende dabei passend: {cards}.',
+        'Erzähle aus einer Alltagssituation und baue diese Wendungen ein: {cards}.'
+      ],
+      description: [
+        'Beschreibe eine Szene, einen Ort oder eine Person so anschaulich wie möglich. Nutze: {cards}.',
+        'Erkläre etwas Schritt für Schritt und integriere: {cards}.'
+      ],
+      debate: [
+        'Formuliere ein Pro- und ein Contra-Argument zu einem Thema. Diese Karten sollen einfließen: {cards}.',
+        'Führe eine Mini-Debatte mit dir selbst und benutze diese Ausdrücke: {cards}.'
+      ]
+    };
+
+    let selectedText = '';
+    let selectedContext = '';
+    let pendingSaveType = 'chunk';
+    let activeLearnFilter = 'all';
+    let editingCardId = null;
+    let currentView = 'homeView';
+    let studyState = { mode: 'due', cardIds: [], index: 0, revealed: false };
+
+    function uid(prefix = 'id') {
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    function makeReaderTab(seed = {}) {
+      return {
+        id: uid('tab'),
+        title: seed.title || '',
+        url: seed.url || '',
+        text: seed.text || '',
+        sourceType: seed.sourceType || 'text',
+        chapterPrev: seed.chapterPrev || '',
+        chapterNext: seed.chapterNext || ''
+      };
+    }
+
+    function makeCard(payload = {}) {
+      return {
+        id: uid('card'),
+        type: payload.type || 'chunk',
+        front: payload.front || '',
+        back: payload.back || '',
+        context: payload.context || '',
+        sourceTitle: payload.sourceTitle || '',
+        sourceUrl: payload.sourceUrl || '',
+        tags: Array.isArray(payload.tags) ? payload.tags : [],
+        starred: !!payload.starred,
+        session: !!payload.session,
+        createdAt: payload.createdAt || new Date().toISOString(),
+        srs: {
+          dueAt: payload.srs?.dueAt || new Date().toISOString(),
+          intervalDays: payload.srs?.intervalDays ?? 0,
+          ease: payload.srs?.ease ?? 2.5,
+          reps: payload.srs?.reps ?? 0,
+          lapses: payload.srs?.lapses ?? 0,
+          lastGrade: payload.srs?.lastGrade || 'new',
+          lastReviewedAt: payload.srs?.lastReviewedAt || ''
+        }
+      };
+    }
+
+    function defaultState() {
+      const firstTab = makeReaderTab();
+      return {
+        settings: {
+          dark: false,
+          lang: 'en',
+          readerSize: 20,
+          dockCollapsed: false,
+          srsSteps: { againMinutes: 10, hardDays: 1, goodDays: 3, easyDays: 7 }
+        },
+        reader: {
+          tabs: [firstTab],
+          currentTabId: firstTab.id
+        },
+        cards: [],
+        speak: { category: 'mixed', prompt: '', response: '', corrected: '' }
+      };
+    }
+
+    function migrateState(raw) {
+      const base = defaultState();
+      const state = {
+        ...base,
+        ...raw,
+        settings: { ...base.settings, ...(raw?.settings || {}) },
+        reader: { ...base.reader, ...(raw?.reader || {}) },
+        speak: { ...base.speak, ...(raw?.speak || {}) }
+      };
+      if (!Array.isArray(state.reader.tabs) || !state.reader.tabs.length) state.reader.tabs = [makeReaderTab()];
+      if (!state.reader.currentTabId || !state.reader.tabs.some(tab => tab.id === state.reader.currentTabId)) state.reader.currentTabId = state.reader.tabs[0].id;
+      state.cards = (raw?.cards || []).map(card => makeCard(card));
+      return state;
+    }
+
+    function loadState() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (raw) return migrateState(raw);
+      } catch (error) {
+        console.warn(error);
+      }
+      return defaultState();
+    }
+
+    let state = loadState();
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderStats();
+    }
+
+    function showToast(message) {
+      const toast = $('#toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    function normalizeText(value) {
+      return String(value || '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\u00A0/g, ' ')
+        .replace(/[ \t]+/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    function activeTab() {
+      return state.reader.tabs.find(tab => tab.id === state.reader.currentTabId) || state.reader.tabs[0];
+    }
+
+    function persistReaderMeta() {
+      const tab = activeTab();
+      if (!tab) return;
+      tab.title = $('#readerTitleInput').value.trim();
+      tab.url = $('#readerUrlInput').value.trim();
+      saveState();
+    }
+
+    function applyTheme() {
+      document.body.classList.toggle('dark', !!state.settings.dark);
+      document.documentElement.style.setProperty('--reader-size', `${state.settings.readerSize}px`);
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', state.settings.dark ? '#211b1f' : '#4d693f');
+      $('#themeToggleBtn').textContent = state.settings.dark ? 'Light' : 'Dark';
+      $('#langSelect').value = state.settings.lang;
+      const lang = LANGS[state.settings.lang];
+      $('#langPill').textContent = `${lang.short} · ${lang.label}`;
+      $('#stepAgainInput').value = state.settings.srsSteps.againMinutes;
+      $('#stepHardInput').value = state.settings.srsSteps.hardDays;
+      $('#stepGoodInput').value = state.settings.srsSteps.goodDays;
+      $('#stepEasyInput').value = state.settings.srsSteps.easyDays;
+      $('#promptCategorySelect').value = state.speak.category || 'mixed';
+      $('#dockNav').classList.toggle('collapsed', !!state.settings.dockCollapsed);
+      $('#dockToggleBtn').textContent = state.settings.dockCollapsed ? 'Menü ausfahren' : 'Menü einklappen';
+      document.documentElement.style.setProperty('--dock-offset', state.settings.dockCollapsed ? '54px' : '112px');
+    }
+
+    function switchView(viewId) {
+      currentView = viewId;
+      $$('.screen').forEach(screen => screen.classList.toggle('active', screen.id === viewId));
+      $$('#dockNav button').forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewId));
+      if (viewId === 'learnView') renderCards();
+      if (viewId === 'readerView') renderReader();
+      if (viewId === 'speakView') renderSpeak();
+    }
+
+    function renderStats() {
+      const due = getDueCards().length;
+      const session = state.cards.filter(card => card.session).length;
+      $('#statTabs').textContent = state.reader.tabs.length;
+      $('#statDue').textContent = due;
+      $('#statSession').textContent = session;
+      $('#dueCardsCount').textContent = due;
+      $('#sessionCardsCount').textContent = session;
+      $('#starredCardsCount').textContent = state.cards.filter(card => card.starred).length;
+    }
+
+    function renderReaderTabs() {
+      $('#readerTabs').innerHTML = state.reader.tabs.map(tab => {
+        const label = escapeHtml(tab.title || tab.url || 'Neuer Tab');
+        return `<button class="reader-tab ${tab.id === state.reader.currentTabId ? 'active' : ''}" data-tab="${escapeHtml(tab.id)}"><span class="label">${label}</span><span data-close-tab="${escapeHtml(tab.id)}">×</span></button>`;
+      }).join('');
+    }
+
+    function renderReader() {
+      const tab = activeTab();
+      $('#readerTitleInput').value = tab.title || '';
+      $('#readerUrlInput').value = tab.url || '';
+      $('#readerBox').innerHTML = tab.text ? escapeHtml(tab.text).replace(/\n/g, '<br>') : '<div class="reader-empty">Noch kein Text geladen.<br>Füge Text ein oder lade eine Datei.</div>';
+      $('#bookReader').innerHTML = tab.text ? escapeHtml(tab.text).replace(/\n/g, '<br>') : '<div class="reader-empty">Noch kein Text geladen.</div>';
+      $('#bookMeta').textContent = tab.title || tab.url || 'Buchmodus';
+      renderReaderTabs();
+      renderChapterHint();
+    }
+
+    function renderChapterHint() {
+      const tab = activeTab();
+      $('#chapterHint').textContent = tab.chapterPrev || tab.chapterNext
+        ? 'Kapitellinks erkannt. Du kannst im Reader weiterblättern.'
+        : 'Kapitelnavigation funktioniert gut mit nummerierten Kapitel-Links.';
+    }
+
+    function addReaderTab() {
+      persistReaderMeta();
+      const tab = makeReaderTab();
+      state.reader.tabs.push(tab);
+      state.reader.currentTabId = tab.id;
+      saveState();
+      renderReader();
+      showToast('Neuer Reader-Tab erstellt');
+    }
+
+    function switchReaderTab(tabId) {
+      persistReaderMeta();
+      state.reader.currentTabId = tabId;
+      saveState();
+      renderReader();
+    }
+
+    function closeReaderTab(tabId) {
+      if (state.reader.tabs.length <= 1) return showToast('Mindestens ein Reader-Tab bleibt bestehen');
+      const index = state.reader.tabs.findIndex(tab => tab.id === tabId);
+      if (index === -1) return;
+      const wasCurrent = state.reader.currentTabId === tabId;
+      state.reader.tabs.splice(index, 1);
+      if (wasCurrent) state.reader.currentTabId = state.reader.tabs[Math.max(0, index - 1)].id;
+      saveState();
+      renderReader();
+      showToast('Reader-Tab geschlossen');
+    }
+
+    function setReaderText(text, meta = {}) {
+      const tab = activeTab();
+      tab.text = normalizeText(text);
+      if (meta.title !== undefined) tab.title = meta.title || '';
+      if (meta.url !== undefined) tab.url = meta.url || '';
+      if (meta.sourceType) tab.sourceType = meta.sourceType;
+      if (meta.chapterPrev !== undefined) tab.chapterPrev = meta.chapterPrev || '';
+      if (meta.chapterNext !== undefined) tab.chapterNext = meta.chapterNext || '';
+      saveState();
+      renderReader();
+      clearSelectionBar();
+      if (tab.text) showToast('Text geladen');
+    }
+
+    function chapterLinksFromUrl(url) {
+      const match = String(url || '').match(/(.*?)(\d+)([^\d]*)$/);
+      if (!match) return { prev: '', next: '' };
+      const base = match[1], digits = match[2], suffix = match[3] || '';
+      const number = parseInt(digits, 10);
+      const pad = value => String(value).padStart(digits.length, '0');
+      return {
+        prev: number > 1 ? `${base}${pad(number - 1)}${suffix}` : '',
+        next: `${base}${pad(number + 1)}${suffix}`
+      };
+    }
+
+    async function loadUrl(urlOverride = '') {
+      const url = (urlOverride || $('#readerUrlInput').value).trim();
+      if (!url) return showToast('Bitte eine URL eingeben');
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const rawHtml = await response.text();
+        const doc = new DOMParser().parseFromString(rawHtml, 'text/html');
+        let title = doc.title || url;
+        let text = '';
+        try {
+          const article = new Readability(doc.cloneNode(true)).parse();
+          if (article) {
+            title = article.title || title;
+            text = article.textContent || '';
+          }
+        } catch (error) {
+          console.warn(error);
+        }
+        if (!text) text = doc.body?.innerText || '';
+        const links = chapterLinksFromUrl(url);
+        $('#readerTitleInput').value = title;
+        $('#readerUrlInput').value = url;
+        setReaderText(text, { title, url, sourceType: 'url', chapterPrev: links.prev, chapterNext: links.next });
+      } catch (error) {
+        console.warn(error);
+        showToast('URL konnte nicht geladen werden');
+      }
+    }
+
+    async function loadFile(file) {
+      if (!file) return;
+      const name = file.name || 'Datei';
+      const title = name.replace(/\.[^.]+$/, '');
+      const lower = name.toLowerCase();
+      $('#readerTitleInput').value = title;
+      try {
+        if (lower.endsWith('.pdf')) {
+          await loadPdf(file, title);
+        } else if (lower.endsWith('.epub')) {
+          await loadEpub(file, title);
+        } else {
+          const text = await file.text();
+          setReaderText(text, { title, url: '', sourceType: 'text' });
+        }
+      } catch (error) {
+        console.error(error);
+        showToast('Datei konnte nicht gelesen werden');
+      }
+    }
+
+    async function loadPdf(file, title) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const data = new Uint8Array(await file.arrayBuffer());
+      const pdf = await pdfjsLib.getDocument({ data }).promise;
+      let text = '';
+      for (let pageIndex = 1; pageIndex <= pdf.numPages; pageIndex += 1) {
+        const page = await pdf.getPage(pageIndex);
+        const content = await page.getTextContent();
+        text += '\n\n' + content.items.map(item => item.str).join(' ');
+      }
+      setReaderText(text, { title, url: '', sourceType: 'pdf' });
+    }
+
+    async function loadEpub(file, title) {
+      const zip = await JSZip.loadAsync(await file.arrayBuffer());
+      const htmlFiles = Object.values(zip.files).filter(entry => /\.(xhtml|html|htm)$/i.test(entry.name) && !entry.dir);
+      let text = '';
+      for (const entry of htmlFiles) {
+        const raw = await entry.async('text');
+        const doc = new DOMParser().parseFromString(raw, 'text/html');
+        const head = doc.querySelector('h1,h2,title')?.textContent?.trim();
+        const body = normalizeText(doc.body?.innerText || doc.documentElement?.innerText || '');
+        if (!body) continue;
+        text += '\n\n' + (head ? head + '\n\n' : '') + body;
+      }
+      setReaderText(text, { title, url: '', sourceType: 'epub' });
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('visible'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('visible'); }
+
+    function currentSelectionData() {
+      const sel = window.getSelection();
+      const text = normalizeText(sel?.toString() || '');
+      if (!text || !$('#readerBox').contains(sel.anchorNode)) return null;
+      const full = activeTab().text || '';
+      const anchor = full.indexOf(text.slice(0, 80));
+      let context = text;
+      if (anchor >= 0) {
+        const start = Math.max(0, Math.max(full.lastIndexOf('.', anchor), full.lastIndexOf('\n', anchor)) + 1);
+        const dot = full.indexOf('.', anchor + text.length);
+        const br = full.indexOf('\n', anchor + text.length);
+        const end = [dot, br].filter(value => value > -1).sort((a, b) => a - b)[0] || Math.min(full.length, anchor + text.length + 220);
+        context = normalizeText(full.slice(start, end + 1));
+      }
+      return { text, context };
+    }
+
+    function updateSelectionBar() {
+      const data = currentSelectionData();
+      if (!data) return;
+      selectedText = data.text;
+      selectedContext = data.context;
+      $('#selectedPreview').textContent = selectedText.length > 180 ? selectedText.slice(0, 180) + '…' : selectedText;
+      $('#selectionBar').classList.add('visible');
+    }
+
+    function clearSelectionBar() {
+      selectedText = '';
+      selectedContext = '';
+      $('#selectionBar').classList.remove('visible');
+    }
+
+    function defaultBackForType(type, front) {
+      if (type === 'vocab') return 'Bedeutung / Übersetzung';
+      if (type === 'grammar') return 'Was ist hier zu korrigieren oder zu beachten?';
+      if (type === 'structure') return 'Muster / Formel';
+      return 'Kurze Notiz oder Zusammenfassung';
+    }
+
+    function openSaveCardModal(type) {
+      pendingSaveType = type;
+      $('#saveTypeSelect').value = type;
+      $('#saveFrontInput').value = selectedText;
+      $('#saveBackInput').value = defaultBackForType(type, selectedText);
+      $('#saveContextInput').value = selectedContext || selectedText;
+      $('#saveTagsInput').value = `${LANGS[state.settings.lang].short.toLowerCase()},reader`;
+      openModal('saveCardModal');
+    }
+
+    function addCard(payload) {
+      state.cards.unshift(makeCard(payload));
+      saveState();
+      renderCards();
+      renderStats();
+    }
+
+    function saveCardFromModal() {
+      const front = normalizeText($('#saveFrontInput').value);
+      if (!front) return showToast('Bitte Text einfügen');
+      addCard({
+        type: $('#saveTypeSelect').value,
+        front,
+        back: normalizeText($('#saveBackInput').value),
+        context: normalizeText($('#saveContextInput').value),
+        sourceTitle: activeTab().title || '',
+        sourceUrl: activeTab().url || '',
+        tags: $('#saveTagsInput').value.split(',').map(tag => tag.trim()).filter(Boolean)
+      });
+      closeModal('saveCardModal');
+      clearSelectionBar();
+      showToast('Karte gespeichert');
+    }
+
+    function getDueCards() {
+      const now = Date.now();
+      return state.cards.filter(card => new Date(card.srs.dueAt).getTime() <= now);
+    }
+
+    function formatDue(card) {
+      const due = new Date(card.srs.dueAt);
+      if (Number.isNaN(due.getTime())) return 'fällig';
+      return due.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderLearnFilters() {
+      $('#learnFilters').innerHTML = LEARN_FILTERS.map(filter => `<button class="small ${activeLearnFilter === filter.id ? 'active' : 'soft'}" data-filter="${filter.id}">${filter.label}</button>`).join('');
+    }
+
+    function cardsForActiveFilter() {
+      const dueIds = new Set(getDueCards().map(card => card.id));
+      if (activeLearnFilter === 'all') return state.cards;
+      if (activeLearnFilter === 'due') return state.cards.filter(card => dueIds.has(card.id));
+      if (activeLearnFilter === 'session') return state.cards.filter(card => card.session);
+      if (activeLearnFilter === 'starred') return state.cards.filter(card => card.starred);
+      return state.cards.filter(card => card.type === activeLearnFilter);
+    }
+
+    function renderCards() {
+      renderLearnFilters();
+      const cards = cardsForActiveFilter();
+      if (!cards.length) {
+        $('#cardsList').innerHTML = '<div class="learn-card"><div class="note">Noch keine Karten in diesem Bereich.</div></div>';
+        return;
+      }
+      $('#cardsList').innerHTML = cards.map(card => {
+        const tags = card.tags?.length ? card.tags.map(tag => `<span class="pill">${escapeHtml(tag)}</span>`).join('') : '';
+        return `
+          <article class="learn-card">
+            <div class="row spread">
+              <div>
+                <h3>${escapeHtml(card.front)}</h3>
+                <div class="note">${escapeHtml(card.sourceTitle || 'Lernkarte')} · fällig ${escapeHtml(formatDue(card))}</div>
+              </div>
+              <div class="row">
+                <button class="small ${card.starred ? 'wine' : 'soft'}" data-action="star" data-id="${card.id}">${card.starred ? '★' : '☆'}</button>
+                <button class="small ${card.session ? 'accent' : 'soft'}" data-action="session" data-id="${card.id}">${card.session ? 'Session ✓' : 'Session'}</button>
+                <button class="small soft" data-action="speak" data-id="${card.id}">Vorlesen</button>
+                <button class="small ghost" data-action="edit" data-id="${card.id}">Bearbeiten</button>
+              </div>
+            </div>
+            <div class="learn-meta">
+              <span class="pill">${escapeHtml(card.type)}</span>
+              <span class="pill">Intervall: ${card.srs.intervalDays || 0} d</span>
+              <span class="pill">Ease: ${card.srs.ease.toFixed(2)}</span>
+              ${card.starred ? '<span class="pill starred">markiert</span>' : ''}
+              ${card.session ? '<span class="pill session">Session</span>' : ''}
+              ${tags}
+            </div>
+            ${card.back ? `<div class="back">${escapeHtml(card.back)}</div>` : ''}
+            ${card.context ? `<div class="context">${escapeHtml(card.context)}</div>` : ''}
+            <div class="srs-edit">
+              <div><label>Intervall (Tage)</label><input type="number" min="0" step="0.5" value="${card.srs.intervalDays || 0}" data-inline="interval" data-id="${card.id}" /></div>
+              <div><label>Fällig</label><input type="datetime-local" value="${toDatetimeLocal(card.srs.dueAt)}" data-inline="due" data-id="${card.id}" /></div>
+              <div><label>Tags</label><input type="text" value="${escapeHtml((card.tags || []).join(', '))}" data-inline="tags" data-id="${card.id}" /></div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    function toDatetimeLocal(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      const pad = number => String(number).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function updateInlineCardField(input) {
+      const card = state.cards.find(item => item.id === input.dataset.id);
+      if (!card) return;
+      const type = input.dataset.inline;
+      if (type === 'interval') {
+        card.srs.intervalDays = parseFloat(input.value || '0') || 0;
+      }
+      if (type === 'due') {
+        card.srs.dueAt = input.value ? new Date(input.value).toISOString() : new Date().toISOString();
+      }
+      if (type === 'tags') {
+        card.tags = input.value.split(',').map(tag => tag.trim()).filter(Boolean);
+      }
+      saveState();
+      renderStats();
+    }
+
+    function openEditCard(cardId) {
+      const card = state.cards.find(item => item.id === cardId);
+      if (!card) return;
+      editingCardId = cardId;
+      $('#editTypeSelect').value = card.type;
+      $('#editTagsInput').value = (card.tags || []).join(', ');
+      $('#editFrontInput').value = card.front;
+      $('#editBackInput').value = card.back;
+      $('#editContextInput').value = card.context;
+      $('#editDueInput').value = toDatetimeLocal(card.srs.dueAt);
+      $('#editIntervalInput').value = card.srs.intervalDays || 0;
+      $('#editStarredInput').checked = !!card.starred;
+      $('#editSessionInput').checked = !!card.session;
+      openModal('editCardModal');
+    }
+
+    function saveEditedCard() {
+      const card = state.cards.find(item => item.id === editingCardId);
+      if (!card) return;
+      card.type = $('#editTypeSelect').value;
+      card.tags = $('#editTagsInput').value.split(',').map(tag => tag.trim()).filter(Boolean);
+      card.front = normalizeText($('#editFrontInput').value);
+      card.back = normalizeText($('#editBackInput').value);
+      card.context = normalizeText($('#editContextInput').value);
+      card.srs.dueAt = $('#editDueInput').value ? new Date($('#editDueInput').value).toISOString() : new Date().toISOString();
+      card.srs.intervalDays = parseFloat($('#editIntervalInput').value || '0') || 0;
+      card.starred = $('#editStarredInput').checked;
+      card.session = $('#editSessionInput').checked;
+      saveState();
+      renderCards();
+      closeModal('editCardModal');
+      showToast('Karte aktualisiert');
+    }
+
+    function deleteEditedCard() {
+      if (!editingCardId) return;
+      state.cards = state.cards.filter(card => card.id !== editingCardId);
+      saveState();
+      renderCards();
+      closeModal('editCardModal');
+      showToast('Karte gelöscht');
+    }
+
+    function toggleCardFlag(cardId, field) {
+      const card = state.cards.find(item => item.id === cardId);
+      if (!card) return;
+      card[field] = !card[field];
+      saveState();
+      renderCards();
+      renderStats();
+    }
+
+    function clearSession() {
+      state.cards.forEach(card => { card.session = false; });
+      saveState();
+      renderCards();
+      showToast('Session geleert');
+    }
+
+    function clearAllCards() {
+      if (!confirm('Alle Lernkarten wirklich löschen?')) return;
+      state.cards = [];
+      saveState();
+      renderCards();
+      renderStats();
+      showToast('Alle Karten gelöscht');
+    }
+
+    function updateSrsStepsFromInputs() {
+      state.settings.srsSteps.againMinutes = Math.max(1, parseInt($('#stepAgainInput').value || '10', 10));
+      state.settings.srsSteps.hardDays = Math.max(1, parseInt($('#stepHardInput').value || '1', 10));
+      state.settings.srsSteps.goodDays = Math.max(1, parseInt($('#stepGoodInput').value || '3', 10));
+      state.settings.srsSteps.easyDays = Math.max(1, parseInt($('#stepEasyInput').value || '7', 10));
+      saveState();
+    }
+
+    function gradeLabel(key) {
+      const steps = state.settings.srsSteps;
+      if (key === 'again') return `Again · ${steps.againMinutes}m`;
+      if (key === 'hard') return `Hard · ${steps.hardDays}d`;
+      if (key === 'good') return `Good · ${steps.goodDays}d`;
+      return `Easy · ${steps.easyDays}d`;
+    }
+
+    function startStudy(mode) {
+      let pool = [];
+      if (mode === 'due') pool = getDueCards();
+      if (mode === 'session') pool = state.cards.filter(card => card.session);
+      if (mode === 'starred') pool = state.cards.filter(card => card.starred);
+      if (!pool.length) return showToast('Keine Karten in diesem Review');
+      studyState = { mode, cardIds: pool.map(card => card.id), index: 0, revealed: false };
+      $('#studyModePill').textContent = mode === 'due' ? 'Fällige Karten' : mode === 'session' ? 'Session Review' : 'Markierte Karten';
+      $('#studyOverlay').classList.add('visible');
+      renderStudyCard();
+    }
+
+    function currentStudyCard() {
+      return state.cards.find(card => card.id === studyState.cardIds[studyState.index]);
+    }
+
+    function renderStudyCard() {
+      const card = currentStudyCard();
+      if (!card) {
+        $('#studyFace').innerHTML = '<div class="note">Fertig für diese Runde.</div>';
+        $('#studyProgressPill').textContent = `${studyState.cardIds.length} / ${studyState.cardIds.length}`;
+        return;
+      }
+      $('#studyProgressPill').textContent = `${studyState.index + 1} / ${studyState.cardIds.length}`;
+      const revealed = studyState.revealed;
+      $('#studyFace').innerHTML = `
+        <div class="front">${escapeHtml(card.front)}</div>
+        ${revealed ? `<div class="answer"><strong>${escapeHtml(card.back || '—')}</strong></div>` : ''}
+        ${revealed && card.context ? `<div class="context">${escapeHtml(card.context)}</div>` : ''}
+      `;
+      $('#revealStudyBtn').classList.toggle('hidden', revealed);
+      $$('#gradeButtons button').forEach(button => { button.disabled = !revealed; button.textContent = gradeLabel(button.dataset.grade); });
+    }
+
+    function revealStudyAnswer() {
+      studyState.revealed = true;
+      renderStudyCard();
+    }
+
+    function scheduleCard(card, grade) {
+      const now = Date.now();
+      const steps = state.settings.srsSteps;
+      let dueAt = now;
+      let intervalDays = card.srs.intervalDays || 0;
+      if (grade === 'again') {
+        dueAt = now + steps.againMinutes * 60 * 1000;
+        intervalDays = 0;
+        card.srs.ease = Math.max(1.3, (card.srs.ease || 2.5) - 0.2);
+        card.srs.lapses += 1;
+      }
+      if (grade === 'hard') {
+        dueAt = now + steps.hardDays * 24 * 60 * 60 * 1000;
+        intervalDays = steps.hardDays;
+        card.srs.ease = Math.max(1.3, (card.srs.ease || 2.5) - 0.05);
+      }
+      if (grade === 'good') {
+        dueAt = now + steps.goodDays * 24 * 60 * 60 * 1000;
+        intervalDays = steps.goodDays;
+        card.srs.ease = Math.max(1.3, (card.srs.ease || 2.5) + 0.03);
+      }
+      if (grade === 'easy') {
+        dueAt = now + steps.easyDays * 24 * 60 * 60 * 1000;
+        intervalDays = steps.easyDays;
+        card.srs.ease = Math.max(1.3, (card.srs.ease || 2.5) + 0.12);
+      }
+      card.srs.dueAt = new Date(dueAt).toISOString();
+      card.srs.intervalDays = intervalDays;
+      card.srs.lastGrade = grade;
+      card.srs.lastReviewedAt = new Date().toISOString();
+      card.srs.reps += 1;
+    }
+
+    function applyStudyGrade(grade) {
+      const card = currentStudyCard();
+      if (!card) return;
+      scheduleCard(card, grade);
+      if (studyState.mode === 'session' && grade !== 'again') card.session = false;
+      studyState.index += 1;
+      studyState.revealed = false;
+      saveState();
+      renderStats();
+      renderCards();
+      if (studyState.index >= studyState.cardIds.length) {
+        showToast('Review abgeschlossen');
+        $('#studyOverlay').classList.remove('visible');
+        return;
+      }
+      renderStudyCard();
+    }
+
+    function closeStudy() {
+      $('#studyOverlay').classList.remove('visible');
+    }
+
+    function speakText(text, rate = 1) {
+      const cleaned = normalizeText(text);
+      if (!cleaned) return;
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(cleaned);
+      utterance.lang = LANGS[state.settings.lang].voice;
+      utterance.rate = rate;
+      speechSynthesis.speak(utterance);
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleCameraImage(file) {
+      if (!file) return;
+      $('#ocrStatusText').textContent = 'Bild wird analysiert …';
+      $('#ocrTextArea').value = '';
+      $('#ocrTagsInput').value = `${LANGS[state.settings.lang].short.toLowerCase()},photo,ocr`;
+      $('#ocrTypeSelect').value = 'chunk';
+      openModal('ocrModal');
+      try {
+        const result = await Tesseract.recognize(file, LANGS[state.settings.lang].ocr);
+        const text = normalizeText(result?.data?.text || '');
+        $('#ocrTextArea').value = text;
+        $('#ocrTypeSelect').value = text.split(/\s+/).filter(Boolean).length <= 3 ? 'vocab' : 'chunk';
+        $('#ocrStatusText').textContent = text ? 'Text erkannt. Du kannst ihn jetzt speichern.' : 'Es wurde kaum Text erkannt. Probiere ein schärferes Foto.';
+      } catch (error) {
+        console.error(error);
+        $('#ocrStatusText').textContent = 'OCR konnte nicht ausgeführt werden.';
+      }
+    }
+
+    function saveOcrCard() {
+      const front = normalizeText($('#ocrTextArea').value);
+      if (!front) return showToast('Kein Text erkannt');
+      addCard({
+        type: $('#ocrTypeSelect').value,
+        front,
+        back: defaultBackForType($('#ocrTypeSelect').value, front),
+        context: front,
+        sourceTitle: activeTab().title || 'Foto / OCR',
+        sourceUrl: activeTab().url || '',
+        tags: $('#ocrTagsInput').value.split(',').map(tag => tag.trim()).filter(Boolean)
+      });
+      closeModal('ocrModal');
+      showToast('Foto-Text gespeichert');
+    }
+
+    function renderSpeak() {
+      $('#speakingDraftInput').value = state.speak.response || '';
+      $('#speakingCorrectedInput').value = state.speak.corrected || '';
+      $('#promptText').textContent = state.speak.prompt || 'Noch kein Prompt generiert.';
+      $('#promptCategorySelect').value = state.speak.category || 'mixed';
+      renderPromptCards(getPromptSourceCards());
+    }
+
+    function getPromptSourceCards() {
+      const preferred = state.cards.filter(card => card.session || card.starred);
+      const fallback = preferred.length ? preferred : [...getDueCards(), ...state.cards].filter((card, index, list) => list.findIndex(item => item.id === card.id) === index);
+      const count = Math.max(1, Math.min(6, parseInt($('#promptCardCountInput')?.value || '3', 10)));
+      return fallback.slice(0, count);
+    }
+
+    function renderPromptCards(cards) {
+      $('#promptCards').innerHTML = cards.length
+        ? cards.map(card => `<span class="pill">${escapeHtml(card.front)}</span>`).join('')
+        : '<span class="note">Noch keine passenden Lernkarten vorhanden.</span>';
+    }
+
+    function generatePrompt() {
+      const category = $('#promptCategorySelect').value;
+      state.speak.category = category;
+      const pool = PROMPT_TEMPLATES[category] || PROMPT_TEMPLATES.mixed;
+      const template = pool[Math.floor(Math.random() * pool.length)];
+      const cards = getPromptSourceCards();
+      const cardText = cards.length ? cards.map(card => `„${card.front}“`).join(', ') : 'keine festen Karten';
+      const prompt = template.replace('{cards}', cardText);
+      state.speak.prompt = prompt;
+      saveState();
+      $('#promptText').textContent = prompt;
+      renderPromptCards(cards);
+      showToast('Prompt generiert');
+    }
+
+    function splitSentences(text) {
+      const clean = normalizeText(text);
+      if (!clean) return [];
+      const byLines = clean.split(/\n+/).map(part => part.trim()).filter(Boolean);
+      if (byLines.length > 1) return byLines;
+      return clean.match(/[^.!?]+[.!?]?/g)?.map(part => part.trim()).filter(Boolean) || [clean];
+    }
+
+    function saveCorrectionsAsCards() {
+      const original = normalizeText($('#speakingDraftInput').value);
+      const corrected = normalizeText($('#speakingCorrectedInput').value);
+      state.speak.response = original;
+      state.speak.corrected = corrected;
+      saveState();
+      if (!corrected) return showToast('Bitte korrigierte Version einfügen');
+      const originalParts = splitSentences(original);
+      const correctedParts = splitSentences(corrected);
+      let created = 0;
+      const max = Math.max(originalParts.length, correctedParts.length);
+      for (let index = 0; index < max; index += 1) {
+        const before = normalizeText(originalParts[index] || '');
+        const after = normalizeText(correctedParts[index] || '');
+        if (!after) continue;
+        if (before && before === after) continue;
+        addCard({
+          type: 'grammar',
+          front: before || 'Korrigierte Formulierung merken',
+          back: after,
+          context: state.speak.prompt || 'Speaking prompt',
+          sourceTitle: 'Speaking Correction',
+          tags: ['speaking', 'correction', LANGS[state.settings.lang].short.toLowerCase()],
+          starred: true
+        });
+        created += 1;
+      }
+      if (!created) {
+        addCard({
+          type: 'chunk',
+          front: corrected,
+          back: 'Korrigierte Endversion',
+          context: state.speak.prompt || 'Speaking prompt',
+          sourceTitle: 'Speaking Correction',
+          tags: ['speaking', 'correction']
+        });
+        created = 1;
+      }
+      switchView('learnView');
+      showToast(`${created} Karte(n) aus Korrekturen erstellt`);
+    }
+
+    function exportSpeakingSession() {
+      state.speak.response = $('#speakingDraftInput').value;
+      state.speak.corrected = $('#speakingCorrectedInput').value;
+      saveState();
+      const content = [
+        '# Fluent. Speaking Session',
+        '',
+        `Datum: ${new Date().toLocaleString('de-DE')}`,
+        '',
+        '## Prompt',
+        state.speak.prompt || '',
+        '',
+        '## Antwort',
+        state.speak.response || '',
+        '',
+        '## Korrigierte Version',
+        state.speak.corrected || ''
+      ].join('\n');
+      downloadFile('fluent-speaking-session.md', content, 'text/markdown');
+      showToast('Speaking-Session exportiert');
+    }
+
+    function downloadFile(filename, content, mimeType = 'text/plain') {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportBackup() {
+      downloadFile('fluent-backup.json', JSON.stringify(state, null, 2), 'application/json');
+      showToast('Backup exportiert');
+    }
+
+    async function importBackup(file) {
+      if (!file) return;
+      try {
+        const raw = JSON.parse(await file.text());
+        state = migrateState(raw);
+        saveState();
+        applyTheme();
+        renderReader();
+        renderCards();
+        renderSpeak();
+        renderStats();
+        showToast('Backup importiert');
+      } catch (error) {
+        console.error(error);
+        showToast('Backup konnte nicht importiert werden');
+      }
+    }
+
+    function toggleDock() {
+      state.settings.dockCollapsed = !state.settings.dockCollapsed;
+      saveState();
+      applyTheme();
+    }
+
+    function bindEvents() {
+      $('#themeToggleBtn').addEventListener('click', () => {
+        state.settings.dark = !state.settings.dark;
+        saveState();
+        applyTheme();
+      });
+      $('#langSelect').addEventListener('change', event => {
+        state.settings.lang = event.target.value;
+        saveState();
+        applyTheme();
+      });
+      $('#dockToggleBtn').addEventListener('click', toggleDock);
+      $$('#dockNav button').forEach(button => button.addEventListener('click', () => switchView(button.dataset.view)));
+
+      $('#exportBackupBtn').addEventListener('click', exportBackup);
+      $('#importBackupInput').addEventListener('change', event => importBackup(event.target.files[0]));
+
+      $('#addTabBtn').addEventListener('click', addReaderTab);
+      $('#readerTabs').addEventListener('click', event => {
+        const closeButton = event.target.closest('[data-close-tab]');
+        if (closeButton) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeReaderTab(closeButton.dataset.closeTab);
+          return;
+        }
+        const tabButton = event.target.closest('[data-tab]');
+        if (tabButton) switchReaderTab(tabButton.dataset.tab);
+      });
+      $('#readerTitleInput').addEventListener('input', persistReaderMeta);
+      $('#readerUrlInput').addEventListener('input', persistReaderMeta);
+      $('#readerFileInput').addEventListener('change', event => loadFile(event.target.files[0]));
+      $('#cameraInput').addEventListener('change', event => handleCameraImage(event.target.files[0]));
+      $('#loadUrlBtn').addEventListener('click', () => loadUrl());
+      $('#openPasteBtn').addEventListener('click', () => openModal('pasteModal'));
+      $('#loadPasteBtn').addEventListener('click', () => {
+        setReaderText($('#pasteArea').value, { title: $('#readerTitleInput').value.trim(), url: $('#readerUrlInput').value.trim(), sourceType: 'text' });
+        closeModal('pasteModal');
+      });
+      $('#clearReaderBtn').addEventListener('click', () => setReaderText('', { title: $('#readerTitleInput').value.trim(), url: $('#readerUrlInput').value.trim() }));
+      $('#readerFontUpBtn').addEventListener('click', () => { state.settings.readerSize = Math.min(30, state.settings.readerSize + 1); saveState(); applyTheme(); });
+      $('#readerFontDownBtn').addEventListener('click', () => { state.settings.readerSize = Math.max(15, state.settings.readerSize - 1); saveState(); applyTheme(); });
+      $('#openBookModeBtn').addEventListener('click', () => $('#bookOverlay').classList.add('visible'));
+      $('#closeBookModeBtn').addEventListener('click', () => $('#bookOverlay').classList.remove('visible'));
+      $('#bookFontUpBtn').addEventListener('click', () => { state.settings.readerSize = Math.min(30, state.settings.readerSize + 1); saveState(); applyTheme(); });
+      $('#bookFontDownBtn').addEventListener('click', () => { state.settings.readerSize = Math.max(15, state.settings.readerSize - 1); saveState(); applyTheme(); });
+      $('#prevChapterBtn').addEventListener('click', () => activeTab().chapterPrev ? loadUrl(activeTab().chapterPrev) : showToast('Kein voriges Kapitel erkannt'));
+      $('#nextChapterBtn').addEventListener('click', () => activeTab().chapterNext ? loadUrl(activeTab().chapterNext) : showToast('Kein nächstes Kapitel erkannt'));
+
+      ['mouseup', 'keyup', 'touchend'].forEach(evt => $('#readerBox').addEventListener(evt, () => setTimeout(updateSelectionBar, 30)));
+      document.addEventListener('selectionchange', () => {
+        const sel = window.getSelection();
+        if (!sel || !sel.toString()) return;
+        if ($('#readerBox').contains(sel.anchorNode)) updateSelectionBar();
+      });
+      document.addEventListener('click', event => {
+        if (!event.target.closest('#selectionBar') && !event.target.closest('#readerBox')) clearSelectionBar();
+      });
+      $$('#selectionBar [data-save-type]').forEach(button => button.addEventListener('click', () => openSaveCardModal(button.dataset.saveType)));
+      $('#speakSelectionBtn').addEventListener('click', () => speakText(selectedText, 1));
+      $('#saveCardBtn').addEventListener('click', saveCardFromModal);
+      $('#saveOcrBtn').addEventListener('click', saveOcrCard);
+      $$('[data-close]').forEach(button => button.addEventListener('click', () => closeModal(button.dataset.close)));
+      $$('.modal-backdrop').forEach(backdrop => backdrop.addEventListener('click', event => { if (event.target === backdrop) backdrop.classList.remove('visible'); }));
+
+      $('#learnFilters').addEventListener('click', event => {
+        const button = event.target.closest('[data-filter]');
+        if (!button) return;
+        activeLearnFilter = button.dataset.filter;
+        renderCards();
+      });
+      $('#cardsList').addEventListener('click', event => {
+        const target = event.target.closest('[data-action]');
+        if (!target) return;
+        const { action, id } = target.dataset;
+        if (action === 'star') toggleCardFlag(id, 'starred');
+        if (action === 'session') toggleCardFlag(id, 'session');
+        if (action === 'edit') openEditCard(id);
+        if (action === 'speak') {
+          const card = state.cards.find(item => item.id === id);
+          if (card) speakText(card.front, 1);
+        }
+      });
+      $('#cardsList').addEventListener('change', event => {
+        const input = event.target.closest('[data-inline]');
+        if (input) updateInlineCardField(input);
+      });
+      $('#studyDueBtn').addEventListener('click', () => startStudy('due'));
+      $('#studySessionBtn').addEventListener('click', () => startStudy('session'));
+      $('#studyStarredBtn').addEventListener('click', () => startStudy('starred'));
+      $('#clearSessionBtn').addEventListener('click', clearSession);
+      $('#clearAllCardsBtn').addEventListener('click', clearAllCards);
+      ['stepAgainInput', 'stepHardInput', 'stepGoodInput', 'stepEasyInput'].forEach(id => $("#" + id).addEventListener('change', updateSrsStepsFromInputs));
+      $('#closeStudyBtn').addEventListener('click', closeStudy);
+      $('#revealStudyBtn').addEventListener('click', revealStudyAnswer);
+      $$('#gradeButtons button').forEach(button => button.addEventListener('click', () => applyStudyGrade(button.dataset.grade)));
+
+      $('#saveEditedCardBtn').addEventListener('click', saveEditedCard);
+      $('#deleteEditedCardBtn').addEventListener('click', deleteEditedCard);
+
+      $('#promptCategorySelect').addEventListener('change', event => { state.speak.category = event.target.value; saveState(); renderSpeak(); });
+      $('#generatePromptBtn').addEventListener('click', generatePrompt);
+      $('#exportSpeakingBtn').addEventListener('click', exportSpeakingSession);
+      $('#speakPromptBtn').addEventListener('click', () => speakText(state.speak.prompt || $('#promptText').textContent, 1));
+      $('#stopSpeakingBtn').addEventListener('click', () => speechSynthesis.cancel());
+      $('#saveCorrectionsBtn').addEventListener('click', saveCorrectionsAsCards);
+      $('#speakingDraftInput').addEventListener('input', event => { state.speak.response = event.target.value; saveState(); });
+      $('#speakingCorrectedInput').addEventListener('input', event => { state.speak.corrected = event.target.value; saveState(); });
+    }
+
+    function init() {
+      applyTheme();
+      renderReader();
+      renderCards();
+      renderSpeak();
+      renderStats();
+      bindEvents();
+      if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+        navigator.serviceWorker.register('./sw.js').catch(console.warn);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
