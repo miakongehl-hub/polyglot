@@ -1,4 +1,4 @@
-const CACHE_NAME = "fluent-cache-v8";
+const CACHE_NAME = "fluent-cache-v10";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,8 +6,7 @@ const ASSETS = [
   "./icon-192.png",
   "./icon-512.png",
   "./apple-touch-icon.png",
-  "./app-tile.png",
-  "./Herunterladen.jpg"
+  "./app-tile.png"
 ];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));

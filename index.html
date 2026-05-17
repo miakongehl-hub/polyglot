@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#4d693f" />
+  <meta name="theme-color" content="#05070c" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Fluent." />
@@ -1112,246 +1112,6 @@
       padding: 14px;
     }
 
-
-    /* --- Fluent spring 2026 cleanup patch --- */
-    body {
-      background-image: url('./Herunterladen.jpg');
-      background-size: cover;
-      background-position: center top;
-      background-attachment: fixed;
-    }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: inherit;
-      background-size: cover;
-      background-position: center top;
-      filter: saturate(1.04) contrast(1.02);
-      transform: scale(1.03);
-      z-index: -2;
-    }
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(250,247,241,.56);
-      backdrop-filter: blur(2px);
-      z-index: -1;
-      pointer-events: none;
-    }
-    body.dark::after {
-      background: rgba(17,14,17,.58);
-      backdrop-filter: blur(4px);
-    }
-    .brand { gap: 0; }
-    .brand-tile { display: none !important; }
-    .topbar {
-      border: 1px solid rgba(255,255,255,.28);
-      background: color-mix(in srgb, var(--paper-strong) 72%, transparent);
-      backdrop-filter: blur(12px);
-    }
-    .hero-start {
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
-      min-height: auto;
-    }
-    .hero-grid-single { grid-template-columns: 1fr !important; padding: 6px 0 10px !important; }
-    .compact-hero-info, .eyebrow { display: none !important; }
-    #homeView .hero h2 {
-      color: var(--ink) !important;
-      font-size: clamp(38px, 7vw, 64px);
-      line-height: .96;
-      max-width: 10ch;
-      text-shadow: none;
-    }
-    #homeView .hero p {
-      color: var(--ink2) !important;
-      font-size: 17px;
-      max-width: 640px;
-      text-shadow: none;
-    }
-    #homeView .chip {
-      background: rgba(255,251,246,.72);
-      color: var(--ink);
-      backdrop-filter: blur(10px);
-    }
-    body.dark #homeView .chip {
-      background: rgba(33,27,31,.68);
-      color: #fffaf6;
-    }
-    .stats .stat,
-    .helper-card,
-    .learn-card,
-    .prompt-box,
-    .export-box,
-    .ki-import-box,
-    .learn-help,
-    .card,
-    .modal,
-    .study-face,
-    .study-card,
-    .selection-bar,
-    .book-select-bar,
-    .reader-stage,
-    .dock,
-    .dock-toggle,
-    .topbar {
-      backdrop-filter: blur(12px);
-    }
-    .reader-stage {
-      padding-inline: clamp(16px, 4vw, 42px);
-    }
-    .reader-box,
-    .book-reader,
-    .learn-card h3,
-    .learn-card .back,
-    .learn-card .context {
-      overflow-wrap: anywhere;
-      word-break: normal;
-    }
-    .reader-box {
-      max-width: 42em;
-      margin: 0 auto;
-    }
-    .book-overlay {
-      background: rgba(255,252,247,.96) !important;
-      padding: 0 !important;
-    }
-    body.dark .book-overlay { background: rgba(8,8,9,.97) !important; }
-    .book-topbar {
-      top: calc(10px + env(safe-area-inset-top));
-      display: grid !important;
-      grid-template-columns: minmax(0,1fr) auto;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      margin: 0;
-      border-radius: 24px;
-      background: color-mix(in srgb, var(--paper-strong) 82%, transparent);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-    .book-topbar .overlay-pill {
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .book-search-row input {
-      min-width: 146px;
-      max-width: min(44vw, 240px);
-      border: 1px solid var(--line);
-      background: color-mix(in srgb, var(--paper-strong) 86%, transparent);
-      padding: 10px 14px;
-    }
-    .book-select-bar {
-      top: calc(76px + env(safe-area-inset-top));
-      left: 12px;
-      right: 12px;
-      width: auto !important;
-      border-radius: 24px;
-      background: color-mix(in srgb, var(--paper-strong) 90%, transparent);
-      box-shadow: var(--shadow);
-    }
-    .book-reader {
-      width: 100% !important;
-      max-width: none !important;
-      height: 100svh;
-      padding: calc(env(safe-area-inset-top) + 96px) 16px calc(env(safe-area-inset-bottom) + 28px) !important;
-      font-size: calc(var(--reader-size) + 2px) !important;
-      line-height: 1.88 !important;
-      color: var(--ink);
-    }
-    .book-page {
-      max-width: 42em;
-      margin: 0 auto;
-    }
-    .book-paragraph,
-    .book-heading {
-      margin: 0 0 1.1em;
-      overflow-wrap: anywhere;
-      word-break: normal;
-    }
-    .book-heading {
-      font-weight: 700;
-      line-height: 1.24;
-      font-size: calc(var(--reader-size) + 4px);
-      margin-top: 1.5em;
-    }
-    .book-paragraph.is-first,
-    .book-heading.is-first { margin-top: 0; }
-    .book-word {
-      border-radius: 7px;
-      padding: .03em .04em;
-      transition: background .15s ease, box-shadow .15s ease;
-    }
-    .book-word.selected {
-      background: color-mix(in srgb, var(--green) 24%, transparent);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 24%, transparent);
-    }
-    .book-word.search-hit {
-      background: color-mix(in srgb, var(--red-soft) 42%, transparent);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--red-soft) 24%, transparent);
-    }
-    .book-ui button.small,
-    .dock button,
-    .reader-tab,
-    .small,
-    .soft,
-    .ghost,
-    .accent {
-      font-weight: 700;
-    }
-    #bookHideControlsBtn,
-    #closeBookModeBtn,
-    #bookSearchClearBtn,
-    #dockToggleBtn {
-      width: 42px;
-      min-width: 42px;
-      height: 42px;
-      min-height: 42px;
-      padding: 0;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-    #saveBackInput,
-    #saveContextInput,
-    #saveFrontInput,
-    #editFrontInput,
-    #editBackInput,
-    #editContextInput,
-    #ocrTextArea,
-    #pasteArea,
-    #speakingDraftInput,
-    #aiFeedbackInput {
-      min-height: 118px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: color-mix(in srgb, var(--paper-strong) 84%, transparent);
-    }
-    body:not(.dark) .reader-box,
-    body:not(.dark) .book-reader,
-    body:not(.dark) .book-heading,
-    body:not(.dark) .book-paragraph { color: #171415 !important; }
-    @media (max-width: 640px) {
-      #homeView .hero h2 { font-size: 44px; }
-      .book-reader {
-        padding: calc(env(safe-area-inset-top) + 104px) 14px calc(env(safe-area-inset-bottom) + 24px) !important;
-      }
-      .book-topbar {
-        left: 10px;
-        right: 10px;
-      }
-    }
-
     @media (max-width: 860px) {
       .hero-grid,
       .grid-2,
@@ -1376,6 +1136,74 @@
       .step-grid { grid-template-columns: 1fr; }
       .mini-stats { grid-template-columns: 1fr 1fr 1fr; }
     }
+
+
+    /* Stability patch: readable boxes, robust book mode, manual cards */
+    body::before { opacity: .54 !important; filter: saturate(1.12) contrast(1.03) brightness(.98) !important; }
+    body::after { background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.48)) !important; }
+    body.dark::before { opacity: .40 !important; filter: saturate(1.24) contrast(1.06) brightness(.78) !important; }
+    body.dark::after { background: linear-gradient(180deg, rgba(3,4,10,.54), rgba(3,4,10,.68)) !important; }
+    body:not(.dark) { --ink:#111116; --muted:#5f5963; --paper:rgba(255,255,255,.66); --paper-strong:rgba(255,252,246,.88); }
+    body.dark { --ink:#fffaf5; --muted:rgba(255,250,245,.72); --paper:rgba(15,17,27,.72); --paper-strong:rgba(20,22,34,.88); }
+    .hero, .card, .helper-card, .learn-help, .learn-card, .prompt-box, .ki-import-box, .export-box, .dock { border-color: transparent !important; box-shadow:0 22px 54px rgba(0,0,0,.13) !important; }
+    body.dark .hero, body.dark .card, body.dark .helper-card, body.dark .learn-help, body.dark .learn-card, body.dark .prompt-box, body.dark .ki-import-box, body.dark .export-box, body.dark .dock { color:#fffaf5 !important; background:radial-gradient(circle at 0 0, rgba(219,36,174,.18), transparent 18rem), radial-gradient(circle at 100% 8%, rgba(82,185,239,.16), transparent 22rem), linear-gradient(145deg, rgba(14,16,27,.86), rgba(23,24,37,.74)) !important; }
+    body:not(.dark) .hero, body:not(.dark) .card, body:not(.dark) .helper-card, body:not(.dark) .learn-help, body:not(.dark) .learn-card, body:not(.dark) .prompt-box, body:not(.dark) .ki-import-box, body:not(.dark) .export-box, body:not(.dark) .dock { color:#111116 !important; background:radial-gradient(circle at 0 0, rgba(219,36,174,.09), transparent 18rem), radial-gradient(circle at 100% 8%, rgba(82,185,239,.10), transparent 21rem), linear-gradient(145deg, rgba(255,255,255,.82), rgba(255,248,241,.73)) !important; }
+    .learn-start-grid { grid-template-columns:1fr !important; }
+    .learn-start { grid-template-columns:72px minmax(0,1fr) !important; min-height:112px !important; overflow:hidden; }
+    .learn-start strong { white-space:normal !important; word-break:normal !important; overflow-wrap:normal !important; line-height:1.1 !important; }
+    .learn-card .row.spread { align-items:flex-start; gap:14px; }
+    .learn-card .row.spread > div:first-child { min-width:0; flex:1 1 240px; }
+    .learn-card .row.spread > .row { flex:0 1 100%; justify-content:flex-start; }
+    .learn-card h3, .learn-card .back, .learn-card .context, .learn-meta { overflow-wrap:anywhere; max-width:100%; }
+    .pronounce-btn { background:linear-gradient(135deg,#d829a7,#ff9c38) !important; color:#fff !important; font-weight:800; }
+
+    .book-overlay { display:none; position:fixed; inset:0; z-index:100; padding:0 !important; background:#fff !important; color:#050505 !important; overflow:hidden; touch-action:manipulation; }
+    .book-overlay.visible { display:block !important; }
+    .book-overlay.book-theme-paper { background:#f5ecd7 !important; }
+    .book-overlay.book-theme-quiet { background:#3c3f46 !important; color:#f2f1ed !important; }
+    .book-overlay.book-theme-quiet .book-reader { color:#f2f1ed !important; }
+    .book-overlay.book-theme-paper .book-reader { color:#17130e !important; }
+    .book-ui { position:absolute; z-index:5; transition:opacity .18s ease, transform .18s ease; }
+    .book-overlay.controls-hidden .book-ui:not(.book-select-bar) { opacity:0; pointer-events:none; transform:translateY(8px); }
+    .book-overlay.controls-hidden .book-select-bar:not(.visible) { opacity:0; pointer-events:none; }
+    .book-close-btn { top:calc(env(safe-area-inset-top) + 14px); right:18px; width:58px; height:58px; min-height:58px; border:0; border-radius:999px; font-size:38px; line-height:1; color:#686a70; background:rgba(241,242,246,.92); box-shadow:0 14px 34px rgba(0,0,0,.10); }
+    .book-page-pill { top:calc(env(safe-area-inset-top) + 26px); left:50%; transform:translateX(-50%); border-radius:999px; padding:8px 16px; color:#696b71; background:rgba(237,238,242,.88); box-shadow:0 10px 30px rgba(0,0,0,.07); font-weight:700; white-space:nowrap; }
+    .book-reader { position:absolute; inset:0; width:100% !important; max-width:none !important; height:100svh; margin:0 !important; padding:calc(env(safe-area-inset-top) + 76px) clamp(28px,7vw,64px) calc(env(safe-area-inset-bottom) + 92px) !important; overflow-y:auto; overflow-x:hidden; font-family:Georgia,'Iowan Old Style',serif !important; font-size:calc(var(--reader-size) + 5px) !important; line-height:1.72 !important; background:transparent !important; color:#050505 !important; white-space:normal !important; word-break:normal !important; overflow-wrap:break-word; hyphens:auto; -webkit-overflow-scrolling:touch; }
+    .book-reader p { margin:0 0 1.45em; max-width:100%; overflow-wrap:break-word; }
+    .book-reader * { max-width:100%; }
+    .book-word { display:inline; border-radius:5px; padding:0 1px; }
+    .book-word.selected { background:rgba(255,212,43,.52) !important; box-shadow:0 0 0 2px rgba(255,212,43,.25) !important; }
+    .book-word.search-hit { background:rgba(255,212,43,.35); }
+    .book-select-bar { left:50% !important; right:auto !important; bottom:calc(env(safe-area-inset-bottom) + 170px); top:auto !important; transform:translateX(-50%); width:min(720px,calc(100% - 40px)) !important; display:none; gap:8px; align-items:center; flex-wrap:wrap; padding:12px !important; border:0 !important; border-radius:28px !important; background:rgba(241,242,246,.94) !important; box-shadow:0 16px 45px rgba(0,0,0,.15) !important; backdrop-filter:blur(18px); }
+    .book-select-bar.visible { display:flex !important; opacity:1 !important; pointer-events:auto !important; }
+    .selected-preview { flex:1 1 100%; color:#42444a; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .book-bottom-menu { left:50%; bottom:calc(env(safe-area-inset-bottom) + 18px); transform:translateX(-50%); width:min(720px,calc(100% - 40px)); display:grid; gap:10px; }
+    .book-menu-row.top { display:grid; grid-template-columns:1fr 58px; gap:10px; }
+    .book-pill, .book-icon-btn { border:0 !important; background:rgba(239,240,244,.94) !important; color:#0b0c10 !important; box-shadow:0 14px 36px rgba(0,0,0,.10) !important; backdrop-filter:blur(18px); }
+    .book-pill { width:100%; min-height:56px; padding:10px 18px; border-radius:999px; display:flex; align-items:center; justify-content:space-between; gap:16px; font-weight:750; text-align:left; }
+    .book-pill strong { font-size:24px; line-height:1; }
+    .book-icon-btn { width:58px; height:58px; min-height:58px; padding:0 !important; border-radius:999px; display:grid; place-items:center; font-size:26px; font-weight:800; }
+    .book-icon-btn.big-a { font-size:24px; }
+    .book-action-row, .book-font-row, .book-theme-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .book-action-row .book-icon-btn, .book-font-row .book-icon-btn { width:100%; }
+    .book-font-row { grid-template-columns:1fr 1fr; }
+    .book-search-panel, .book-theme-panel { display:grid; gap:10px; }
+    .book-search-panel.hidden, .book-theme-panel.hidden { display:none !important; }
+    .book-search-row { display:grid !important; grid-template-columns:1fr 44px; gap:8px; align-items:center; }
+    .book-search-row input { width:100%; max-width:none !important; min-height:52px; border-radius:999px; background:rgba(239,240,244,.94) !important; color:#0b0c10 !important; border:0 !important; padding:10px 18px !important; }
+    .book-search-row button { min-height:52px; border-radius:999px; }
+    .book-results { max-height:220px; overflow:auto; display:grid; gap:8px; }
+    .book-result { width:100%; border:0; border-radius:18px; background:rgba(239,240,244,.94); padding:12px 14px; text-align:left; color:#0b0c10; box-shadow:none; }
+    .book-result small { display:block; color:#73757c; margin-top:4px; line-height:1.35; }
+    .book-theme-row { grid-template-columns:repeat(3,1fr); }
+    .book-theme-choice { border:0 !important; border-radius:20px !important; min-height:90px; background:rgba(239,240,244,.94) !important; color:#0b0c10 !important; box-shadow:0 10px 28px rgba(0,0,0,.08) !important; font-family:Georgia,serif; font-size:28px; }
+    .book-theme-choice span { font-family:var(--sans); font-size:13px; }
+    .book-theme-choice[data-book-theme="quiet"] { background:#4a4d54 !important; color:#f2f1ed !important; }
+    .book-theme-choice[data-book-theme="paper"] { background:#f4ead5 !important; }
+    .book-theme-choice.active { outline:3px solid currentColor; }
+    .book-overlay.book-theme-quiet .book-pill, .book-overlay.book-theme-quiet .book-icon-btn, .book-overlay.book-theme-quiet .book-search-row input, .book-overlay.book-theme-quiet .book-result { background:rgba(238,239,242,.90) !important; color:#0b0c10 !important; }
+    @media(max-width:560px){ .book-reader{ padding-left:28px !important; padding-right:28px !important; font-size:calc(var(--reader-size) + 6px) !important; } .book-bottom-menu{ width:calc(100% - 36px); } .book-action-row{ grid-template-columns:repeat(4,1fr); } .book-pill{ font-size:16px; } }
+
   </style>
 </head>
 <body>
@@ -1396,19 +1224,28 @@
 
     <main>
       <section class="screen active" id="homeView">
-        <div class="hero hero-start">
-          <div class="hero-grid hero-grid-single">
+        <div class="hero" style="background: linear-gradient(160deg, rgba(77,105,63,.52), rgba(111,31,40,.62));">
+          <div class="hero-grid">
             <div class="hero-copy">
               <div>
-                <h2>lesen, markieren, lernen</h2>
-                <p>Dein Reader mit Buchmodus, Markierungen, Suche, Vorlesen und Lernkarten. Der Start ist ruhiger, der Blumenhintergrund bleibt sichtbar und die wichtigsten Wege sind direkt erreichbar.</p>
+                <div class="eyebrow">Reader · Review · Speak</div>
+                <h2>Lesen ohne Ballast. Lernen mit System.</h2>
+                <p>Die App orientiert sich jetzt dauerhaft an deiner rot-grünen Collage. Der Reader bleibt ruhig, der Buchmodus ist klarer und der Lernbereich arbeitet mit Spaced Repetition, Session-Fokus und markierbaren Karten.</p>
               </div>
               <div class="chip-row">
                 <span class="chip">PDF · EPUB · Web</span>
-                <span class="chip">Buchmodus mit Suche</span>
-                <span class="chip">Vokabel · Chunk · Grammatik</span>
+                <span class="chip">SRS mit Again / Hard / Good / Easy</span>
+                <span class="chip">Foto → Lernkarte</span>
               </div>
             </div>
+            <div class="hero-canvas compact-hero-info">
+              <div>
+                <strong style="font-size:18px">Fluent.</strong>
+                <div class="note">Reader, Lernkarten und KI-Import – ohne extra Design-Setup.</div>
+              </div>
+            </div>
+          </div>
+        </div>
           </div>
         </div>
 
@@ -1555,7 +1392,7 @@
                 </div>
               </div>
               <div class="row">
-                <button class="small accent" id="openManualCardBtn">Karte manuell hinzufügen</button>
+                <button class="small accent" id="manualCardBtn">+ Lernkarte hinzufügen</button>
                 <button class="small soft" id="clearSessionBtn">Session leeren</button>
                 <button class="small ghost" id="clearAllCardsBtn">Alle Karten löschen</button>
               </div>
@@ -1668,26 +1505,50 @@
     </main>
   </div>
 
-  <div class="book-overlay" id="bookOverlay">
-    <div class="book-ui overlay-top book-topbar">
-      <div class="row">
-        <span class="overlay-pill" id="bookMeta">Buchmodus</span>
-      </div>
-      <div class="book-top-actions">
-        <div class="book-search-row"><input id="bookSearchInput" type="search" placeholder="Im Buch suchen …" /><button class="small soft" id="bookSearchClearBtn">×</button></div>
-        <button class="small" id="bookFontDownBtn">A-</button>
-        <button class="small" id="bookFontUpBtn">A+</button>
-        <button class="small soft" id="bookHideControlsBtn" aria-label="Menüs ausblenden">◌</button><button class="small ghost" id="closeBookModeBtn">✕</button>
-      </div>
-    </div>
+  <div class="book-overlay controls-hidden" id="bookOverlay">
+    <button class="book-ui book-close-btn" id="closeBookModeBtn" aria-label="Buchmodus schließen">×</button>
+    <div class="book-ui book-page-pill" id="bookPagePill">0 %</div>
+
     <div class="book-ui book-select-bar" id="bookSelectionBar">
       <div class="selected-preview" id="bookSelectedPreview">Auswahl</div>
       <button class="small accent" data-book-save-type="chunk">Chunk</button>
       <button class="small" data-book-save-type="vocab">Vokabel</button>
       <button class="small" data-book-save-type="grammar">Grammatik</button>
-      <button class="small" id="bookSpeakSelectionBtn">Vorlesen</button>
+      <button class="small" id="bookSpeakSelectionBtn">🔊</button>
     </div>
+
     <div id="bookReader" class="book-reader"></div>
+
+    <div class="book-ui book-bottom-menu" id="bookMenuArea">
+      <div class="book-menu-row top">
+        <button class="book-pill" id="bookContentBtn"><span>Inhalt</span><strong id="bookProgressPill">0 %</strong></button>
+        <button class="book-icon-btn" id="bookMenuListBtn" aria-label="Inhalt anzeigen">☰</button>
+      </div>
+      <div class="book-menu-row">
+        <button class="book-pill" id="bookSearchToggleBtn"><span>Buch durchsuchen</span><strong>⌕</strong></button>
+      </div>
+      <div class="book-search-panel hidden" id="bookSearchPanel">
+        <div class="book-search-row"><input id="bookSearchInput" type="search" placeholder="Wort oder Satz suchen …" /><button class="small soft" id="bookSearchClearBtn">×</button></div>
+        <div class="book-results" id="bookSearchResults"></div>
+      </div>
+      <div class="book-menu-row">
+        <button class="book-pill" id="bookThemeToggleBtn"><span>Themen & Einstellungen</span><strong>Aa</strong></button>
+      </div>
+      <div class="book-theme-panel hidden" id="bookThemePanel">
+        <div class="book-font-row"><button id="bookFontDownBtn" class="book-icon-btn">A−</button><button id="bookFontUpBtn" class="book-icon-btn big-a">A+</button></div>
+        <div class="book-theme-row">
+          <button class="book-theme-choice active" data-book-theme="light">Aa<br><span>Original</span></button>
+          <button class="book-theme-choice" data-book-theme="quiet">Aa<br><span>Leise</span></button>
+          <button class="book-theme-choice" data-book-theme="paper">Aa<br><span>Papier</span></button>
+        </div>
+      </div>
+      <div class="book-action-row">
+        <button class="book-icon-btn" id="bookCopyBtn" aria-label="Text kopieren">⇧</button>
+        <button class="book-icon-btn" id="bookSpeakPageBtn" aria-label="Seite vorlesen">🔊</button>
+        <button class="book-icon-btn" id="bookBookmarkBtn" aria-label="Lesezeichen">♡</button>
+        <button class="book-icon-btn" id="bookMenuHideBtn" aria-label="Menü ausblenden">⌄</button>
+      </div>
+    </div>
   </div>
 
   <div class="study-overlay" id="studyOverlay">
@@ -1840,6 +1701,7 @@
     let selectedText = '';
     let selectedContext = '';
     let pendingSaveType = 'chunk';
+    let manualCardMode = false;
     let activeLearnFilter = 'all';
     let editingCardId = null;
     let currentView = 'homeView';
@@ -1951,45 +1813,13 @@
       showToast._timer = setTimeout(() => toast.classList.remove('show'), 1800);
     }
 
-    function decodeHtmlEntities(value) {
-      const el = document.createElement('textarea');
-      el.innerHTML = String(value || '');
-      return el.value;
-    }
-
     function normalizeText(value) {
-      let text = String(value || '');
-      for (let i = 0; i < 2; i += 1) text = decodeHtmlEntities(text);
-      return text
+      return String(value || '')
         .replace(/\r\n/g, '\n')
         .replace(/\u00A0/g, ' ')
-        .replace(/[“”]/g, '"')
-        .replace(/[‘’]/g, "'")
-        .replace(/&nbsp;/gi, ' ')
         .replace(/[ \t]+/g, ' ')
-        .replace(/\s+([,.;:!?])/g, '$1')
-        .replace(/([.!?])([A-Za-zÀ-ÖØ-öø-ÿÄÖÜäöü])/g, '$1 $2')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
-    }
-
-    function contextFromText(fullText, excerpt) {
-      const full = normalizeText(fullText || '');
-      const query = normalizeText(excerpt || '');
-      if (!query) return '';
-      if (!full) return query;
-      const lowerFull = full.toLowerCase();
-      const lowerQuery = query.toLowerCase();
-      const index = lowerFull.indexOf(lowerQuery);
-      if (index < 0) return query;
-      let start = index;
-      while (start > 0 && !/[.!?\n]/.test(full[start - 1])) start -= 1;
-      while (start < full.length && /\s/.test(full[start])) start += 1;
-      let end = index + query.length;
-      while (end < full.length && !/[.!?\n]/.test(full[end])) end += 1;
-      if (end < full.length && /[.!?]/.test(full[end])) end += 1;
-      const context = normalizeText(full.slice(start, Math.min(full.length, end + 1)));
-      return context || query;
     }
 
     function escapeHtml(value) {
@@ -2011,7 +1841,7 @@
     function applyTheme() {
       document.body.classList.toggle('dark', !!state.settings.dark);
       document.documentElement.style.setProperty('--reader-size', `${state.settings.readerSize}px`);
-      document.querySelector('meta[name="theme-color"]').setAttribute('content', state.settings.dark ? '#211b1f' : '#4d693f');
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', state.settings.dark ? '#05070c' : '#fff8f0');
       $('#themeToggleBtn').textContent = state.settings.dark ? 'Light' : 'Dark';
       $('#langSelect').value = state.settings.lang;
       const lang = LANGS[state.settings.lang];
@@ -2024,6 +1854,7 @@
       $('#dockNav').classList.toggle('collapsed', !!state.settings.dockCollapsed);
       $('#dockToggleBtn').textContent = state.settings.dockCollapsed ? '☰' : '⌄';
       document.documentElement.style.setProperty('--dock-offset', state.settings.dockCollapsed ? '54px' : '112px');
+      if (typeof applyBookTheme === 'function') applyBookTheme(state.settings.bookTheme || 'light');
     }
 
     function switchView(viewId) {
@@ -2062,104 +1893,44 @@
       $('#bookMeta').textContent = tab.title || tab.url || 'Buchmodus';
       renderReaderTabs();
       renderChapterHint();
-      renderBookContents();
-      runBookSearch($('#bookSearchInput')?.value || '');
     }
 
-
-    function bookInlineHtml(text) {
-      return escapeHtml(text)
-        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ0-9][A-Za-zÀ-ÖØ-öø-ÿ0-9'’\-]*)/g, '<span class="book-word" data-word="$1">$1</span>');
-    }
-
-    function looksLikeBookHeading(block) {
-      const line = normalizeText(block || '');
-      if (!line) return false;
-      return /^(chapter|kapitel|prologue|epilogue|preface|introduction|translations|notes|summary|teil)\b/i.test(line)
-        || /^chapter\s+[a-z0-9-]+/i.test(line)
-        || (line.length < 80 && /^[A-ZÄÖÜ0-9][A-Za-zÄÖÜäöüß0-9 '\-]+$/.test(line) && !/[.!?]$/.test(line));
-    }
-
-    function extractHeadings(text) {
-      return normalizeText(text || '')
-        .split(/\n{2,}/)
-        .map(block => normalizeText(block))
-        .filter(block => block && looksLikeBookHeading(block))
-        .slice(0, 80);
-    }
 
     function bookTextToHtml(text) {
-      const blocks = normalizeText(text || '').split(/\n{2,}/).map(block => normalizeText(block)).filter(Boolean);
-      if (!blocks.length) return '<div class="reader-empty">Noch kein Text geladen.</div>';
-      return `<div class="book-page">${blocks.map((block, index) => {
-        const cls = looksLikeBookHeading(block) ? 'book-heading' : 'book-paragraph';
-        const first = index === 0 ? ' is-first' : '';
-        return `<div class="${cls}${first}" data-block-index="${index}">${bookInlineHtml(block)}</div>`;
-      }).join('')}</div>`;
-    }
-
-    function currentBookText() {
-      return activeTab().text || '';
-    }
-
-    function setBookSelection(text) {
-      selectedText = normalizeText(text || '');
-      selectedContext = contextFromText(currentBookText(), selectedText) || selectedText;
-      $('#bookSelectedPreview').textContent = selectedText.length > 120 ? selectedText.slice(0, 120) + '…' : selectedText;
-      $('#bookSelectionBar').classList.add('visible');
-      bookControlsHidden = false;
-      $('#bookOverlay').classList.remove('controls-hidden');
-    }
-
-    function clearBookSelection() {
-      selectedText = '';
-      selectedContext = '';
-      $$('.book-word.selected').forEach(el => el.classList.remove('selected'));
-      $('#bookSelectionBar').classList.remove('visible');
-      $('#bookSelectedPreview').textContent = 'Auswahl';
+      return escapeHtml(text)
+        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ0-9][A-Za-zÀ-ÖØ-öø-ÿ0-9'’\\-]*)/g, '<span class="book-word" data-word="$1">$1</span>')
+        .replace(/\n/g, '<br>');
     }
 
     function selectBookWord(wordEl) {
       if (!wordEl) return;
       $$('.book-word.selected').forEach(el => el.classList.remove('selected'));
       wordEl.classList.add('selected');
-      setBookSelection(wordEl.textContent || '');
+      selectedText = normalizeText(wordEl.textContent || '');
+      selectedContext = selectedText;
+      $('#bookSelectedPreview').textContent = selectedText;
+      $('#bookSelectionBar').classList.add('visible');
+      bookControlsHidden = false;
+      $('#bookOverlay').classList.remove('controls-hidden');
     }
 
     function updateBookSelectionFromNative() {
       const sel = window.getSelection();
       const text = normalizeText(sel?.toString() || '');
       if (!text || !$('#bookReader').contains(sel.anchorNode)) return false;
-      setBookSelection(text);
+      selectedText = text;
+      selectedContext = text;
+      $('#bookSelectedPreview').textContent = text.length > 120 ? text.slice(0, 120) + '…' : text;
+      $('#bookSelectionBar').classList.add('visible');
+      bookControlsHidden = false;
+      $('#bookOverlay').classList.remove('controls-hidden');
       return true;
     }
 
-    function toggleBookControls(force = null) {
-      if (force === true) bookControlsHidden = false;
-      else if (force === false) bookControlsHidden = true;
-      else bookControlsHidden = !bookControlsHidden;
+    function toggleBookControls() {
+      if ($('#bookSelectionBar').classList.contains('visible')) return;
+      bookControlsHidden = !bookControlsHidden;
       $('#bookOverlay').classList.toggle('controls-hidden', bookControlsHidden);
-    }
-
-    function runBookSearch(query) {
-      const q = normalizeText(query || '').toLowerCase();
-      const words = $$('#bookReader .book-word');
-      let firstHit = null;
-      words.forEach(word => {
-        const hit = !!q && normalizeText(word.textContent).toLowerCase().includes(q);
-        word.classList.toggle('search-hit', hit);
-        if (hit && !firstHit) firstHit = word;
-      });
-      if (firstHit) firstHit.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-
-    function renderBookContents() {
-      const existing = $('#bookMeta');
-      if (!existing) return;
-      const tab = activeTab();
-      const label = tab.title || tab.url || 'Buchmodus';
-      const count = extractHeadings(currentBookText()).length;
-      existing.textContent = count ? `${label} · ${count} Kapitel` : label;
     }
 
     function renderChapterHint() {
@@ -2311,7 +2082,15 @@
       const text = normalizeText(sel?.toString() || '');
       if (!text || !$('#readerBox').contains(sel.anchorNode)) return null;
       const full = activeTab().text || '';
-      const context = contextFromText(full, text);
+      const anchor = full.indexOf(text.slice(0, 80));
+      let context = text;
+      if (anchor >= 0) {
+        const start = Math.max(0, Math.max(full.lastIndexOf('.', anchor), full.lastIndexOf('\n', anchor)) + 1);
+        const dot = full.indexOf('.', anchor + text.length);
+        const br = full.indexOf('\n', anchor + text.length);
+        const end = [dot, br].filter(value => value > -1).sort((a, b) => a - b)[0] || Math.min(full.length, anchor + text.length + 220);
+        context = normalizeText(full.slice(start, end + 1));
+      }
       return { text, context };
     }
 
@@ -2338,28 +2117,21 @@
     function defaultBackForType(type, front) {
       if (type === 'vocab') {
         const translation = translateToGerman(front);
-        return translation || '';
+        return translation ? `Deutsch: ${translation}` : 'Deutsch: Übersetzung ergänzen';
       }
-      if (type === 'grammar') return '';
-      return '';
+      if (type === 'grammar') return 'Was ist hier zu korrigieren oder zu beachten?';
+      return 'Kurze Notiz oder Zusammenfassung';
     }
 
-    function openSaveCardModal(type, overrides = {}) {
+    function openSaveCardModal(type) {
+      manualCardMode = false;
       pendingSaveType = type;
-      const front = overrides.front !== undefined ? overrides.front : selectedText;
-      const back = overrides.back !== undefined ? overrides.back : defaultBackForType(type, front);
-      const context = overrides.context !== undefined ? overrides.context : (selectedContext || contextFromText(currentBookText() || activeTab().text || '', front) || front);
       $('#saveTypeSelect').value = type;
-      $('#saveFrontInput').value = front || '';
-      $('#saveBackInput').value = back || '';
-      $('#saveContextInput').value = context || '';
-      $('#saveTagsInput').value = overrides.tags || `${LANGS[state.settings.lang].short.toLowerCase()},reader`;
+      $('#saveFrontInput').value = selectedText;
+      $('#saveBackInput').value = defaultBackForType(type, selectedText);
+      $('#saveContextInput').value = selectedContext || selectedText;
+      $('#saveTagsInput').value = `${LANGS[state.settings.lang].short.toLowerCase()},reader`;
       openModal('saveCardModal');
-    }
-
-    function openManualCardModal() {
-      clearBookSelection();
-      openSaveCardModal('chunk', { front: '', back: '', context: '', tags: `${LANGS[state.settings.lang].short.toLowerCase()},manual` });
     }
 
     function addCard(payload) {
@@ -2377,12 +2149,14 @@
         front,
         back: normalizeText($('#saveBackInput').value),
         context: normalizeText($('#saveContextInput').value),
-        sourceTitle: activeTab().title || 'Manuelle Karte',
-        sourceUrl: activeTab().url || '',
+        sourceTitle: manualCardMode ? 'Manuell' : (activeTab().title || ''),
+        sourceUrl: manualCardMode ? '' : (activeTab().url || ''),
         tags: $('#saveTagsInput').value.split(',').map(tag => tag.trim()).filter(Boolean)
       });
+      manualCardMode = false;
       closeModal('saveCardModal');
       clearSelectionBar();
+      if (typeof clearBookSelectionBar === 'function') clearBookSelectionBar();
       showToast('Karte gespeichert');
     }
 
@@ -2434,7 +2208,7 @@
               <div class="row">
                 <button class="small ${card.starred ? 'wine' : 'soft'}" data-action="star" data-id="${card.id}">${card.starred ? '★' : '☆'}</button>
                 <button class="small ${card.session ? 'accent' : 'soft'}" data-action="session" data-id="${card.id}">${card.session ? 'Session ✓' : 'Session'}</button>
-                <button class="small soft" data-action="speak" data-id="${card.id}">Vorlesen</button>
+                <button class="small pronounce-btn" data-action="speak" data-id="${card.id}">🔊 Aussprache</button>
                 <button class="small ghost" data-action="edit" data-id="${card.id}">Bearbeiten</button>
               </div>
             </div>
@@ -3017,6 +2791,220 @@ FLUENT_JSON_END`;
       applyTheme();
     }
 
+
+
+    /* Stable book mode patch */
+    let bookSearchQuery = '';
+    let bookLongPressActive = false;
+
+    function decodeHtmlEntities(value) {
+      const area = document.createElement('textarea');
+      area.innerHTML = String(value || '');
+      return area.value;
+    }
+
+    function normalizeText(value) {
+      return decodeHtmlEntities(String(value || ''))
+        .replace(/\r\n/g, '\n')
+        .replace(/\u00A0/g, ' ')
+        .replace(/[ \t]+/g, ' ')
+        .replace(/\s+([.,;:!?])/g, '$1')
+        .replace(/([.!?])(["”]){2,}/g, '$1"')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    }
+
+    function defaultBackForType(type, front) {
+      if (type === 'vocab') return translateToGerman(front) || '';
+      if (type === 'grammar') return 'Was ist hier zu korrigieren oder zu beachten?';
+      return 'Kurze Notiz oder Zusammenfassung';
+    }
+
+    function escapeRegExp(value) {
+      return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function sentenceForSelection(text, selected = '') {
+      const clean = normalizeText(text);
+      if (!clean) return normalizeText(selected);
+      const needle = normalizeText(selected);
+      let idx = needle ? clean.toLowerCase().indexOf(needle.toLowerCase()) : -1;
+      if (idx < 0) idx = 0;
+      let start = clean.lastIndexOf('.', idx - 1);
+      for (const mark of ['!', '?', '…', '\n']) start = Math.max(start, clean.lastIndexOf(mark, idx - 1));
+      start = start < 0 ? 0 : start + 1;
+      let end = clean.length;
+      const endings = ['.', '!', '?', '…', '\n'].map(mark => clean.indexOf(mark, idx + Math.max(needle.length, 1))).filter(n => n >= 0);
+      if (endings.length) end = Math.min(...endings) + 1;
+      return normalizeText(clean.slice(start, end)) || clean;
+    }
+
+    function contextForBookNode(node, selected = '') {
+      const el = node?.nodeType === 1 ? node : node?.parentElement;
+      const paragraph = el?.closest?.('p');
+      return sentenceForSelection(paragraph?.textContent || el?.textContent || selected, selected);
+    }
+
+    function inlineBookWords(raw) {
+      const escaped = escapeHtml(raw);
+      const query = normalizeText(bookSearchQuery).toLowerCase();
+      return escaped.replace(/([A-Za-zÀ-ÖØ-öø-ÿ0-9][A-Za-zÀ-ÖØ-öø-ÿ0-9'’\-]*)/g, match => {
+        const hit = query && match.toLowerCase().includes(query) ? ' search-hit' : '';
+        return `<span class="book-word${hit}" data-word="${escapeHtml(match)}">${match}</span>`;
+      });
+    }
+
+    function bookTextToHtml(text) {
+      const clean = normalizeText(text);
+      if (!clean) return '<div class="reader-empty">Noch kein Text geladen.</div>';
+      return clean.split(/\n{2,}/).map(para => `<p>${inlineBookWords(para).replace(/\n/g, '<br>')}</p>`).join('');
+    }
+
+    function renderReader() {
+      const tab = activeTab();
+      $('#readerTitleInput').value = tab.title || '';
+      $('#readerUrlInput').value = tab.url || '';
+      const clean = normalizeText(tab.text || '');
+      if (tab.text !== clean) { tab.text = clean; saveState(); }
+      $('#readerBox').innerHTML = clean ? escapeHtml(clean).replace(/\n/g, '<br>') : '<div class="reader-empty">Noch kein Text geladen.<br>Füge Text ein oder lade eine Datei.</div>';
+      $('#bookReader').innerHTML = clean ? bookTextToHtml(clean) : '<div class="reader-empty">Noch kein Text geladen.</div>';
+      if ($('#bookMeta')) $('#bookMeta').textContent = tab.title || tab.url || 'Buchmodus';
+      renderReaderTabs();
+      renderChapterHint();
+      updateBookProgress();
+      renderBookSearchResults();
+    }
+
+    function clearBookSelectionBar() {
+      selectedText = '';
+      selectedContext = '';
+      $$('.book-word.selected').forEach(el => el.classList.remove('selected'));
+      $('#bookSelectionBar')?.classList.remove('visible');
+      const sel = window.getSelection();
+      if (sel) sel.removeAllRanges();
+    }
+
+    function selectBookWord(wordEl) {
+      if (!wordEl) return;
+      if (wordEl.classList.contains('selected')) { clearBookSelectionBar(); return; }
+      $$('.book-word.selected').forEach(el => el.classList.remove('selected'));
+      wordEl.classList.add('selected');
+      selectedText = normalizeText(wordEl.textContent || '');
+      selectedContext = contextForBookNode(wordEl, selectedText);
+      $('#bookSelectedPreview').textContent = selectedText;
+      $('#bookSelectionBar').classList.add('visible');
+      showBookControls();
+    }
+
+    function updateBookSelectionFromNative() {
+      const sel = window.getSelection();
+      const text = normalizeText(sel?.toString() || '');
+      if (!text || !$('#bookReader')?.contains(sel.anchorNode)) return false;
+      selectedText = text;
+      selectedContext = contextForBookNode(sel.anchorNode, text);
+      $$('.book-word.selected').forEach(el => el.classList.remove('selected'));
+      $('#bookSelectedPreview').textContent = text.length > 120 ? text.slice(0, 120) + '…' : text;
+      $('#bookSelectionBar').classList.add('visible');
+      showBookControls();
+      return true;
+    }
+
+    function showBookControls() {
+      bookControlsHidden = false;
+      $('#bookOverlay').classList.remove('controls-hidden');
+    }
+
+    function hideBookControls() {
+      bookControlsHidden = true;
+      $('#bookOverlay').classList.add('controls-hidden');
+      $('#bookSearchPanel')?.classList.add('hidden');
+      $('#bookThemePanel')?.classList.add('hidden');
+      if (!selectedText) $('#bookSelectionBar')?.classList.remove('visible');
+    }
+
+    function toggleBookControls() {
+      if ($('#bookSelectionBar').classList.contains('visible')) { clearBookSelectionBar(); return; }
+      bookControlsHidden ? showBookControls() : hideBookControls();
+    }
+
+    function updateBookProgress() {
+      const reader = $('#bookReader');
+      if (!reader) return;
+      const max = Math.max(1, reader.scrollHeight - reader.clientHeight);
+      const percent = Math.round(Math.max(0, Math.min(1, reader.scrollTop / max)) * 100);
+      $('#bookProgressPill') && ($('#bookProgressPill').textContent = `${percent} %`);
+      $('#bookPagePill') && ($('#bookPagePill').textContent = `${percent} %`);
+    }
+
+    function renderBookSearchResults() {
+      const box = $('#bookSearchResults');
+      if (!box) return;
+      const query = normalizeText(bookSearchQuery);
+      if (!query) { box.innerHTML = ''; return; }
+      const text = normalizeText(activeTab()?.text || '');
+      const lower = text.toLowerCase();
+      const q = query.toLowerCase();
+      const out = [];
+      let pos = lower.indexOf(q);
+      while (pos !== -1 && out.length < 20) {
+        const start = Math.max(0, pos - 70);
+        const end = Math.min(text.length, pos + q.length + 100);
+        out.push({ pos, snippet: normalizeText(text.slice(start, end)) });
+        pos = lower.indexOf(q, pos + q.length);
+      }
+      box.innerHTML = out.length ? out.map(r => `<button class="book-result" data-book-pos="${r.pos}"><strong>${escapeHtml(query)}</strong><small>${escapeHtml(r.snippet)}</small></button>`).join('') : '<div class="note">Keine Treffer gefunden.</div>';
+    }
+
+    function scrollBookToTextPosition(pos) {
+      const reader = $('#bookReader');
+      const text = normalizeText(activeTab()?.text || '');
+      const fraction = Math.max(0, Math.min(1, pos / Math.max(1, text.length)));
+      reader.scrollTo({ top: (reader.scrollHeight - reader.clientHeight) * fraction, behavior: 'smooth' });
+    }
+
+    function applyBookTheme(theme) {
+      const overlay = $('#bookOverlay');
+      if (!overlay) return;
+      ['light','quiet','paper'].forEach(name => overlay.classList.toggle(`book-theme-${name}`, theme === name));
+      $$('.book-theme-choice').forEach(btn => btn.classList.toggle('active', btn.dataset.bookTheme === theme));
+    }
+
+    function openManualCardModal() {
+      manualCardMode = true;
+      pendingSaveType = 'vocab';
+      $('#saveTypeSelect').value = 'vocab';
+      $('#saveFrontInput').value = '';
+      $('#saveBackInput').value = '';
+      $('#saveContextInput').value = '';
+      $('#saveTagsInput').value = `${LANGS[state.settings.lang].short.toLowerCase()},manual`;
+      openModal('saveCardModal');
+      setTimeout(() => $('#saveFrontInput').focus(), 80);
+    }
+
+    function bindStableBookExtras() {
+      $('#bookOverlay')?.addEventListener('click', event => {
+        const insideMenu = event.target.closest('#bookMenuArea, #bookSelectionBar, #closeBookModeBtn');
+        if (insideMenu) return;
+        const word = event.target.closest('.book-word');
+        if (word) return;
+        toggleBookControls();
+      });
+      $('#bookReader')?.addEventListener('scroll', updateBookProgress, { passive: true });
+      $('#bookMenuHideBtn')?.addEventListener('click', hideBookControls);
+      $('#bookSearchToggleBtn')?.addEventListener('click', () => { showBookControls(); $('#bookSearchPanel').classList.toggle('hidden'); $('#bookThemePanel').classList.add('hidden'); setTimeout(() => $('#bookSearchInput')?.focus(), 80); });
+      $('#bookThemeToggleBtn')?.addEventListener('click', () => { showBookControls(); $('#bookThemePanel').classList.toggle('hidden'); $('#bookSearchPanel').classList.add('hidden'); });
+      $('#bookContentBtn')?.addEventListener('click', () => showToast('Inhalt wird aus Kapiteln im Text geschätzt'));
+      $('#bookMenuListBtn')?.addEventListener('click', () => showToast('Inhalt wird aus Kapiteln im Text geschätzt'));
+      $('#bookCopyBtn')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(selectedText || normalizeText(activeTab()?.text || '').slice(0, 1200)); showToast('Text kopiert'); } catch { showToast('Kopieren nicht möglich'); } });
+      $('#bookSpeakPageBtn')?.addEventListener('click', () => speakText(selectedText || normalizeText(activeTab()?.text || '').slice(0, 900), .95));
+      $('#bookBookmarkBtn')?.addEventListener('click', () => showToast('Lesezeichen gemerkt'));
+      $('#bookSearchInput')?.addEventListener('input', event => { bookSearchQuery = event.target.value; $('#bookReader').innerHTML = bookTextToHtml(activeTab()?.text || ''); renderBookSearchResults(); });
+      $('#bookSearchClearBtn')?.addEventListener('click', () => { bookSearchQuery = ''; $('#bookSearchInput').value = ''; $('#bookReader').innerHTML = bookTextToHtml(activeTab()?.text || ''); renderBookSearchResults(); });
+      $('#bookSearchResults')?.addEventListener('click', event => { const target = event.target.closest('[data-book-pos]'); if (target) { scrollBookToTextPosition(Number(target.dataset.bookPos)); hideBookControls(); } });
+      $$('.book-theme-choice').forEach(btn => btn.addEventListener('click', () => { state.settings.bookTheme = btn.dataset.bookTheme; saveState(); applyBookTheme(state.settings.bookTheme); }));
+      $('#manualCardBtn')?.addEventListener('click', openManualCardModal);
+      applyBookTheme(state.settings.bookTheme || 'light');
+    }
     function bindEvents() {
       $('#themeToggleBtn').addEventListener('click', () => {
         state.settings.dark = !state.settings.dark;
@@ -3059,30 +3047,28 @@ FLUENT_JSON_END`;
       $('#clearReaderBtn').addEventListener('click', () => setReaderText('', { title: $('#readerTitleInput').value.trim(), url: $('#readerUrlInput').value.trim() }));
       $('#readerFontUpBtn').addEventListener('click', () => { state.settings.readerSize = Math.min(30, state.settings.readerSize + 1); saveState(); applyTheme(); });
       $('#readerFontDownBtn').addEventListener('click', () => { state.settings.readerSize = Math.max(15, state.settings.readerSize - 1); saveState(); applyTheme(); });
-      $('#openBookModeBtn').addEventListener('click', () => { bookControlsHidden = false; $('#bookOverlay').classList.remove('controls-hidden'); $('#bookOverlay').classList.add('visible'); clearBookSelection(); runBookSearch($('#bookSearchInput')?.value || ''); });
-      $('#closeBookModeBtn').addEventListener('click', () => { $('#bookOverlay').classList.remove('visible'); clearBookSelection(); });
-      $('#bookHideControlsBtn').addEventListener('click', () => { clearBookSelection(); toggleBookControls(false); });
+      $('#openBookModeBtn').addEventListener('click', () => { renderReader(); clearBookSelectionBar(); bookControlsHidden = false; $('#bookOverlay').classList.remove('controls-hidden'); $('#bookOverlay').classList.add('visible'); updateBookProgress(); });
+      $('#closeBookModeBtn').addEventListener('click', () => { $('#bookOverlay').classList.remove('visible'); clearBookSelectionBar(); });
       $('#bookReader').addEventListener('click', event => {
+        event.stopPropagation();
+        if (bookLongPressActive) { bookLongPressActive = false; event.preventDefault(); return; }
+        const sel = window.getSelection();
+        if (sel && normalizeText(sel.toString()) && $('#bookReader').contains(sel.anchorNode)) { updateBookSelectionFromNative(); return; }
         const word = event.target.closest('.book-word');
         if (word) { selectBookWord(word); return; }
-        if ($('#bookSelectionBar').classList.contains('visible')) { clearBookSelection(); return; }
         toggleBookControls();
       });
       $('#bookReader').addEventListener('touchstart', event => {
-        const word = event.target.closest('.book-word');
         clearTimeout(bookTouchTimer);
-        if (word) bookTouchTimer = setTimeout(() => selectBookWord(word), 420);
+        const word = event.target.closest('.book-word');
+        if (word) bookTouchTimer = setTimeout(() => { bookLongPressActive = true; selectBookWord(word); }, 430);
       }, { passive: true });
       $('#bookReader').addEventListener('touchend', () => clearTimeout(bookTouchTimer));
       document.addEventListener('selectionchange', () => { updateBookSelectionFromNative(); });
       $$('[data-book-save-type]').forEach(button => button.addEventListener('click', () => openSaveCardModal(button.dataset.bookSaveType)));
       $('#bookSpeakSelectionBtn').addEventListener('click', () => speakText(selectedText, 1));
-      $('#bookFontUpBtn').addEventListener('click', () => { state.settings.readerSize = Math.min(30, state.settings.readerSize + 1); saveState(); applyTheme(); });
-      $('#bookFontDownBtn').addEventListener('click', () => { state.settings.readerSize = Math.max(15, state.settings.readerSize - 1); saveState(); applyTheme(); });
-      $('#bookSearchInput').addEventListener('input', event => runBookSearch(event.target.value));
-      $('#bookSearchClearBtn').addEventListener('click', () => { $('#bookSearchInput').value = ''; runBookSearch(''); });
-      $('#bookOverlay').addEventListener('click', event => { if (event.target === $('#bookOverlay')) { clearBookSelection(); toggleBookControls(false); } });
-      $('#openManualCardBtn').addEventListener('click', openManualCardModal);
+      $('#bookFontUpBtn').addEventListener('click', () => { state.settings.readerSize = Math.min(34, (state.settings.readerSize || 20) + 1); saveState(); applyTheme(); showToast(`Schriftgröße: ${state.settings.readerSize}`); });
+      $('#bookFontDownBtn').addEventListener('click', () => { state.settings.readerSize = Math.max(14, (state.settings.readerSize || 20) - 1); saveState(); applyTheme(); showToast(`Schriftgröße: ${state.settings.readerSize}`); });
       $('#prevChapterBtn').addEventListener('click', () => activeTab().chapterPrev ? loadUrl(activeTab().chapterPrev) : showToast('Kein voriges Kapitel erkannt'));
       $('#nextChapterBtn').addEventListener('click', () => activeTab().chapterNext ? loadUrl(activeTab().chapterNext) : showToast('Kein nächstes Kapitel erkannt'));
 
@@ -3094,10 +3080,6 @@ FLUENT_JSON_END`;
       });
       document.addEventListener('click', event => {
         if (!event.target.closest('#selectionBar') && !event.target.closest('#readerBox')) clearSelectionBar();
-        if ($('#bookOverlay').classList.contains('visible') && !event.target.closest('.book-ui') && !event.target.closest('.book-word') && !event.target.closest('#bookReader')) {
-          clearBookSelection();
-          toggleBookControls(false);
-        }
       });
       $$('#selectionBar [data-save-type]').forEach(button => button.addEventListener('click', () => openSaveCardModal(button.dataset.saveType)));
       $('#speakSelectionBtn').addEventListener('click', () => speakText(selectedText, 1));
@@ -3170,6 +3152,7 @@ FLUENT_JSON_END`;
       renderSpeak();
       renderStats();
       bindEvents();
+      bindStableBookExtras();
       if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         navigator.serviceWorker.register('./sw.js').catch(console.warn);
       }
