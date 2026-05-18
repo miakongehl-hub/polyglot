@@ -1,4 +1,4 @@
-const CACHE_NAME = "fluent-cache-v11";
+const CACHE_NAME = "fluent-cache-v12";
 const ASSETS = [
   "./",
   "./index.html",
