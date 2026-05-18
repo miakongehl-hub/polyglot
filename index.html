@@ -1138,180 +1138,62 @@
     }
 
 
-    /* Latest book-mode stability patch */
-    .visually-hidden { position:absolute !important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
-    body.book-open .dock-wrap { display:none !important; }
-
-    .book-overlay {
-      position: fixed !important;
-      inset: 0 !important;
-      z-index: 900 !important;
-      display: none !important;
-      padding: 0 !important;
-      background: #fff !important;
-      color: #07070a !important;
-      overflow: hidden !important;
-      --book-bg: #fff;
-      --book-ink: #07070a;
-      --book-muted: #777a82;
-      --book-pill: rgba(242,243,247,.94);
-    }
+    /* Book mode interaction cleanup: compact selection, hidden app dock, stable text */
+    body.book-mode-open .dock-wrap { display:none !important; }
+    .book-overlay { display:none; position:fixed; inset:0; z-index:9999 !important; padding:0 !important; overflow:hidden; background:#fff !important; color:#08080b !important; --book-page-bg:#fff; --book-ink:#08080b; }
     .book-overlay.visible { display:block !important; }
-    .book-overlay.book-theme-original { --book-bg:#fff; --book-ink:#07070a; --book-muted:#777a82; --book-pill:rgba(242,243,247,.94); background:#fff !important; color:#07070a !important; }
-    .book-overlay.book-theme-quiet { --book-bg:#34363c; --book-ink:#f4f4f6; --book-muted:#c5c7ce; --book-pill:rgba(70,73,82,.94); background:#34363c !important; color:#f4f4f6 !important; }
-    .book-overlay.book-theme-paper { --book-bg:#f2e7cb; --book-ink:#24211d; --book-muted:#726b61; --book-pill:rgba(246,237,216,.95); background:#f2e7cb !important; color:#24211d !important; }
-
-    .book-reader {
-      position: absolute !important;
-      inset: 0 !important;
-      width: 100% !important;
-      max-width: none !important;
-      height: 100svh !important;
-      margin: 0 !important;
-      padding: calc(env(safe-area-inset-top) + 54px) clamp(20px, 6vw, 58px) calc(env(safe-area-inset-bottom) + 82px) !important;
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-      background: var(--book-bg) !important;
-      color: var(--book-ink) !important;
-      font-family: var(--serif) !important;
-      font-size: var(--book-reader-size, 18px) !important;
-      line-height: 1.72 !important;
-      white-space: normal !important;
-      word-break: normal !important;
-      overflow-wrap: anywhere !important;
-      hyphens: auto !important;
-      -webkit-overflow-scrolling: touch;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-    .book-reader p { margin: 0 0 1.35em; max-width: 42rem; }
-    .book-word { border-radius: 5px; padding: 0 1px; cursor: text; }
-    .book-word.selected { background: rgba(252, 203, 53, .44) !important; box-shadow: 0 0 0 2px rgba(252, 203, 53, .20) !important; }
-    .book-word.search-hit { background: rgba(226, 59, 178, .28) !important; box-shadow: 0 0 0 2px rgba(226, 59, 178, .16) !important; }
-
-    .book-close-clean,
-    .book-options-fab,
-    .book-options-panel,
-    .book-select-bar { position: absolute !important; z-index: 920 !important; }
-    .book-close-clean {
-      top: calc(env(safe-area-inset-top) + 14px) !important;
-      right: 16px !important;
-      width: 46px !important;
-      height: 46px !important;
-      min-height: 46px !important;
-      padding: 0 !important;
-      border: 0 !important;
-      border-radius: 999px !important;
-      background: var(--book-pill) !important;
-      color: var(--book-muted) !important;
-      box-shadow: 0 10px 26px rgba(0,0,0,.10) !important;
-      font-size: 30px !important;
-      line-height: 1 !important;
-    }
-    .book-options-fab {
-      right: calc(16px + env(safe-area-inset-right)) !important;
-      bottom: calc(16px + env(safe-area-inset-bottom)) !important;
-      width: 58px !important;
-      height: 58px !important;
-      min-height: 58px !important;
-      padding: 0 !important;
-      border: 0 !important;
-      border-radius: 999px !important;
-      background: var(--book-pill) !important;
-      color: var(--book-ink) !important;
-      box-shadow: 0 12px 34px rgba(0,0,0,.14) !important;
-      display: grid !important;
-      place-items: center !important;
-      backdrop-filter: blur(14px) saturate(1.05);
-    }
-    .book-options-fab svg { width: 27px; height: 27px; fill:none; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; }
-
-    .book-options-panel {
-      right: calc(16px + env(safe-area-inset-right)) !important;
-      bottom: calc(84px + env(safe-area-inset-bottom)) !important;
-      width: min(360px, calc(100vw - 32px)) !important;
-      max-height: min(72svh, 600px) !important;
-      overflow-y: auto !important;
-      display: none !important;
-      gap: 12px !important;
-      padding: 14px !important;
-      border: 0 !important;
-      border-radius: 26px !important;
-      background: color-mix(in srgb, var(--book-pill) 92%, transparent) !important;
-      color: var(--book-ink) !important;
-      box-shadow: 0 18px 50px rgba(0,0,0,.18) !important;
-      backdrop-filter: blur(18px) saturate(1.08) !important;
-    }
-    .book-options-panel.visible { display: grid !important; }
-    .book-options-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding: 2px 2px 4px; }
-    .book-options-head strong { font-size: 18px; }
-    .book-options-section { display:grid; gap:10px; padding: 10px; border-radius: 20px; background: rgba(255,255,255,.24); }
-    .book-theme-quiet .book-options-section { background: rgba(255,255,255,.08); }
-    .book-section-title { font-size: 13px; color: var(--book-muted); font-weight: 800; text-transform: uppercase; letter-spacing:.04em; }
-    .book-progress-grid { display:grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-    .book-progress-grid button,
-    .book-theme-buttons button,
-    .book-option-row,
-    .book-font-row button,
-    .mini {
-      border: 0 !important;
-      box-shadow: none !important;
-      background: rgba(255,255,255,.55) !important;
-      color: var(--book-ink) !important;
-    }
-    .book-theme-quiet .book-progress-grid button,
-    .book-theme-quiet .book-theme-buttons button,
-    .book-theme-quiet .book-option-row,
-    .book-theme-quiet .book-font-row button,
-    .book-theme-quiet .mini { background: rgba(255,255,255,.12) !important; color:#fff !important; }
-    .book-progress-grid button { min-height: 34px !important; padding: 7px 0 !important; border-radius: 999px !important; font-size: 12px !important; }
-    .book-progress-grid button.active { background: linear-gradient(135deg, #1f7da6, #e13ab1) !important; color: #fff !important; }
-    .book-option-row { display:flex; justify-content:space-between; align-items:center; min-height:44px; border-radius: 16px !important; padding: 10px 12px !important; width:100%; }
-    .book-search-panel { display:none; gap:8px; }
-    .book-search-panel.visible { display:grid; }
-    .book-search-row { display:grid; grid-template-columns: minmax(0,1fr) auto; gap:8px; }
-    .book-search-row input { min-height:42px !important; border:0 !important; border-radius: 999px !important; background: rgba(255,255,255,.64) !important; color: var(--book-ink) !important; padding: 0 13px !important; }
-    .book-theme-quiet .book-search-row input { background: rgba(255,255,255,.12) !important; color:#fff !important; }
-    .book-search-results { display:grid; gap:6px; max-height: 190px; overflow:auto; }
-    .book-search-results button { border:0 !important; text-align:left; border-radius: 14px !important; padding: 9px 10px !important; min-height: 0 !important; background: rgba(255,255,255,.45) !important; color: var(--book-ink) !important; box-shadow: none !important; }
-    .book-theme-quiet .book-search-results button { background: rgba(255,255,255,.10) !important; color:#fff !important; }
-    .book-search-results small { display:block; margin-top:3px; color: var(--book-muted); line-height:1.35; }
-    .book-theme-buttons { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; }
-    .book-theme-buttons button { min-height:42px !important; border-radius: 16px !important; padding: 8px !important; }
-    .book-theme-buttons button.active { outline: 2px solid currentColor; }
-    .book-font-row { display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; gap:10px; }
-    .book-font-row button { min-height: 44px !important; border-radius: 16px !important; }
-    #bookFontValue { font-weight:800; color: var(--book-muted); min-width: 44px; text-align:center; }
-    .mini { min-height: 34px !important; min-width: 34px !important; padding: 0 9px !important; border-radius: 999px !important; }
-
-    .book-select-bar {
-      left: 50% !important;
-      right: auto !important;
-      top: auto !important;
-      bottom: calc(84px + env(safe-area-inset-bottom)) !important;
-      transform: translateX(-50%) !important;
-      width: min(560px, calc(100vw - 28px)) !important;
-      display: none !important;
-      grid-template-columns: minmax(0, 1fr) !important;
-      gap: 8px !important;
-      padding: 9px !important;
-      border-radius: 22px !important;
-      border: 0 !important;
-      background: color-mix(in srgb, var(--book-pill) 94%, transparent) !important;
-      color: var(--book-ink) !important;
-      box-shadow: 0 12px 36px rgba(0,0,0,.15) !important;
-      backdrop-filter: blur(18px) !important;
-    }
-    .book-select-bar.visible { display: grid !important; }
-    .book-select-bar .selected-preview { font-size: 13px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color: var(--book-muted); padding: 0 6px; }
-    .book-select-tools { display:flex; align-items:center; gap:6px; overflow-x:auto; scrollbar-width:none; }
-    .book-select-tools::-webkit-scrollbar { display:none; }
-    .book-select-tools button { flex: 0 0 auto; min-height: 36px !important; border-radius: 999px !important; padding: 8px 11px !important; }
-
-    @media (max-width: 520px) {
-      .book-reader { padding-left: 24px !important; padding-right: 24px !important; }
-      .book-select-tools button { padding-left: 10px !important; padding-right: 10px !important; }
-    }
+    .book-overlay.book-theme-original { --book-page-bg:#fff; --book-ink:#08080b; }
+    .book-overlay.book-theme-quiet { --book-page-bg:#303238; --book-ink:#f5f5f3; }
+    .book-overlay.book-theme-paper { --book-page-bg:#f2e6c8; --book-ink:#27231d; }
+    .book-reader { position:absolute; inset:0; width:100% !important; max-width:none !important; height:100svh; margin:0 !important; overflow-y:auto; overflow-x:hidden; background:var(--book-page-bg) !important; color:var(--book-ink) !important; font-family:Georgia,"Iowan Old Style",serif !important; font-size:calc(var(--reader-size) + 5px) !important; line-height:1.68 !important; padding:calc(env(safe-area-inset-top) + 64px) clamp(24px,7vw,68px) calc(env(safe-area-inset-bottom) + 100px) !important; white-space:normal !important; word-break:normal !important; overflow-wrap:break-word !important; hyphens:auto; -webkit-overflow-scrolling:touch; }
+    .book-reader p { margin:0 0 1.55em; }
+    .book-word { border-radius:6px; padding:0 1px; }
+    .book-word.selected { background:rgba(255,204,48,.42) !important; box-shadow:0 0 0 2px rgba(255,204,48,.24) !important; }
+    .book-word.search-hit { background:rgba(91,183,255,.28) !important; box-shadow:0 0 0 2px rgba(91,183,255,.18); }
+    .book-ui { position:absolute; z-index:8; }
+    .book-close { top:calc(env(safe-area-inset-top) + 18px); right:20px; width:52px; height:52px; min-height:52px; border:0; border-radius:999px; background:rgba(232,233,237,.84) !important; color:#666 !important; font-size:36px; line-height:1; display:grid; place-items:center; box-shadow:0 12px 32px rgba(0,0,0,.10); }
+    .book-progress-pill { top:calc(env(safe-area-inset-top) + 22px); left:50%; transform:translateX(-50%); max-width:60vw; padding:8px 14px; border-radius:999px; background:rgba(232,233,237,.84); color:#6c6d72; font-weight:750; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; box-shadow:0 12px 32px rgba(0,0,0,.08); }
+    .book-menu-toggle { right:22px; bottom:calc(env(safe-area-inset-bottom) + 24px); width:62px; height:62px; min-height:62px; border:0; border-radius:999px; background:rgba(232,233,237,.90) !important; color:#111 !important; font-size:28px; display:grid; place-items:center; box-shadow:0 14px 38px rgba(0,0,0,.14); }
+    .book-menu-panel { right:22px; bottom:calc(env(safe-area-inset-bottom) + 96px); width:min(330px,calc(100vw - 44px)); display:none; gap:10px; padding:14px; border-radius:26px; background:rgba(242,243,246,.96); color:#111; box-shadow:0 18px 54px rgba(0,0,0,.16); backdrop-filter:blur(18px); }
+    .book-menu-panel.visible { display:grid; }
+    .book-menu-head { display:flex; justify-content:space-between; align-items:center; padding:4px 4px 8px; }
+    .book-menu-head strong { font-size:18px; }
+    .book-progress-dots { display:grid; grid-template-columns:repeat(10,1fr); gap:5px; padding:0 3px 6px; }
+    .book-progress-dots span { height:8px; border-radius:999px; background:rgba(0,0,0,.13); }
+    .book-progress-dots span.done { background:linear-gradient(90deg,#1f7da6,#e13ab1); }
+    .book-menu-item { width:100%; min-height:56px; border:0; border-radius:18px; background:#fff !important; color:#111 !important; display:grid; grid-template-columns:42px minmax(0,1fr); align-items:center; text-align:left; padding:10px 14px; box-shadow:none; }
+    .book-menu-item span { font-size:26px; text-align:center; }
+    .book-menu-item strong { font-size:17px; }
+    .book-select-bar.compact { left:50% !important; right:auto !important; top:auto !important; bottom:calc(env(safe-area-inset-bottom) + 94px) !important; transform:translateX(-50%) !important; width:min(620px,calc(100vw - 28px)) !important; display:none !important; align-items:center; gap:5px; flex-wrap:wrap; border:0 !important; border-radius:18px !important; padding:7px !important; background:rgba(242,243,246,.96) !important; color:#111 !important; box-shadow:0 12px 34px rgba(0,0,0,.14) !important; backdrop-filter:blur(18px); }
+    .book-select-bar.compact.visible { display:flex !important; }
+    .book-select-bar.compact .selected-preview { flex:1 1 100%; min-width:0; font-size:12px; font-weight:750; color:#555; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 4px 2px; }
+    .book-select-bar.compact .tiny { min-height:32px; padding:6px 9px; border-radius:999px; font-size:12px; font-weight:850; border:0; box-shadow:none; }
+    .book-sheet { position:absolute; z-index:15; left:50%; bottom:0; transform:translate(-50%,105%); width:min(820px,100%); max-height:80svh; overflow:auto; background:rgba(250,251,253,.98); color:#090a0e; border-radius:34px 34px 0 0; padding:26px 24px calc(env(safe-area-inset-bottom) + 26px); box-shadow:0 -20px 70px rgba(0,0,0,.18); transition:.22s ease; }
+    .book-sheet.visible { transform:translate(-50%,0); }
+    .book-sheet-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; }
+    .book-sheet-head strong { font-size:26px; letter-spacing:-.04em; }
+    .book-round { width:50px; height:50px; min-height:50px; border:0; border-radius:999px; background:#eceef2 !important; color:#111 !important; font-size:26px; }
+    .book-search-field { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:10px; min-height:58px; padding:0 14px; border-radius:999px; background:#eff0f4; margin-bottom:16px; }
+    .book-search-field input { border:0; background:transparent !important; color:#111 !important; min-height:54px; padding:0; min-width:0; }
+    .book-search-field button { width:32px; height:32px; min-height:32px; padding:0; border:0; background:#111 !important; color:#fff !important; }
+    .book-search-results { display:grid; }
+    .book-search-item { display:grid; grid-template-columns:minmax(0,1fr) auto; width:100%; gap:14px; border:0; border-bottom:1px solid rgba(0,0,0,.10); background:transparent !important; color:#111 !important; text-align:left; padding:16px 0; border-radius:0; box-shadow:none; }
+    .book-search-item strong { display:block; font-size:17px; }
+    .book-search-item span { display:block; color:#777; line-height:1.45; }
+    .book-font-controls { display:grid; grid-template-columns:1fr 1fr; gap:1px; border-radius:999px; overflow:hidden; background:#e7e8ec; margin-bottom:18px; }
+    .book-font-controls button { border:0; border-radius:0; background:#e7e8ec !important; color:#111 !important; box-shadow:none; min-height:58px; font-weight:900; }
+    .book-font-controls button:last-child { font-size:26px; }
+    .book-theme-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    .book-theme-grid button { border:1px solid rgba(0,0,0,.08); border-radius:22px; min-height:106px; background:#fff !important; color:#111 !important; box-shadow:none; display:grid; place-items:center; gap:4px; }
+    .book-theme-grid button[data-book-theme="quiet"] { background:#303238 !important; color:#fff !important; }
+    .book-theme-grid button[data-book-theme="paper"] { background:#f2e6c8 !important; color:#27231d !important; }
+    .book-theme-grid button.active { outline:3px solid #111; }
+    .book-theme-grid strong { font-family:Georgia,serif; font-size:34px; }
+    .book-overlay.book-theme-quiet .book-close,.book-overlay.book-theme-quiet .book-progress-pill,.book-overlay.book-theme-quiet .book-menu-toggle { background:rgba(245,245,245,.16) !important; color:#fff !important; }
+    .book-overlay.book-theme-quiet .book-menu-panel { background:rgba(50,52,58,.95); color:#fff; }
+    .book-overlay.book-theme-quiet .book-menu-item { background:rgba(255,255,255,.12) !important; color:#fff !important; }
+    .book-overlay.book-theme-quiet .book-progress-dots span { background:rgba(255,255,255,.18); }
+    @media(max-width:560px){ .book-reader{ padding-left:26px !important; padding-right:26px !important; font-size:calc(var(--reader-size) + 6px) !important; } .book-select-bar.compact{gap:4px;} .book-select-bar.compact .tiny{font-size:11px;padding:6px 8px;} .book-theme-grid{grid-template-columns:1fr 1fr;} }
 
   </style>
 </head>
@@ -1614,60 +1496,47 @@
   </div>
 
   <div class="book-overlay book-theme-original" id="bookOverlay">
-    <span id="bookMeta" class="visually-hidden">Buchmodus</span>
-    <button class="book-close-clean" id="closeBookModeBtn" aria-label="Buchmodus schließen">×</button>
+    <button class="book-ui book-close" id="closeBookModeBtn" aria-label="Buchmodus schließen">×</button>
+    <div class="book-ui book-progress-pill" id="bookMeta">Buchmodus</div>
+
+    <div class="book-ui book-select-bar compact" id="bookSelectionBar">
+      <div class="selected-preview" id="bookSelectedPreview">Auswahl</div>
+      <button class="tiny soft" id="bookSelectOneBtn" type="button">1 Wort</button>
+      <button class="tiny soft" id="bookExpandLeftBtn" type="button">←</button>
+      <button class="tiny soft" id="bookExpandRightBtn" type="button">→</button>
+      <button class="tiny" data-book-save-type="vocab" type="button">Vokabel</button>
+      <button class="tiny accent" data-book-save-type="chunk" type="button">Chunk</button>
+      <button class="tiny" data-book-save-type="grammar" type="button">Grammatik</button>
+      <button class="tiny soft" id="bookSpeakSelectionBtn" type="button">🔊</button>
+    </div>
 
     <div id="bookReader" class="book-reader"></div>
 
-    <div class="book-ui book-select-bar" id="bookSelectionBar">
-      <div class="selected-preview" id="bookSelectedPreview">Auswahl</div>
-      <div class="book-select-tools">
-        <button class="mini" id="bookShrinkLeftBtn" title="links kürzen">‹</button>
-        <button class="mini" id="bookGrowLeftBtn" title="links erweitern">+‹</button>
-        <button class="small accent" data-book-save-type="vocab">Vokabel</button>
-        <button class="small" data-book-save-type="chunk">Chunk</button>
-        <button class="small" data-book-save-type="grammar">Grammatik</button>
-        <button class="mini" id="bookGrowRightBtn" title="rechts erweitern">›+</button>
-        <button class="mini" id="bookShrinkRightBtn" title="rechts kürzen">›</button>
-      </div>
+    <button class="book-ui book-menu-toggle" id="bookModeMenuBtn" type="button" aria-label="Buchmenü öffnen">☰</button>
+    <div class="book-ui book-menu-panel" id="bookModeMenuPanel" aria-hidden="true">
+      <div class="book-menu-head"><strong>Inhalt</strong><span id="bookProgressLabel">0 %</span></div>
+      <div class="book-progress-dots" id="bookProgressDots"></div>
+      <button class="book-menu-item" id="bookSearchOpenBtn" type="button"><span>⌕</span><strong>Buch durchsuchen</strong></button>
+      <button class="book-menu-item" id="bookThemeOpenBtn" type="button"><span>Aa</span><strong>Themen & Einstellungen</strong></button>
     </div>
 
-    <button class="book-options-fab" id="bookOptionsBtn" aria-label="Buchoptionen öffnen">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
-    </button>
+    <div class="book-sheet" id="bookSearchSheet" aria-hidden="true">
+      <div class="book-sheet-head"><strong>Buch durchsuchen</strong><button class="book-round" data-book-close-sheet type="button">×</button></div>
+      <div class="book-search-field"><span>⌕</span><input id="bookSearchInput" type="search" placeholder="Wort oder Satz suchen …" /><button id="bookSearchClearBtn" type="button">×</button></div>
+      <div class="book-search-results" id="bookSearchResults"></div>
+    </div>
 
-    <div class="book-options-panel" id="bookOptionsPanel" aria-hidden="true">
-      <div class="book-options-head">
-        <strong>Optionen</strong>
-        <button class="mini ghost" id="bookOptionsCloseBtn" aria-label="Optionen schließen">×</button>
+    <div class="book-sheet" id="bookThemeSheet" aria-hidden="true">
+      <div class="book-sheet-head"><strong>Themen & Einstellungen</strong><button class="book-round" data-book-close-sheet type="button">×</button></div>
+      <div class="book-font-controls">
+        <button id="bookFontDownBtn" type="button">A−</button>
+        <button id="bookFontUpBtn" type="button">A+</button>
       </div>
-
-      <section class="book-options-section">
-        <div class="book-section-title">Fortschritt</div>
-        <div class="book-progress-grid" id="bookProgressGrid"></div>
-      </section>
-
-      <section class="book-options-section">
-        <button class="book-option-row" id="bookSearchToggleBtn"><span>Buch durchsuchen</span><span>⌕</span></button>
-        <div class="book-search-panel" id="bookSearchPanel">
-          <div class="book-search-row"><input id="bookSearchInput" type="search" placeholder="Wort oder Satz suchen …" /><button class="mini" id="bookSearchClearBtn">×</button></div>
-          <div class="book-search-results" id="bookSearchResults"></div>
-        </div>
-      </section>
-
-      <section class="book-options-section">
-        <div class="book-section-title">Themen & Schrift</div>
-        <div class="book-theme-buttons">
-          <button data-book-theme="original">Original</button>
-          <button data-book-theme="quiet">Leise</button>
-          <button data-book-theme="paper">Papier</button>
-        </div>
-        <div class="book-font-row">
-          <button class="small" id="bookFontDownBtn">A−</button>
-          <span id="bookFontValue">20</span>
-          <button class="small" id="bookFontUpBtn">A+</button>
-        </div>
-      </section>
+      <div class="book-theme-grid">
+        <button data-book-theme="original" type="button"><strong>Aa</strong><span>Original</span></button>
+        <button data-book-theme="quiet" type="button"><strong>Aa</strong><span>Leise</span></button>
+        <button data-book-theme="paper" type="button"><strong>Aa</strong><span>Papier</span></button>
+      </div>
     </div>
   </div>
 
@@ -1827,11 +1696,8 @@
     let cardSearchQuery = '';
     let bookControlsHidden = false;
     let bookTouchTimer = null;
-    let bookSearchQuery = '';
-    let bookSelectionRange = { start: null, end: null };
-    let bookProgressTimer = null;
     const DE_DICT = {
-      'before':'bevor / vorher','read':'lesen','write':'schreiben','wrote':'schrieb','draft':'Entwurf','truth':'Wahrheit','discovered':'entdeckt','idea':'Idee','rewrite':'umschreiben','publishing':'veröffentlichen','experience':'Erfahrung','however':'jedoch','friend':'Freund:in','friends':'Freund:innen','chapter':'Kapitel','story':'Geschichte','work':'Arbeit / Werk','works':'Werke / funktioniert','time':'Zeit','many':'viele','different':'verschieden','path':'Weg','vision':'Vision','outline':'Gliederung / Entwurf','mourned':'trauerte','found':'fand / gefunden','unexpectedly':'unerwartet','although':'obwohl','through':'durch','attention':'Aufmerksamkeit','easy':'leicht','hard':'schwer','good':'gut','again':'noch einmal','later':'später','late':'spät','early':'früh','soon':'bald','maybe':'vielleicht','because':'weil','although':'obwohl','however':'jedoch','still':'immer noch','already':'schon','moment':'Moment','room':'Zimmer','bathroom':'Badezimmer','friend':'Freund:in','choice':'Entscheidung','decision':'Entscheidung','strange':'seltsam','experience':'Erlebnis / Erfahrung','subject':'Thema','change':'ändern / Veränderung','chapter':'Kapitel','search':'suchen','book':'Buch'
+      'before':'bevor / vorher','read':'lesen','write':'schreiben','wrote':'schrieb','draft':'Entwurf','truth':'Wahrheit','discovered':'entdeckt','idea':'Idee','rewrite':'umschreiben','publishing':'veröffentlichen','experience':'Erfahrung','however':'jedoch','friend':'Freund:in','friends':'Freund:innen','chapter':'Kapitel','story':'Geschichte','work':'Arbeit / Werk','works':'Werke / funktioniert','time':'Zeit','many':'viele','different':'verschieden','path':'Weg','vision':'Vision','outline':'Gliederung / Entwurf','mourned':'trauerte','found':'fand / gefunden','unexpectedly':'unerwartet','although':'obwohl','through':'durch','attention':'Aufmerksamkeit','easy':'leicht','hard':'schwer','good':'gut','again':'noch einmal'
     };
     let studyState = { mode: 'due', cardIds: [], index: 0, revealed: false };
 
@@ -1847,8 +1713,7 @@
         text: seed.text || '',
         sourceType: seed.sourceType || 'text',
         chapterPrev: seed.chapterPrev || '',
-        chapterNext: seed.chapterNext || '',
-        bookProgress: seed.bookProgress ?? 0
+        chapterNext: seed.chapterNext || ''
       };
     }
 
@@ -1884,8 +1749,6 @@
           dark: false,
           lang: 'en',
           readerSize: 20,
-          bookReaderSize: 18,
-          bookTheme: 'original',
           dockCollapsed: false,
           srsSteps: { againMinutes: 10, hardDays: 1, goodDays: 3, easyDays: 7 }
         },
@@ -1938,32 +1801,17 @@
       showToast._timer = setTimeout(() => toast.classList.remove('show'), 1800);
     }
 
-    function decodeHtmlEntities(value) {
-      const area = document.createElement('textarea');
-      area.innerHTML = String(value || '');
-      return area.value;
-    }
-
     function normalizeText(value) {
-      let previous = String(value || '');
-      let current = previous;
-      for (let i = 0; i < 3; i += 1) {
-        current = decodeHtmlEntities(current);
-        if (current === previous) break;
-        previous = current;
-      }
-      return current
+      return String(value || '')
         .replace(/\r\n/g, '\n')
         .replace(/\u00A0/g, ' ')
         .replace(/[ \t]+/g, ' ')
-        .replace(/\s+([.,;:!?])/g, '$1')
-        .replace(/([.!?])["”]{2,}/g, '$1"')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
     }
 
     function escapeHtml(value) {
-      return String(value || '').replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+      return String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     }
 
     function activeTab() {
@@ -1981,7 +1829,6 @@
     function applyTheme() {
       document.body.classList.toggle('dark', !!state.settings.dark);
       document.documentElement.style.setProperty('--reader-size', `${state.settings.readerSize}px`);
-      document.documentElement.style.setProperty('--book-reader-size', `${state.settings.bookReaderSize || 18}px`);
       document.querySelector('meta[name="theme-color"]').setAttribute('content', state.settings.dark ? '#211b1f' : '#4d693f');
       $('#themeToggleBtn').textContent = state.settings.dark ? 'Light' : 'Dark';
       $('#langSelect').value = state.settings.lang;
@@ -1995,9 +1842,6 @@
       $('#dockNav').classList.toggle('collapsed', !!state.settings.dockCollapsed);
       $('#dockToggleBtn').textContent = state.settings.dockCollapsed ? '☰' : '⌄';
       document.documentElement.style.setProperty('--dock-offset', state.settings.dockCollapsed ? '54px' : '112px');
-      applyBookTheme(state.settings.bookTheme || 'original');
-      const fontValue = $('#bookFontValue');
-      if (fontValue) fontValue.textContent = state.settings.bookReaderSize || 18;
     }
 
     function switchView(viewId) {
@@ -2031,105 +1875,30 @@
       const tab = activeTab();
       $('#readerTitleInput').value = tab.title || '';
       $('#readerUrlInput').value = tab.url || '';
-      const clean = normalizeText(tab.text || '');
-      if (tab.text !== clean) tab.text = clean;
-      $('#readerBox').innerHTML = clean ? escapeHtml(clean).replace(/\n/g, '<br>') : '<div class="reader-empty">Noch kein Text geladen.<br>Füge Text ein oder lade eine Datei.</div>';
-      $('#bookReader').innerHTML = clean ? bookTextToHtml(clean) : '<div class="reader-empty">Noch kein Text geladen.</div>';
+      $('#readerBox').innerHTML = tab.text ? escapeHtml(tab.text).replace(/\n/g, '<br>') : '<div class="reader-empty">Noch kein Text geladen.<br>Füge Text ein oder lade eine Datei.</div>';
+      $('#bookReader').innerHTML = tab.text ? bookTextToHtml(tab.text) : '<div class="reader-empty">Noch kein Text geladen.</div>';
       $('#bookMeta').textContent = tab.title || tab.url || 'Buchmodus';
       renderReaderTabs();
       renderChapterHint();
-      renderBookProgressGrid();
-      renderBookSearchResults();
-      restoreBookProgressSoon();
     }
 
-    function plainBookText() {
-      return normalizeText(activeTab()?.text || '');
-    }
-
-    function inlineBookWords(raw) {
-      return escapeHtml(raw).replace(/([A-Za-zÀ-ÖØ-öø-ÿ0-9][A-Za-zÀ-ÖØ-öø-ÿ0-9'’\-]*)/g, match => {
-        const index = inlineBookWords.index++;
-        const hit = bookSearchQuery && match.toLowerCase().includes(bookSearchQuery.toLowerCase()) ? ' search-hit' : '';
-        return `<span class="book-word${hit}" data-word-index="${index}">${match}</span>`;
-      });
-    }
 
     function bookTextToHtml(text) {
-      inlineBookWords.index = 0;
-      const clean = normalizeText(text);
-      if (!clean) return '<div class="reader-empty">Noch kein Text geladen.</div>';
-      return clean.split(/\n{2,}/).map(paragraph => `<p>${inlineBookWords(paragraph).replace(/\n/g, '<br>')}</p>`).join('');
-    }
-
-    function setBookRange(start, end) {
-      const words = $$('#bookReader .book-word');
-      if (!words.length) return;
-      start = Math.max(0, Math.min(words.length - 1, Number(start)));
-      end = Math.max(0, Math.min(words.length - 1, Number(end)));
-      if (start > end) [start, end] = [end, start];
-      bookSelectionRange = { start, end };
-      words.forEach((word, index) => word.classList.toggle('selected', index >= start && index <= end));
-      const selectedWords = words.slice(start, end + 1);
-      selectedText = normalizeText(selectedWords.map(word => word.textContent).join(' '));
-      selectedContext = contextForBookSelection(selectedText, selectedWords[0]);
-      $('#bookSelectedPreview').textContent = selectedText.length > 90 ? selectedText.slice(0, 90) + '…' : selectedText;
-      $('#bookSelectionBar').classList.add('visible');
-      closeBookOptions();
-    }
-
-    function adjustBookRange(side, amount) {
-      if (bookSelectionRange.start === null) return;
-      let { start, end } = bookSelectionRange;
-      if (side === 'left') start += amount;
-      if (side === 'right') end += amount;
-      if (start > end) start = end;
-      setBookRange(start, end);
-    }
-
-    function clearBookSelection() {
-      selectedText = '';
-      selectedContext = '';
-      bookSelectionRange = { start: null, end: null };
-      $$('#bookReader .book-word.selected').forEach(el => el.classList.remove('selected'));
-      $('#bookSelectionBar').classList.remove('visible');
-      const sel = window.getSelection();
-      if (sel) sel.removeAllRanges();
+      return escapeHtml(text)
+        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ0-9][A-Za-zÀ-ÖØ-öø-ÿ0-9'’\\-]*)/g, '<span class="book-word" data-word="$1">$1</span>')
+        .replace(/\n/g, '<br>');
     }
 
     function selectBookWord(wordEl) {
       if (!wordEl) return;
-      const index = Number(wordEl.dataset.wordIndex);
-      if (wordEl.classList.contains('selected') && bookSelectionRange.start === index && bookSelectionRange.end === index) {
-        clearBookSelection();
-        return;
-      }
-      setBookRange(index, index);
-    }
-
-    function sentenceBounds(full, anchor, length) {
-      const leftText = full.slice(0, Math.max(0, anchor));
-      const leftMatch = [...leftText.matchAll(/[.!?…]["”')\]]?\s+/g)].pop();
-      const start = leftMatch ? leftMatch.index + leftMatch[0].length : Math.max(0, leftText.lastIndexOf('\n') + 1);
-      const rightText = full.slice(anchor + length);
-      const rightMatch = rightText.match(/[.!?…]["”')\]]?/);
-      const end = rightMatch ? anchor + length + rightMatch.index + rightMatch[0].length : Math.min(full.length, anchor + length + 240);
-      return { start, end };
-    }
-
-    function contextForBookSelection(text, wordEl = null) {
-      const cleanText = normalizeText(text);
-      const full = plainBookText();
-      let anchor = full.indexOf(cleanText);
-      if (anchor < 0 && wordEl) {
-        const paragraph = normalizeText(wordEl.closest('p')?.textContent || '');
-        const paragraphAnchor = full.indexOf(paragraph.slice(0, 80));
-        const inner = paragraph.indexOf(cleanText);
-        if (paragraphAnchor >= 0 && inner >= 0) anchor = paragraphAnchor + inner;
-      }
-      if (anchor < 0) return normalizeText(wordEl?.closest('p')?.textContent || cleanText);
-      const bounds = sentenceBounds(full, anchor, cleanText.length);
-      return normalizeText(full.slice(bounds.start, bounds.end));
+      $$('.book-word.selected').forEach(el => el.classList.remove('selected'));
+      wordEl.classList.add('selected');
+      selectedText = normalizeText(wordEl.textContent || '');
+      selectedContext = selectedText;
+      $('#bookSelectedPreview').textContent = selectedText;
+      $('#bookSelectionBar').classList.add('visible');
+      bookControlsHidden = false;
+      $('#bookOverlay').classList.remove('controls-hidden');
     }
 
     function updateBookSelectionFromNative() {
@@ -2137,123 +1906,18 @@
       const text = normalizeText(sel?.toString() || '');
       if (!text || !$('#bookReader').contains(sel.anchorNode)) return false;
       selectedText = text;
-      const node = sel.anchorNode?.nodeType === 1 ? sel.anchorNode : sel.anchorNode?.parentElement;
-      selectedContext = contextForBookSelection(text, node?.closest?.('.book-word'));
-      $$('#bookReader .book-word.selected').forEach(el => el.classList.remove('selected'));
-      bookSelectionRange = { start: null, end: null };
-      $('#bookSelectedPreview').textContent = text.length > 90 ? text.slice(0, 90) + '…' : text;
+      selectedContext = text;
+      $('#bookSelectedPreview').textContent = text.length > 120 ? text.slice(0, 120) + '…' : text;
       $('#bookSelectionBar').classList.add('visible');
-      closeBookOptions();
+      bookControlsHidden = false;
+      $('#bookOverlay').classList.remove('controls-hidden');
       return true;
     }
 
     function toggleBookControls() {
-      if ($('#bookOptionsPanel').classList.contains('visible')) { closeBookOptions(); return; }
-      if ($('#bookSelectionBar').classList.contains('visible')) { clearBookSelection(); return; }
-    }
-
-    function applyBookTheme(theme) {
-      const overlay = $('#bookOverlay');
-      if (!overlay) return;
-      state.settings.bookTheme = theme || state.settings.bookTheme || 'original';
-      ['original','quiet','paper'].forEach(name => overlay.classList.toggle(`book-theme-${name}`, state.settings.bookTheme === name));
-      $$('[data-book-theme]').forEach(button => button.classList.toggle('active', button.dataset.bookTheme === state.settings.bookTheme));
-    }
-
-    function openBookMode() {
-      bookControlsHidden = false;
-      $('#bookOverlay').classList.add('visible');
-      document.body.classList.add('book-open');
-      applyTheme();
-      renderReader();
-      restoreBookProgressSoon();
-    }
-
-    function closeBookMode() {
-      saveBookProgress();
-      $('#bookOverlay').classList.remove('visible');
-      document.body.classList.remove('book-open');
-      closeBookOptions();
-      clearBookSelection();
-    }
-
-    function openBookOptions() {
-      clearBookSelection();
-      renderBookProgressGrid();
-      $('#bookOptionsPanel').classList.add('visible');
-      $('#bookOptionsPanel').setAttribute('aria-hidden', 'false');
-    }
-
-    function closeBookOptions() {
-      $('#bookOptionsPanel')?.classList.remove('visible');
-      $('#bookOptionsPanel')?.setAttribute('aria-hidden', 'true');
-    }
-
-    function toggleBookOptions() {
-      $('#bookOptionsPanel').classList.contains('visible') ? closeBookOptions() : openBookOptions();
-    }
-
-    function saveBookProgress() {
-      const reader = $('#bookReader');
-      if (!reader) return;
-      const max = Math.max(1, reader.scrollHeight - reader.clientHeight);
-      activeTab().bookProgress = Math.max(0, Math.min(1, reader.scrollTop / max));
-      saveState();
-      renderBookProgressGrid();
-    }
-
-    function restoreBookProgressSoon() {
-      const reader = $('#bookReader');
-      if (!reader || !$('#bookOverlay')?.classList.contains('visible')) return;
-      const progress = activeTab().bookProgress || 0;
-      setTimeout(() => {
-        const max = Math.max(0, reader.scrollHeight - reader.clientHeight);
-        reader.scrollTop = max * progress;
-        renderBookProgressGrid();
-      }, 40);
-    }
-
-    function renderBookProgressGrid() {
-      const grid = $('#bookProgressGrid');
-      if (!grid) return;
-      const current = Math.round((activeTab().bookProgress || 0) * 10) * 10;
-      grid.innerHTML = Array.from({ length: 11 }, (_, i) => i * 10).map(value => `<button class="${value === current ? 'active' : ''}" data-book-progress="${value}">${value}%</button>`).join('');
-    }
-
-    function jumpBookProgress(value) {
-      const reader = $('#bookReader');
-      const fraction = Math.max(0, Math.min(1, Number(value) / 100));
-      const max = Math.max(0, reader.scrollHeight - reader.clientHeight);
-      reader.scrollTo({ top: max * fraction, behavior: 'smooth' });
-      activeTab().bookProgress = fraction;
-      saveState();
-      renderBookProgressGrid();
-    }
-
-    function renderBookSearchResults() {
-      const box = $('#bookSearchResults');
-      if (!box) return;
-      const query = normalizeText(bookSearchQuery);
-      if (!query) { box.innerHTML = ''; return; }
-      const full = plainBookText();
-      const lower = full.toLowerCase();
-      const q = query.toLowerCase();
-      const results = [];
-      let at = lower.indexOf(q);
-      while (at >= 0 && results.length < 25) {
-        const snippet = normalizeText(full.slice(Math.max(0, at - 55), Math.min(full.length, at + q.length + 95)));
-        results.push({ at, snippet });
-        at = lower.indexOf(q, at + Math.max(q.length, 1));
-      }
-      box.innerHTML = results.length ? results.map(result => `<button data-search-pos="${result.at}"><strong>${escapeHtml(query)}</strong><small>${escapeHtml(result.snippet)}</small></button>`).join('') : '<small>Keine Treffer gefunden.</small>';
-    }
-
-    function updateBookSearch(value) {
-      bookSearchQuery = normalizeText(value);
-      const tab = activeTab();
-      $('#bookReader').innerHTML = tab.text ? bookTextToHtml(tab.text) : '<div class="reader-empty">Noch kein Text geladen.</div>';
-      restoreBookProgressSoon();
-      renderBookSearchResults();
+      if ($('#bookSelectionBar').classList.contains('visible')) return;
+      bookControlsHidden = !bookControlsHidden;
+      $('#bookOverlay').classList.toggle('controls-hidden', bookControlsHidden);
     }
 
     function renderChapterHint() {
@@ -2440,7 +2104,7 @@
     function defaultBackForType(type, front) {
       if (type === 'vocab') {
         const translation = translateToGerman(front);
-        return translation || '';
+        return translation ? `Deutsch: ${translation}` : 'Deutsch: Übersetzung ergänzen';
       }
       if (type === 'grammar') return 'Was ist hier zu korrigieren oder zu beachten?';
       return 'Kurze Notiz oder Zusammenfassung';
@@ -2451,7 +2115,7 @@
       $('#saveTypeSelect').value = type;
       $('#saveFrontInput').value = selectedText;
       $('#saveBackInput').value = defaultBackForType(type, selectedText);
-      $('#saveContextInput').value = selectedContext || contextForBookSelection(selectedText) || selectedText;
+      $('#saveContextInput').value = selectedContext || selectedText;
       $('#saveTagsInput').value = `${LANGS[state.settings.lang].short.toLowerCase()},reader`;
       openModal('saveCardModal');
     }
@@ -3111,6 +2775,382 @@ FLUENT_JSON_END`;
       applyTheme();
     }
 
+
+
+    /* Book mode fix: entity decoding, compact controlled selection, smaller font limits */
+    let bookSearchTerm = '';
+    let bookRangeStart = -1;
+    let bookRangeEnd = -1;
+    let bookSaveTimer = null;
+
+    function decodeHtmlEntities(value) {
+      let output = String(value || '');
+      const area = document.createElement('textarea');
+      for (let i = 0; i < 3; i += 1) {
+        area.innerHTML = output;
+        const decoded = area.value;
+        if (decoded === output) break;
+        output = decoded;
+      }
+      return output;
+    }
+
+    function normalizeText(value) {
+      return decodeHtmlEntities(String(value || ''))
+        .replace(/\r\n/g, '\n')
+        .replace(/\u00A0/g, ' ')
+        .replace(/[ \t]+/g, ' ')
+        .replace(/\s+([.,;:!?])/g, '$1')
+        .replace(/([.!?])\s*"\s*"/g, '$1"')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    }
+
+    function translateToGerman(front) {
+      const extra = {
+        later:'später', room:'Zimmer', bathroom:'Badezimmer', kitchen:'Küche', kitchenette:'kleine Küche',
+        subject:'Thema', change:'ändern / Veränderung', changing:'wechselnd / ändern', moment:'Moment',
+        however:'jedoch', although:'obwohl', because:'weil', through:'durch', between:'zwischen', own:'eigen',
+        easy:'leicht', hard:'schwer', friend:'Freund:in', friends:'Freund:innen', chapter:'Kapitel',
+        story:'Geschichte', truth:'Wahrheit', draft:'Entwurf', write:'schreiben', wrote:'schrieb', read:'lesen',
+        discovered:'entdeckt', experience:'Erlebnis / Erfahrung', decision:'Entscheidung', decide:'entscheiden'
+      };
+      const key = normalizeText(front).toLowerCase().replace(/^[^a-zà-öø-ÿ0-9]+|[^a-zà-öø-ÿ0-9]+$/gi, '');
+      return extra[key] || DE_DICT[key] || '';
+    }
+
+    function defaultBackForType(type, front) {
+      if (type === 'vocab') return translateToGerman(front) || '';
+      return '';
+    }
+
+    function applyBookTheme(theme = state.settings.bookTheme || 'original') {
+      const overlay = $('#bookOverlay');
+      if (!overlay) return;
+      ['original', 'quiet', 'paper'].forEach(name => overlay.classList.toggle(`book-theme-${name}`, theme === name));
+      $$('.book-theme-grid [data-book-theme]').forEach(btn => btn.classList.toggle('active', btn.dataset.bookTheme === theme));
+    }
+
+    function makeReaderTab(seed = {}) {
+      return {
+        id: seed.id || uid('tab'),
+        title: seed.title || 'Neuer Text',
+        url: seed.url || '',
+        text: normalizeText(seed.text || ''),
+        sourceType: seed.sourceType || 'manual',
+        chapterPrev: seed.chapterPrev || '',
+        chapterNext: seed.chapterNext || '',
+        bookProgress: Number(seed.bookProgress || 0)
+      };
+    }
+
+    function migrateState(raw) {
+      const fresh = defaultState();
+      const merged = { ...fresh, ...raw, settings: { ...fresh.settings, ...(raw.settings || {}) }, reader: { ...fresh.reader, ...(raw.reader || {}) }, speak: { ...fresh.speak, ...(raw.speak || {}) } };
+      merged.settings.srsSteps = { ...fresh.settings.srsSteps, ...(raw.settings?.srsSteps || {}) };
+      if (!merged.settings.bookTheme) merged.settings.bookTheme = 'original';
+      merged.reader.tabs = (merged.reader.tabs || []).map(tab => makeReaderTab(tab));
+      if (!merged.reader.tabs.length) merged.reader.tabs = [makeReaderTab()];
+      if (!merged.reader.currentTabId || !merged.reader.tabs.some(tab => tab.id === merged.reader.currentTabId)) merged.reader.currentTabId = merged.reader.tabs[0].id;
+      merged.cards = (merged.cards || []).map(card => makeCard(card));
+      return merged;
+    }
+
+    function applyTheme() {
+      document.body.classList.toggle('dark', !!state.settings.dark);
+      document.documentElement.style.setProperty('--reader-size', `${state.settings.readerSize}px`);
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', state.settings.dark ? '#05070c' : '#fff8f0');
+      $('#themeToggleBtn').textContent = state.settings.dark ? 'Light' : 'Dark';
+      $('#langSelect').value = state.settings.lang;
+      const lang = LANGS[state.settings.lang];
+      $('#langPill').textContent = `${lang.short} · ${lang.label}`;
+      $('#stepAgainInput').value = state.settings.srsSteps.againMinutes;
+      $('#stepHardInput').value = state.settings.srsSteps.hardDays;
+      $('#stepGoodInput').value = state.settings.srsSteps.goodDays;
+      $('#stepEasyInput').value = state.settings.srsSteps.easyDays;
+      $('#promptCategorySelect').value = state.speak.category || 'mixed';
+      $('#dockNav').classList.toggle('collapsed', !!state.settings.dockCollapsed);
+      $('#dockToggleBtn').textContent = state.settings.dockCollapsed ? '☰' : '⌄';
+      document.documentElement.style.setProperty('--dock-offset', state.settings.dockCollapsed ? '54px' : '112px');
+      applyBookTheme();
+    }
+
+    function inlineBookWords(segment, indexRef) {
+      const query = bookSearchTerm.trim().toLowerCase();
+      return escapeHtml(segment).replace(/([A-Za-zÀ-ÖØ-öø-ÿ0-9][A-Za-zÀ-ÖØ-öø-ÿ0-9'’\-]*)/g, match => {
+        const index = indexRef.value++;
+        const hit = query && match.toLowerCase().includes(query) ? ' search-hit' : '';
+        return `<span class="book-word${hit}" data-word-index="${index}" data-word="${escapeHtml(match)}">${match}</span>`;
+      });
+    }
+
+    function bookTextToHtml(text) {
+      const clean = normalizeText(text);
+      if (!clean) return '<div class="reader-empty">Noch kein Text geladen.</div>';
+      const indexRef = { value: 0 };
+      return clean.split(/\n{2,}/).map(para => `<p>${inlineBookWords(para, indexRef).replace(/\n/g, '<br>')}</p>`).join('');
+    }
+
+    function renderReader() {
+      const tab = activeTab();
+      $('#readerTitleInput').value = tab.title || '';
+      $('#readerUrlInput').value = tab.url || '';
+      const cleaned = normalizeText(tab.text || '');
+      if (tab.text !== cleaned) tab.text = cleaned;
+      $('#readerBox').innerHTML = cleaned ? escapeHtml(cleaned).replace(/\n/g, '<br>') : '<div class="reader-empty">Noch kein Text geladen.<br>Füge Text ein oder lade eine Datei.</div>';
+      $('#bookReader').innerHTML = cleaned ? bookTextToHtml(cleaned) : '<div class="reader-empty">Noch kein Text geladen.</div>';
+      $('#bookMeta').textContent = tab.title || 'Buchmodus';
+      renderReaderTabs();
+      renderChapterHint();
+      updateBookProgressUI();
+    }
+
+    function sentenceFromParagraph(paragraphText, selected) {
+      const clean = normalizeText(paragraphText || selected || '');
+      if (!selected || !clean) return clean;
+      const idx = clean.toLowerCase().indexOf(selected.toLowerCase());
+      if (idx < 0) return clean;
+      let start = Math.max(clean.lastIndexOf('.', idx), clean.lastIndexOf('!', idx), clean.lastIndexOf('?', idx), clean.lastIndexOf('\n', idx));
+      start = start < 0 ? 0 : start + 1;
+      const candidates = ['.', '!', '?', '\n'].map(ch => clean.indexOf(ch, idx + selected.length)).filter(n => n >= 0);
+      const end = candidates.length ? Math.min(...candidates) + 1 : clean.length;
+      return normalizeText(clean.slice(start, end));
+    }
+
+    function selectedBookWords() {
+      if (bookRangeStart < 0 || bookRangeEnd < 0) return [];
+      const start = Math.min(bookRangeStart, bookRangeEnd);
+      const end = Math.max(bookRangeStart, bookRangeEnd);
+      return $$('#bookReader .book-word').filter(word => {
+        const i = Number(word.dataset.wordIndex);
+        return i >= start && i <= end;
+      });
+    }
+
+    function updateBookRangeSelection() {
+      $$('#bookReader .book-word').forEach(word => word.classList.remove('selected'));
+      const words = selectedBookWords();
+      words.forEach(word => word.classList.add('selected'));
+      selectedText = normalizeText(words.map(word => word.textContent).join(' '));
+      const paragraph = normalizeText(words[0]?.closest('p')?.textContent || selectedText);
+      selectedContext = sentenceFromParagraph(paragraph, selectedText) || paragraph || selectedText;
+      $('#bookSelectedPreview').textContent = selectedText || 'Auswahl';
+      $('#bookSelectionBar').classList.toggle('visible', !!selectedText);
+      closeBookMenuPanel();
+    }
+
+    function clearBookSelectionStable() {
+      selectedText = '';
+      selectedContext = '';
+      bookRangeStart = -1;
+      bookRangeEnd = -1;
+      $$('#bookReader .book-word').forEach(word => word.classList.remove('selected'));
+      $('#bookSelectionBar')?.classList.remove('visible');
+      const sel = window.getSelection();
+      if (sel) sel.removeAllRanges();
+    }
+
+    function selectBookWord(wordEl) {
+      if (!wordEl) return;
+      const idx = Number(wordEl.dataset.wordIndex);
+      if (wordEl.classList.contains('selected') && bookRangeStart === idx && bookRangeEnd === idx) {
+        clearBookSelectionStable();
+        return;
+      }
+      bookRangeStart = idx;
+      bookRangeEnd = idx;
+      updateBookRangeSelection();
+    }
+
+    function expandBookSelection(direction) {
+      if (bookRangeStart < 0 || bookRangeEnd < 0) return;
+      const words = $$('#bookReader .book-word');
+      if (direction < 0) bookRangeStart = Math.max(0, Math.min(bookRangeStart, bookRangeEnd) - 1);
+      if (direction > 0) bookRangeEnd = Math.min(words.length - 1, Math.max(bookRangeStart, bookRangeEnd) + 1);
+      updateBookRangeSelection();
+    }
+
+    function updateBookSelectionFromNative() {
+      const sel = window.getSelection();
+      const text = normalizeText(sel?.toString() || '');
+      if (!text || !$('#bookReader').contains(sel.anchorNode)) return false;
+      selectedText = text;
+      const node = sel.anchorNode?.nodeType === 1 ? sel.anchorNode : sel.anchorNode?.parentElement;
+      const paragraph = normalizeText(node?.closest?.('p')?.textContent || text);
+      selectedContext = sentenceFromParagraph(paragraph, text) || paragraph || text;
+      bookRangeStart = -1;
+      bookRangeEnd = -1;
+      $$('#bookReader .book-word').forEach(word => word.classList.remove('selected'));
+      $('#bookSelectedPreview').textContent = text.length > 90 ? text.slice(0, 90) + '…' : text;
+      $('#bookSelectionBar').classList.add('visible');
+      closeBookMenuPanel();
+      return true;
+    }
+
+    function openSaveCardModal(type = 'chunk') {
+      pendingSaveType = type;
+      $('#saveTypeSelect').value = type;
+      $('#saveFrontInput').value = selectedText || '';
+      $('#saveBackInput').value = defaultBackForType(type, selectedText || '');
+      $('#saveContextInput').value = selectedContext || selectedText || '';
+      $('#saveTagsInput').value = `${LANGS[state.settings.lang].short.toLowerCase()},reader`;
+      openModal('saveCardModal');
+    }
+
+    function saveBookProgressNow() {
+      const overlay = $('#bookOverlay');
+      const reader = $('#bookReader');
+      if (!overlay || !reader || !overlay.classList.contains('visible')) return;
+      const tab = activeTab();
+      const max = Math.max(1, reader.scrollHeight - reader.clientHeight);
+      tab.bookProgress = Math.max(0, Math.min(1, reader.scrollTop / max));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateBookProgressUI();
+    }
+
+    function updateBookProgressUI() {
+      const reader = $('#bookReader');
+      const tab = activeTab();
+      let fraction = Number(tab?.bookProgress || 0);
+      if (reader && reader.scrollHeight > reader.clientHeight) {
+        fraction = Math.max(0, Math.min(1, reader.scrollTop / Math.max(1, reader.scrollHeight - reader.clientHeight)));
+      }
+      const percent = Math.round(fraction * 100);
+      const rounded = Math.round(percent / 10) * 10;
+      $('#bookProgressLabel') && ($('#bookProgressLabel').textContent = `${rounded} %`);
+      const dots = $('#bookProgressDots');
+      if (dots) dots.innerHTML = Array.from({ length: 10 }, (_, index) => `<span class="${index < Math.ceil(percent / 10) ? 'done' : ''}"></span>`).join('');
+    }
+
+    function restoreBookProgress() {
+      const reader = $('#bookReader');
+      const tab = activeTab();
+      if (!reader || !tab) return;
+      setTimeout(() => {
+        reader.scrollTop = Math.max(0, reader.scrollHeight - reader.clientHeight) * Math.max(0, Math.min(1, Number(tab.bookProgress || 0)));
+        updateBookProgressUI();
+      }, 60);
+    }
+
+    function openBookModeStable() {
+      renderReader();
+      applyBookTheme();
+      document.body.classList.add('book-mode-open');
+      $('#bookOverlay').classList.add('visible');
+      closeBookMenuPanel();
+      closeBookSheets();
+      clearBookSelectionStable();
+      restoreBookProgress();
+    }
+
+    function closeBookModeStable() {
+      saveBookProgressNow();
+      document.body.classList.remove('book-mode-open');
+      $('#bookOverlay').classList.remove('visible');
+      closeBookMenuPanel();
+      closeBookSheets();
+      clearBookSelectionStable();
+    }
+
+    function openBookMenuPanel() {
+      clearBookSelectionStable();
+      closeBookSheets();
+      updateBookProgressUI();
+      $('#bookModeMenuPanel')?.classList.add('visible');
+      $('#bookModeMenuPanel')?.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeBookMenuPanel() {
+      $('#bookModeMenuPanel')?.classList.remove('visible');
+      $('#bookModeMenuPanel')?.setAttribute('aria-hidden', 'true');
+    }
+
+    function openBookSheet(id) {
+      closeBookMenuPanel();
+      clearBookSelectionStable();
+      $$('.book-sheet').forEach(sheet => {
+        const active = sheet.id === id;
+        sheet.classList.toggle('visible', active);
+        sheet.setAttribute('aria-hidden', active ? 'false' : 'true');
+      });
+      if (id === 'bookSearchSheet') setTimeout(() => $('#bookSearchInput')?.focus(), 80);
+    }
+
+    function closeBookSheets() {
+      $$('.book-sheet').forEach(sheet => { sheet.classList.remove('visible'); sheet.setAttribute('aria-hidden', 'true'); });
+    }
+
+    function renderBookSearchResults() {
+      const box = $('#bookSearchResults');
+      if (!box) return;
+      const query = normalizeText($('#bookSearchInput')?.value || bookSearchTerm);
+      bookSearchTerm = query;
+      $('#bookReader').innerHTML = activeTab().text ? bookTextToHtml(activeTab().text) : '<div class="reader-empty">Noch kein Text geladen.</div>';
+      if (!query) {
+        box.innerHTML = '<div class="note">Tippe ein Wort oder einen Satz ein.</div>';
+        return;
+      }
+      const text = normalizeText(activeTab().text || '');
+      const lower = text.toLowerCase();
+      const q = query.toLowerCase();
+      const results = [];
+      let idx = lower.indexOf(q);
+      while (idx !== -1 && results.length < 40) {
+        const start = Math.max(0, idx - 90);
+        const end = Math.min(text.length, idx + q.length + 140);
+        results.push({ idx, snippet: normalizeText(text.slice(start, end)) });
+        idx = lower.indexOf(q, idx + Math.max(1, q.length));
+      }
+      box.innerHTML = results.length ? results.map(result => `<button class="book-search-item" data-book-pos="${result.idx}"><strong>${escapeHtml(query)}</strong><span>${escapeHtml(result.snippet)}</span></button>`).join('') : '<div class="note">Keine Treffer gefunden.</div>';
+    }
+
+    function scrollBookToTextPosition(pos) {
+      const text = normalizeText(activeTab().text || '');
+      const fraction = Math.max(0, Math.min(1, Number(pos || 0) / Math.max(1, text.length)));
+      const reader = $('#bookReader');
+      reader.scrollTo({ top: Math.max(0, reader.scrollHeight - reader.clientHeight) * fraction, behavior: 'smooth' });
+    }
+
+    function bindBookSelectionFix() {
+      $('#openBookModeBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopImmediatePropagation(); openBookModeStable(); }, true);
+      $('#closeBookModeBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopImmediatePropagation(); closeBookModeStable(); }, true);
+      $('#bookFontDownBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopImmediatePropagation(); state.settings.readerSize = Math.max(10, (state.settings.readerSize || 20) - 1); saveState(); applyTheme(); }, true);
+      $('#bookFontUpBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopImmediatePropagation(); state.settings.readerSize = Math.min(34, (state.settings.readerSize || 20) + 1); saveState(); applyTheme(); }, true);
+      $('#bookModeMenuBtn')?.addEventListener('click', event => {
+        event.preventDefault(); event.stopPropagation();
+        $('#bookModeMenuPanel').classList.contains('visible') ? closeBookMenuPanel() : openBookMenuPanel();
+      });
+      $('#bookReader')?.addEventListener('click', event => {
+        const word = event.target.closest('.book-word');
+        if (word) return;
+        closeBookMenuPanel();
+        closeBookSheets();
+        if ($('#bookSelectionBar')?.classList.contains('visible')) clearBookSelectionStable();
+      }, true);
+      $('#bookReader')?.addEventListener('scroll', () => {
+        updateBookProgressUI();
+        clearTimeout(bookSaveTimer);
+        bookSaveTimer = setTimeout(saveBookProgressNow, 350);
+      }, { passive: true });
+      window.addEventListener('pagehide', saveBookProgressNow);
+      window.addEventListener('blur', saveBookProgressNow);
+      $('#bookExpandLeftBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); expandBookSelection(-1); });
+      $('#bookExpandRightBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); expandBookSelection(1); });
+      $('#bookSelectOneBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); if (bookRangeStart >= 0) { bookRangeEnd = bookRangeStart; updateBookRangeSelection(); } });
+      $('#bookSpeakSelectionBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); if (selectedText) speakText(selectedText, 1); });
+      $('#bookSearchOpenBtn')?.addEventListener('click', () => { renderBookSearchResults(); openBookSheet('bookSearchSheet'); });
+      $('#bookThemeOpenBtn')?.addEventListener('click', () => openBookSheet('bookThemeSheet'));
+      $$('[data-book-close-sheet]').forEach(btn => btn.addEventListener('click', closeBookSheets));
+      $('#bookSearchInput')?.addEventListener('input', renderBookSearchResults);
+      $('#bookSearchClearBtn')?.addEventListener('click', () => { bookSearchTerm = ''; $('#bookSearchInput').value = ''; renderBookSearchResults(); });
+      $('#bookSearchResults')?.addEventListener('click', event => {
+        const item = event.target.closest('[data-book-pos]');
+        if (!item) return;
+        scrollBookToTextPosition(Number(item.dataset.bookPos));
+        closeBookSheets();
+      });
+      $$('.book-theme-grid [data-book-theme]').forEach(btn => btn.addEventListener('click', () => { state.settings.bookTheme = btn.dataset.bookTheme; saveState(); applyBookTheme(state.settings.bookTheme); }));
+    }
     function bindEvents() {
       $('#themeToggleBtn').addEventListener('click', () => {
         state.settings.dark = !state.settings.dark;
@@ -3152,41 +3192,25 @@ FLUENT_JSON_END`;
       });
       $('#clearReaderBtn').addEventListener('click', () => setReaderText('', { title: $('#readerTitleInput').value.trim(), url: $('#readerUrlInput').value.trim() }));
       $('#readerFontUpBtn').addEventListener('click', () => { state.settings.readerSize = Math.min(30, state.settings.readerSize + 1); saveState(); applyTheme(); });
-      $('#readerFontDownBtn').addEventListener('click', () => { state.settings.readerSize = Math.max(12, state.settings.readerSize - 1); saveState(); applyTheme(); });
-      $('#openBookModeBtn').addEventListener('click', openBookMode);
-      $('#closeBookModeBtn').addEventListener('click', closeBookMode);
-      $('#bookOptionsBtn').addEventListener('click', event => { event.stopPropagation(); toggleBookOptions(); });
-      $('#bookOptionsCloseBtn').addEventListener('click', closeBookOptions);
+      $('#readerFontDownBtn').addEventListener('click', () => { state.settings.readerSize = Math.max(15, state.settings.readerSize - 1); saveState(); applyTheme(); });
+      $('#openBookModeBtn').addEventListener('click', () => { bookControlsHidden = false; $('#bookOverlay').classList.remove('controls-hidden'); $('#bookOverlay').classList.add('visible'); });
+      $('#closeBookModeBtn').addEventListener('click', () => $('#bookOverlay').classList.remove('visible'));
       $('#bookReader').addEventListener('click', event => {
         const word = event.target.closest('.book-word');
         if (word) { selectBookWord(word); return; }
         toggleBookControls();
       });
-      $('#bookReader').addEventListener('scroll', () => { clearTimeout(bookProgressTimer); bookProgressTimer = setTimeout(saveBookProgress, 180); }, { passive: true });
+      $('#bookReader').addEventListener('touchstart', event => {
+        const word = event.target.closest('.book-word');
+        clearTimeout(bookTouchTimer);
+        if (word) bookTouchTimer = setTimeout(() => selectBookWord(word), 420);
+      }, { passive: true });
+      $('#bookReader').addEventListener('touchend', () => clearTimeout(bookTouchTimer));
       document.addEventListener('selectionchange', () => { updateBookSelectionFromNative(); });
       $$('[data-book-save-type]').forEach(button => button.addEventListener('click', () => openSaveCardModal(button.dataset.bookSaveType)));
-      $('#bookGrowRightBtn').addEventListener('click', () => adjustBookRange('right', 1));
-      $('#bookShrinkRightBtn').addEventListener('click', () => adjustBookRange('right', -1));
-      $('#bookGrowLeftBtn').addEventListener('click', () => adjustBookRange('left', -1));
-      $('#bookShrinkLeftBtn').addEventListener('click', () => adjustBookRange('left', 1));
-      $('#bookFontUpBtn').addEventListener('click', () => { state.settings.bookReaderSize = Math.min(34, (state.settings.bookReaderSize || 18) + 1); saveState(); applyTheme(); });
-      $('#bookFontDownBtn').addEventListener('click', () => { state.settings.bookReaderSize = Math.max(10, (state.settings.bookReaderSize || 18) - 1); saveState(); applyTheme(); });
-      $('#bookSearchToggleBtn').addEventListener('click', () => { $('#bookSearchPanel').classList.toggle('visible'); if ($('#bookSearchPanel').classList.contains('visible')) setTimeout(() => $('#bookSearchInput').focus(), 50); });
-      $('#bookSearchInput').addEventListener('input', event => updateBookSearch(event.target.value));
-      $('#bookSearchClearBtn').addEventListener('click', () => { $('#bookSearchInput').value = ''; updateBookSearch(''); });
-      $('#bookSearchResults').addEventListener('click', event => {
-        const result = event.target.closest('[data-search-pos]');
-        if (!result) return;
-        const fraction = Number(result.dataset.searchPos) / Math.max(1, plainBookText().length);
-        const reader = $('#bookReader');
-        reader.scrollTo({ top: Math.max(0, reader.scrollHeight - reader.clientHeight) * fraction, behavior: 'smooth' });
-        saveBookProgress();
-      });
-      $('#bookProgressGrid').addEventListener('click', event => {
-        const button = event.target.closest('[data-book-progress]');
-        if (button) jumpBookProgress(button.dataset.bookProgress);
-      });
-      $$('[data-book-theme]').forEach(button => button.addEventListener('click', () => { state.settings.bookTheme = button.dataset.bookTheme; saveState(); applyTheme(); }));
+      $('#bookSpeakSelectionBtn').addEventListener('click', () => speakText(selectedText, 1));
+      $('#bookFontUpBtn').addEventListener('click', () => { state.settings.readerSize = Math.min(30, state.settings.readerSize + 1); saveState(); applyTheme(); });
+      $('#bookFontDownBtn').addEventListener('click', () => { state.settings.readerSize = Math.max(15, state.settings.readerSize - 1); saveState(); applyTheme(); });
       $('#prevChapterBtn').addEventListener('click', () => activeTab().chapterPrev ? loadUrl(activeTab().chapterPrev) : showToast('Kein voriges Kapitel erkannt'));
       $('#nextChapterBtn').addEventListener('click', () => activeTab().chapterNext ? loadUrl(activeTab().chapterNext) : showToast('Kein nächstes Kapitel erkannt'));
 
@@ -3270,6 +3294,7 @@ FLUENT_JSON_END`;
       renderSpeak();
       renderStats();
       bindEvents();
+      bindBookSelectionFix();
       if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         navigator.serviceWorker.register('./sw.js').catch(console.warn);
       }
