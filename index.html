@@ -746,7 +746,7 @@
       place-items: center;
       padding: 18px;
       background: rgba(10, 10, 12, .38);
-      z-index: 90;
+      z-index: 260;
     }
 
     .modal-backdrop.visible { display: grid; }
@@ -1639,6 +1639,8 @@
         <span id="bookProgressLabel">0 %</span>
       </div>
       <div class="book-progress-dots" id="bookProgressDots"></div>
+      <button class="book-menu-item" id="bookPrevChapterBtn"><span>←</span><strong>Voriges Kapitel</strong></button>
+      <button class="book-menu-item" id="bookNextChapterBtn"><span>→</span><strong>Nächstes Kapitel</strong></button>
       <button class="book-menu-item" id="bookSearchOpenBtn"><span>⌕</span><strong>Buch durchsuchen</strong></button>
       <button class="book-menu-item" id="bookThemeOpenBtn"><span>Aa</span><strong>Themen & Einstellungen</strong></button>
     </div>
@@ -2093,45 +2095,233 @@
       if (tab.text) showToast('Text geladen');
     }
 
+    function normalizeUrlInput(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      return `https://${raw.replace(/^\/+/, '')}`;
+    }
+
+    function stripHash(url) {
+      try {
+        const parsed = new URL(url, location.href);
+        parsed.hash = '';
+        return parsed.href.replace(/\/$/, '');
+      } catch (error) {
+        return String(url || '').replace(/#.*$/, '').replace(/\/$/, '');
+      }
+    }
+
+    function sameUrl(a, b) {
+      return stripHash(a) === stripHash(b);
+    }
+
+    function absoluteUrl(href, baseUrl) {
+      try { return new URL(String(href || '').trim(), baseUrl).href; }
+      catch (error) { return ''; }
+    }
+
+    function incrementLastNumberInUrl(url, delta = 1) {
+      try {
+        const parsed = new URL(url);
+        const matches = [...parsed.pathname.matchAll(/\d+/g)];
+        if (!matches.length) return '';
+        const match = matches[matches.length - 1];
+        const digits = match[0];
+        const current = Number.parseInt(digits, 10);
+        if (!Number.isFinite(current)) return '';
+        const next = current + delta;
+        if (next < 1) return '';
+        const padded = String(next).padStart(digits.length, '0');
+        parsed.pathname = `${parsed.pathname.slice(0, match.index)}${padded}${parsed.pathname.slice(match.index + digits.length)}`;
+        return parsed.href;
+      } catch (error) {
+        return '';
+      }
+    }
+
     function chapterLinksFromUrl(url) {
-      const match = String(url || '').match(/(.*?)(\d+)([^\d]*)$/);
-      if (!match) return { prev: '', next: '' };
-      const base = match[1], digits = match[2], suffix = match[3] || '';
-      const number = parseInt(digits, 10);
-      const pad = value => String(value).padStart(digits.length, '0');
+      const clean = normalizeUrlInput(url);
       return {
-        prev: number > 1 ? `${base}${pad(number - 1)}${suffix}` : '',
-        next: `${base}${pad(number + 1)}${suffix}`
+        prev: incrementLastNumberInUrl(clean, -1),
+        next: incrementLastNumberInUrl(clean, 1)
       };
     }
 
-    async function loadUrl(urlOverride = '') {
-      const url = (urlOverride || $('#readerUrlInput').value).trim();
-      if (!url) return showToast('Bitte eine URL eingeben');
+    function linkCandidatesFromMarkdown(markdown, baseUrl) {
+      const links = [];
+      const raw = String(markdown || '');
+      const markdownLink = /\[([^\]]{0,160})\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
+      for (const match of raw.matchAll(markdownLink)) {
+        const href = absoluteUrl(match[2], baseUrl);
+        if (href) links.push({ label: normalizeText(match[1]), href });
+      }
+      return links;
+    }
+
+    function linkCandidatesFromHtml(rawHtml, baseUrl) {
+      const links = [];
       try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const rawHtml = await response.text();
-        const doc = new DOMParser().parseFromString(rawHtml, 'text/html');
-        let title = doc.title || url;
-        let text = '';
-        try {
-          const article = new Readability(doc.cloneNode(true)).parse();
-          if (article) {
-            title = article.title || title;
-            text = article.textContent || '';
-          }
-        } catch (error) {
-          console.warn(error);
+        const doc = new DOMParser().parseFromString(String(rawHtml || ''), 'text/html');
+        doc.querySelectorAll('a[href]').forEach(anchor => {
+          const href = absoluteUrl(anchor.getAttribute('href'), baseUrl);
+          if (href) links.push({
+            label: normalizeText(anchor.textContent || anchor.getAttribute('aria-label') || anchor.getAttribute('title') || ''),
+            href,
+            rel: anchor.getAttribute('rel') || '',
+            cls: anchor.className || '',
+            id: anchor.id || ''
+          });
+        });
+      } catch (error) {}
+      return links;
+    }
+
+    function scoreChapterCandidate(candidate, currentUrl, direction = 'next') {
+      if (!candidate?.href || sameUrl(candidate.href, currentUrl)) return -999;
+      const label = normalizeText(candidate.label || '').toLowerCase();
+      const href = candidate.href.toLowerCase();
+      const meta = `${candidate.rel || ''} ${candidate.cls || ''} ${candidate.id || ''}`.toLowerCase();
+      const combined = `${label} ${meta}`;
+      const isNext = direction === 'next';
+      let score = 0;
+
+      const positive = isNext
+        ? /(\bnext\b|next\s*chapter|chapter\s*next|näch|naech|weiter|folgend|›|»|→|older)/i
+        : /(\bprev\b|previous|previous\s*chapter|chapter\s*previous|vorig|vorher|zurück|zurueck|‹|«|←|newer)/i;
+      const negative = isNext
+        ? /(\bprev\b|previous|vorig|vorher|zurück|zurueck|‹|«|←|newer)/i
+        : /(\bnext\b|näch|naech|weiter|folgend|›|»|→|older)/i;
+
+      if (positive.test(combined)) score += 100;
+      if (negative.test(combined)) score -= 120;
+      if (/chapter|kapitel|ch\.?\s*\d+|episode|part/i.test(`${label} ${href}`)) score += 16;
+      if (/comment|login|signup|discord|patreon|facebook|twitter|pinterest|category|tag|privacy|contact/i.test(`${label} ${href}`)) score -= 60;
+      if (/rel=['"]?next|\bnext\b/.test(combined) && isNext) score += 30;
+      if (/rel=['"]?prev|\bprev\b/.test(combined) && !isNext) score += 30;
+      return score;
+    }
+
+    function chapterLinksFromContent(raw, baseUrl) {
+      const candidates = [
+        ...linkCandidatesFromMarkdown(raw, baseUrl),
+        ...linkCandidatesFromHtml(raw, baseUrl)
+      ];
+      const pick = direction => candidates
+        .map(link => ({ ...link, score: scoreChapterCandidate(link, baseUrl, direction) }))
+        .filter(link => link.score > 0)
+        .sort((a, b) => b.score - a.score)[0]?.href || '';
+      const fallback = chapterLinksFromUrl(baseUrl);
+      return {
+        prev: pick('prev') || fallback.prev,
+        next: pick('next') || fallback.next
+      };
+    }
+
+    function looksLikeOwnApp(rawHtml) {
+      const raw = String(rawHtml || '');
+      return raw.includes('<title>Fluent.</title>') || raw.includes('fluent_state_v3') || raw.includes('id="readerView"');
+    }
+
+    async function fetchDirectUrl(url) {
+      const response = await fetch(url, { cache: 'no-store', credentials: 'omit', redirect: 'follow' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const raw = await response.text();
+      if (looksLikeOwnApp(raw)) throw new Error('Die PWA-Fallbackseite wurde statt der Zielseite zurückgegeben.');
+      return { raw, contentType: response.headers.get('content-type') || '', via: 'direct' };
+    }
+
+    async function fetchViaReaderApi(url) {
+      const readerUrl = `https://r.jina.ai/${url}`;
+      const response = await fetch(readerUrl, {
+        cache: 'no-store',
+        headers: { 'X-Respond-With': 'markdown' }
+      });
+      if (!response.ok) throw new Error(`Reader API HTTP ${response.status}`);
+      const raw = await response.text();
+      if (!normalizeText(raw)) throw new Error('Reader API hat keinen Text zurückgegeben.');
+      return { raw, contentType: 'text/markdown', via: 'reader' };
+    }
+
+    async function fetchReadableUrl(url) {
+      try {
+        return await fetchDirectUrl(url);
+      } catch (directError) {
+        console.warn('Direktes Laden fehlgeschlagen, nutze Reader API:', directError);
+        return fetchViaReaderApi(url);
+      }
+    }
+
+    function titleFromReaderMarkdown(markdown, fallbackUrl) {
+      const raw = String(markdown || '');
+      const titleLine = raw.match(/^\s*Title:\s*(.+)$/mi);
+      if (titleLine?.[1]) return normalizeText(titleLine[1]);
+      const heading = raw.match(/^\s*#\s+(.+)$/m);
+      if (heading?.[1]) return normalizeText(heading[1].replace(/\[[^\]]+\]\([^)]+\)/g, '$1'));
+      try { return decodeURIComponent(new URL(fallbackUrl).pathname.split('/').filter(Boolean).pop() || fallbackUrl).replace(/[-_]+/g, ' '); }
+      catch (error) { return fallbackUrl; }
+    }
+
+    function markdownToPlainText(markdown) {
+      return normalizeText(String(markdown || '')
+        .replace(/^\s*(Title|URL Source|Published Time|Markdown Content|Warning|Error):.*$/gmi, '')
+        .replace(/```[\s\S]*?```/g, '')
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+        .replace(/^\s*>\s?/gm, '')
+        .replace(/^\s*[-*+]\s+/gm, '')
+        .replace(/^\s*\d+[.)]\s+/gm, '')
+        .replace(/[ \t]*\n[ \t]*/g, '\n')
+        .replace(/\n{3,}/g, '\n\n'));
+    }
+
+    function htmlToPlainText(rawHtml, fallbackTitle) {
+      const doc = new DOMParser().parseFromString(rawHtml, 'text/html');
+      let title = doc.title || fallbackTitle;
+      let text = '';
+      try {
+        const article = new Readability(doc.cloneNode(true)).parse();
+        if (article) {
+          title = article.title || title;
+          text = article.textContent || '';
         }
-        if (!text) text = doc.body?.innerText || '';
-        const links = chapterLinksFromUrl(url);
+      } catch (error) {
+        console.warn(error);
+      }
+      if (!text) text = doc.body?.innerText || doc.documentElement?.innerText || '';
+      return { title: normalizeText(title), text: normalizeText(text) };
+    }
+
+    async function loadUrl(urlOverride = '') {
+      const url = normalizeUrlInput(urlOverride || $('#readerUrlInput').value);
+      if (!url) return showToast('Bitte eine URL eingeben');
+      const button = $('#loadUrlBtn');
+      const oldLabel = button?.textContent;
+      if (button) { button.disabled = true; button.textContent = 'Lade URL …'; }
+      try {
+        const fetched = await fetchReadableUrl(url);
+        const links = chapterLinksFromContent(fetched.raw, url);
+        let title = url;
+        let text = '';
+        if (/html/i.test(fetched.contentType) || /^\s*<!doctype html|^\s*<html[\s>]/i.test(fetched.raw)) {
+          const parsed = htmlToPlainText(fetched.raw, url);
+          title = parsed.title || title;
+          text = parsed.text;
+        } else {
+          title = titleFromReaderMarkdown(fetched.raw, url);
+          text = markdownToPlainText(fetched.raw);
+        }
+        if (!text || looksLikeOwnApp(text)) throw new Error('Kein brauchbarer Seitentext gefunden.');
         $('#readerTitleInput').value = title;
         $('#readerUrlInput').value = url;
         setReaderText(text, { title, url, sourceType: 'url', chapterPrev: links.prev, chapterNext: links.next });
+        if (fetched.via === 'reader') showToast('URL über Reader geladen');
       } catch (error) {
         console.warn(error);
-        showToast('URL konnte nicht geladen werden');
+        showToast('URL konnte nicht gelesen werden');
+      } finally {
+        if (button) { button.disabled = false; button.textContent = oldLabel || 'URL laden'; }
       }
     }
 
@@ -3394,6 +3584,23 @@ FLUENT_JSON_END`;
       $('#bookSelectionLeftBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); expandBookSelection(-1); });
       $('#bookSelectionRightBtn')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); expandBookSelection(1); });
       $('#bookSpeakSelectionBtn')?.addEventListener('click', speakBookSelection, true);
+      $$('[data-book-save-type]').forEach(button => button.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        openSaveCardModal(button.dataset.bookSaveType || 'chunk');
+      }, true));
+      $('#bookPrevChapterBtn')?.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const prev = activeTab().chapterPrev;
+        prev ? loadUrl(prev) : showToast('Kein voriges Kapitel erkannt');
+      });
+      $('#bookNextChapterBtn')?.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const next = activeTab().chapterNext;
+        next ? loadUrl(next) : showToast('Kein nächstes Kapitel erkannt');
+      });
       $('#bookReader')?.addEventListener('scroll', () => {
         updateBookProgressUI();
         clearTimeout(bookSaveTimer);
