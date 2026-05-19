@@ -3108,6 +3108,8 @@ FLUENT_JSON_END`;
     let bookSearchTerm = '';
     let bookSaveTimer = null;
     let bookSelectionRange = null;
+    let lastBookSelectedText = '';
+    let lastBookSelectedContext = '';
 
     function decodeHtmlEntities(value) {
       const area = document.createElement('textarea');
@@ -3309,6 +3311,8 @@ FLUENT_JSON_END`;
       range.setEndAfter(words[to]);
       selectedText = normalizeText(range.toString());
       selectedContext = contextForBookRange(from, to, selectedText);
+      lastBookSelectedText = selectedText;
+      lastBookSelectedContext = selectedContext;
       bookSelectionRange = { start: from, end: to };
       paintBookSelection(from, to);
       $('#bookSelectedPreview').textContent = selectionPreviewText(selectedText);
@@ -3371,6 +3375,8 @@ FLUENT_JSON_END`;
       const end = selectedIndices[selectedIndices.length - 1];
       selectedText = text;
       selectedContext = contextForBookRange(start, end, text);
+      lastBookSelectedText = selectedText;
+      lastBookSelectedContext = selectedContext;
       bookSelectionRange = { start, end };
       paintBookSelection(start, end);
       $('#bookSelectedPreview').textContent = selectionPreviewText(text);
@@ -3404,16 +3410,58 @@ FLUENT_JSON_END`;
       if ($('#bookModeMenuPanel')?.classList.contains('visible')) closeBookMenuPanel();
     }
 
-    function openSaveCardModal(type = 'chunk') {
-      if ($('#bookOverlay')?.classList.contains('visible') && $('#bookSelectionBar')?.classList.contains('visible')) {
-        if (bookSelectionRange) selectedContext = contextForBookRange(bookSelectionRange.start, bookSelectionRange.end, selectedText);
-        else updateBookSelectionFromNative();
+    function currentBookSelectionForCard() {
+      const overlayVisible = $('#bookOverlay')?.classList.contains('visible');
+      const barVisible = $('#bookSelectionBar')?.classList.contains('visible');
+      if (!overlayVisible || !barVisible) return null;
+
+      let text = '';
+      let context = '';
+
+      if (bookSelectionRange) {
+        const words = bookWordElements();
+        const start = Math.max(0, Math.min(words.length - 1, Number(bookSelectionRange.start)));
+        const end = Math.max(0, Math.min(words.length - 1, Number(bookSelectionRange.end)));
+        const from = Math.min(start, end);
+        const to = Math.max(start, end);
+        if (words[from] && words[to]) {
+          const range = document.createRange();
+          range.setStartBefore(words[from]);
+          range.setEndAfter(words[to]);
+          text = normalizeText(range.toString());
+          context = contextForBookRange(from, to, text);
+          paintBookSelection(from, to);
+          $('#bookSelectedPreview').textContent = selectionPreviewText(text);
+        }
       }
+
+      if (!text) {
+        const sel = window.getSelection();
+        const nativeText = $('#bookReader')?.contains(sel?.anchorNode) ? normalizeText(sel?.toString() || '') : '';
+        text = selectedText || nativeText || lastBookSelectedText || '';
+        context = selectedContext || lastBookSelectedContext || text;
+      }
+
+      text = normalizeText(text);
+      context = normalizeText(context || text);
+      if (!text) return null;
+
+      selectedText = text;
+      selectedContext = context;
+      lastBookSelectedText = text;
+      lastBookSelectedContext = context;
+      return { text, context };
+    }
+
+    function openSaveCardModal(type = 'chunk') {
+      const bookSelection = currentBookSelectionForCard();
+      const front = normalizeText(bookSelection?.text || selectedText || '');
+      const context = normalizeText(bookSelection?.context || selectedContext || front);
       pendingSaveType = type;
       $('#saveTypeSelect').value = type;
-      $('#saveFrontInput').value = selectedText || '';
-      $('#saveBackInput').value = defaultBackForType(type, selectedText || '');
-      $('#saveContextInput').value = selectedContext || selectedText || '';
+      $('#saveFrontInput').value = front;
+      $('#saveBackInput').value = defaultBackForType(type, front);
+      $('#saveContextInput').value = context;
       $('#saveTagsInput').value = `${LANGS[state.settings.lang].short.toLowerCase()},reader`;
       openModal('saveCardModal');
     }
@@ -3586,6 +3634,7 @@ FLUENT_JSON_END`;
       $('#bookSpeakSelectionBtn')?.addEventListener('click', speakBookSelection, true);
       $$('[data-book-save-type]').forEach(button => button.addEventListener('click', event => {
         event.preventDefault();
+        event.stopImmediatePropagation();
         event.stopPropagation();
         openSaveCardModal(button.dataset.bookSaveType || 'chunk');
       }, true));
