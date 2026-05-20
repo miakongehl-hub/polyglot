@@ -1518,6 +1518,7 @@
                 <div><label for="stepHardInput">Hard (Tage)</label><input id="stepHardInput" type="number" min="1" /></div>
                 <div><label for="stepGoodInput">Good (Tage)</label><input id="stepGoodInput" type="number" min="1" /></div>
                 <div><label for="stepEasyInput">Easy (Tage)</label><input id="stepEasyInput" type="number" min="1" /></div>
+                <div><label for="studyDirectionSelect">Abfrage</label><select id="studyDirectionSelect"><option value="front">Vorderseite → Rückseite</option><option value="back">Rückseite → Vorderseite</option></select></div>
               </div>
             </details>
           </div>
@@ -1824,7 +1825,7 @@
     const DE_DICT = {
       'before':'bevor / vorher','read':'lesen','write':'schreiben','wrote':'schrieb','draft':'Entwurf','truth':'Wahrheit','discovered':'entdeckt','idea':'Idee','rewrite':'umschreiben','publishing':'veröffentlichen','experience':'Erfahrung','however':'jedoch','friend':'Freund:in','friends':'Freund:innen','chapter':'Kapitel','story':'Geschichte','work':'Arbeit / Werk','works':'Werke / funktioniert','time':'Zeit','many':'viele','different':'verschieden','path':'Weg','vision':'Vision','outline':'Gliederung / Entwurf','mourned':'trauerte','found':'fand / gefunden','unexpectedly':'unerwartet','although':'obwohl','through':'durch','attention':'Aufmerksamkeit','easy':'leicht','hard':'schwer','good':'gut','again':'noch einmal'
     };
-    let studyState = { mode: 'due', cardIds: [], index: 0, revealed: false };
+    let studyState = { mode: 'due', direction: 'front', cardIds: [], index: 0, revealed: false };
 
     function uid(prefix = 'id') {
       return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -1875,6 +1876,7 @@
           lang: 'en',
           readerSize: 20,
           dockCollapsed: false,
+          studyDirection: 'front',
           srsSteps: { againMinutes: 10, hardDays: 1, goodDays: 3, easyDays: 7 }
         },
         reader: {
@@ -1963,6 +1965,7 @@
       $('#stepHardInput').value = state.settings.srsSteps.hardDays;
       $('#stepGoodInput').value = state.settings.srsSteps.goodDays;
       $('#stepEasyInput').value = state.settings.srsSteps.easyDays;
+      if ($('#studyDirectionSelect')) $('#studyDirectionSelect').value = state.settings.studyDirection || 'front';
       $('#promptCategorySelect').value = state.speak.category || 'mixed';
       $('#dockNav').classList.toggle('collapsed', !!state.settings.dockCollapsed);
       $('#dockToggleBtn').textContent = state.settings.dockCollapsed ? '☰' : '⌄';
@@ -2641,9 +2644,13 @@
       if (mode === 'due') pool = getDueCards();
       if (mode === 'session') pool = state.cards.filter(card => card.session);
       if (mode === 'starred') pool = state.cards.filter(card => card.starred);
-      if (!pool.length) return showToast('Keine Karten in diesem Review');
-      studyState = { mode, cardIds: pool.map(card => card.id), index: 0, revealed: false };
-      $('#studyModePill').textContent = mode === 'due' ? 'Fällige Karten' : mode === 'session' ? 'Session Review' : 'Markierte Karten';
+      const direction = state.settings.studyDirection || 'front';
+      if (direction === 'back') pool = pool.filter(card => normalizeText(card.back || ''));
+      if (!pool.length) return showToast(direction === 'back' ? 'Keine Karten mit Rückseite in diesem Review' : 'Keine Karten in diesem Review');
+      studyState = { mode, direction, cardIds: pool.map(card => card.id), index: 0, revealed: false };
+      const modeLabel = mode === 'due' ? 'Fällige Karten' : mode === 'session' ? 'Session Review' : 'Markierte Karten';
+      const directionLabel = direction === 'back' ? 'Rückseite → Vorderseite' : 'Vorderseite → Rückseite';
+      $('#studyModePill').textContent = `${modeLabel} · ${directionLabel}`;
       $('#studyOverlay').classList.add('visible');
       renderStudyCard();
     }
@@ -2661,9 +2668,13 @@
       }
       $('#studyProgressPill').textContent = `${studyState.index + 1} / ${studyState.cardIds.length}`;
       const revealed = studyState.revealed;
+      const reverse = studyState.direction === 'back';
+      const prompt = reverse ? (card.back || '—') : card.front;
+      const answer = reverse ? card.front : (card.back || '—');
       $('#studyFace').innerHTML = `
-        <div class="front">${escapeHtml(card.front)}</div>
-        ${revealed ? `<div class="answer"><strong>${escapeHtml(card.back || '—')}</strong></div>` : ''}
+        <div class="note">${reverse ? 'Was ist die Vorderseite?' : 'Was ist die Rückseite?'}</div>
+        <div class="front">${escapeHtml(prompt)}</div>
+        ${revealed ? `<div class="answer"><strong>${escapeHtml(answer)}</strong></div>` : ''}
         ${revealed && card.context ? `<div class="context">${escapeHtml(card.context)}</div>` : ''}
       `;
       $('#revealStudyBtn').classList.toggle('hidden', revealed);
@@ -3134,17 +3145,204 @@ FLUENT_JSON_END`;
         .trim();
     }
 
+    const EN_LEMMA_OVERRIDES = {
+      directly:{ display:'direct', lookup:'direct', pos:'adj' }, immediately:{ display:'immediate', lookup:'immediate', pos:'adj' }, quickly:{ display:'quick', lookup:'quick', pos:'adj' }, slowly:{ display:'slow', lookup:'slow', pos:'adj' }, easily:{ display:'easy', lookup:'easy', pos:'adj' }, happily:{ display:'happy', lookup:'happy', pos:'adj' }, truly:{ display:'true', lookup:'true', pos:'adj' }, fully:{ display:'full', lookup:'full', pos:'adj' }, really:{ display:'real', lookup:'real', pos:'adj' }, simply:{ display:'simple', lookup:'simple', pos:'adj' }, probably:{ display:'probable', lookup:'probable', pos:'adj' }, possibly:{ display:'possible', lookup:'possible', pos:'adj' }, especially:{ display:'special', lookup:'special', pos:'adj' }, basically:{ display:'basic', lookup:'basic', pos:'adj' }, finally:{ display:'final', lookup:'final', pos:'adj' }, usually:{ display:'usual', lookup:'usual', pos:'adj' }, suddenly:{ display:'sudden', lookup:'sudden', pos:'adj' }, actually:{ display:'actual', lookup:'actual', pos:'adj' }, completely:{ display:'complete', lookup:'complete', pos:'adj' }, absolutely:{ display:'absolute', lookup:'absolute', pos:'adj' }, clearly:{ display:'clear', lookup:'clear', pos:'adj' }, nearly:{ display:'near', lookup:'near', pos:'adj' }, lately:{ display:'late', lookup:'late', pos:'adj' }, early:{ display:'early', lookup:'early', pos:'adj' }, daily:{ display:'daily', lookup:'daily', pos:'adj' }, only:{ display:'only', lookup:'only', pos:'adj' },
+      was:{ display:'to be', lookup:'be', pos:'verb' }, were:{ display:'to be', lookup:'be', pos:'verb' }, been:{ display:'to be', lookup:'be', pos:'verb' }, being:{ display:'to be', lookup:'be', pos:'verb' }, am:{ display:'to be', lookup:'be', pos:'verb' }, is:{ display:'to be', lookup:'be', pos:'verb' }, are:{ display:'to be', lookup:'be', pos:'verb' }, has:{ display:'to have', lookup:'have', pos:'verb' }, had:{ display:'to have', lookup:'have', pos:'verb' }, having:{ display:'to have', lookup:'have', pos:'verb' }, does:{ display:'to do', lookup:'do', pos:'verb' }, did:{ display:'to do', lookup:'do', pos:'verb' }, done:{ display:'to do', lookup:'do', pos:'verb' }, doing:{ display:'to do', lookup:'do', pos:'verb' }, went:{ display:'to go', lookup:'go', pos:'verb' }, gone:{ display:'to go', lookup:'go', pos:'verb' }, going:{ display:'to go', lookup:'go', pos:'verb' }, came:{ display:'to come', lookup:'come', pos:'verb' }, coming:{ display:'to come', lookup:'come', pos:'verb' }, saw:{ display:'to see', lookup:'see', pos:'verb' }, seen:{ display:'to see', lookup:'see', pos:'verb' }, seeing:{ display:'to see', lookup:'see', pos:'verb' }, made:{ display:'to make', lookup:'make', pos:'verb' }, making:{ display:'to make', lookup:'make', pos:'verb' }, took:{ display:'to take', lookup:'take', pos:'verb' }, taken:{ display:'to take', lookup:'take', pos:'verb' }, taking:{ display:'to take', lookup:'take', pos:'verb' }, gave:{ display:'to give', lookup:'give', pos:'verb' }, given:{ display:'to give', lookup:'give', pos:'verb' }, giving:{ display:'to give', lookup:'give', pos:'verb' }, found:{ display:'to find', lookup:'find', pos:'verb' }, finding:{ display:'to find', lookup:'find', pos:'verb' }, thought:{ display:'to think', lookup:'think', pos:'verb' }, thinking:{ display:'to think', lookup:'think', pos:'verb' }, knew:{ display:'to know', lookup:'know', pos:'verb' }, known:{ display:'to know', lookup:'know', pos:'verb' }, knowing:{ display:'to know', lookup:'know', pos:'verb' }, said:{ display:'to say', lookup:'say', pos:'verb' }, saying:{ display:'to say', lookup:'say', pos:'verb' }, told:{ display:'to tell', lookup:'tell', pos:'verb' }, telling:{ display:'to tell', lookup:'tell', pos:'verb' }, felt:{ display:'to feel', lookup:'feel', pos:'verb' }, feeling:{ display:'to feel', lookup:'feel', pos:'verb' }, left:{ display:'to leave', lookup:'leave', pos:'verb' }, leaving:{ display:'to leave', lookup:'leave', pos:'verb' }, put:{ display:'to put', lookup:'put', pos:'verb' }, let:{ display:'to let', lookup:'let', pos:'verb' }, began:{ display:'to begin', lookup:'begin', pos:'verb' }, begun:{ display:'to begin', lookup:'begin', pos:'verb' }, beginning:{ display:'to begin', lookup:'begin', pos:'verb' }, became:{ display:'to become', lookup:'become', pos:'verb' }, become:{ display:'to become', lookup:'become', pos:'verb' }, kept:{ display:'to keep', lookup:'keep', pos:'verb' }, keeping:{ display:'to keep', lookup:'keep', pos:'verb' }, heard:{ display:'to hear', lookup:'hear', pos:'verb' }, hearing:{ display:'to hear', lookup:'hear', pos:'verb' }, wrote:{ display:'to write', lookup:'write', pos:'verb' }, written:{ display:'to write', lookup:'write', pos:'verb' }, writing:{ display:'to write', lookup:'write', pos:'verb' }, read:{ display:'to read', lookup:'read', pos:'verb' }, reading:{ display:'to read', lookup:'read', pos:'verb' }, purged:{ display:'to purge', lookup:'purge', pos:'verb' },
+      better:{ display:'good', lookup:'good', pos:'adj' }, best:{ display:'good', lookup:'good', pos:'adj' }, worse:{ display:'bad', lookup:'bad', pos:'adj' }, worst:{ display:'bad', lookup:'bad', pos:'adj' }, farther:{ display:'far', lookup:'far', pos:'adj' }, further:{ display:'far', lookup:'far', pos:'adj' }, nearest:{ display:'near', lookup:'near', pos:'adj' }, closer:{ display:'close', lookup:'close', pos:'adj' }, closest:{ display:'close', lookup:'close', pos:'adj' }
+    };
+
+    const EN_DE_TRANSLATIONS = {
+      direct:['direkt','unmittelbar'], immediate:['sofortig','unmittelbar'], quick:['schnell','rasch'], slow:['langsam','träge'], easy:['leicht','einfach'], hard:['schwer','hart'], good:['gut','geeignet'], bad:['schlecht','übel'], true:['wahr','richtig'], full:['voll','vollständig'], real:['wirklich','echt'], simple:['einfach','schlicht'], possible:['möglich','denkbar'], probable:['wahrscheinlich','vermutlich'], actual:['tatsächlich','wirklich'], complete:['vollständig','komplett'], absolute:['absolut','völlig'], clear:['klar','deutlich'], near:['nahe','in der Nähe'], late:['spät','verspätet'], final:['endgültig','abschließend'], usual:['üblich','gewöhnlich'], sudden:['plötzlich','unvermittelt'], basic:['grundlegend','einfach'], special:['besonders','speziell'], close:['nah','eng'], far:['weit','entfernt'], happy:['glücklich','froh'],
+      be:['sein','sich befinden'], have:['haben','besitzen'], do:['tun','machen'], go:['gehen','fahren'], come:['kommen','ankommen'], see:['sehen','verstehen'], make:['machen','herstellen'], take:['nehmen','dauern'], give:['geben','reichen'], find:['finden','entdecken'], think:['denken','glauben'], know:['wissen','kennen'], say:['sagen','meinen'], tell:['erzählen','sagen'], feel:['fühlen','empfinden'], leave:['verlassen','lassen'], begin:['beginnen','anfangen'], become:['werden','sich entwickeln'], keep:['behalten','weiterhin tun'], hear:['hören','erfahren'], write:['schreiben','verfassen'], read:['lesen','ablesen'], purge:['säubern','reinigen'], create:['erschaffen','erstellen'], change:['ändern','wechseln'], use:['benutzen','verwenden'], move:['bewegen','umziehen'], turn:['drehen','werden'], live:['leben','wohnen'], believe:['glauben','meinen'], hold:['halten','festhalten'], bring:['bringen','mitbringen'], happen:['passieren','geschehen'], wait:['warten','abwarten'], speak:['sprechen','reden'], talk:['reden','sprechen'], understand:['verstehen','begreifen'], remember:['erinnern','sich merken'], forget:['vergessen','verlernen'], decide:['entscheiden','beschließen'], try:['versuchen','probieren'], ask:['fragen','bitten'], look:['schauen','aussehen'], seem:['scheinen','wirken'], want:['wollen','möchten'], need:['brauchen','müssen'], like:['mögen','wie'], love:['lieben','sehr mögen'], work:['arbeiten','funktionieren'],
+      solution:['Lösung','Antwort'], problem:['Problem','Aufgabe'], question:['Frage','befragen'], answer:['Antwort','antworten'], word:['Wort','Begriff'], sentence:['Satz','Urteil'], meaning:['Bedeutung','Sinn'], later:['später','nachher'], room:['Zimmer','Raum'], bathroom:['Badezimmer','Bad'], kitchen:['Küche','Kochbereich'], kitchenette:['kleine Küche','Kochnische'], subject:['Thema','Fach'], moment:['Moment','Augenblick'], however:['jedoch','allerdings'], although:['obwohl','wenngleich'], because:['weil','da'], through:['durch','hindurch'], between:['zwischen','dazwischen'], own:['eigen','besitzen'], friend:['Freund:in','Bekannte:r'], chapter:['Kapitel','Abschnitt'], story:['Geschichte','Erzählung'], truth:['Wahrheit','Tatsache'], draft:['Entwurf','Skizze'], experience:['Erfahrung','Erlebnis'], decision:['Entscheidung','Beschluss'], before:['bevor','vorher'], after:['nachdem','danach'], while:['während','solange'], still:['immer noch','trotzdem'], even:['sogar','selbst'], almost:['fast','beinahe'], enough:['genug','ausreichend'], again:['wieder','noch einmal'], maybe:['vielleicht','möglicherweise'], never:['nie','niemals'], always:['immer','stets'], often:['oft','häufig'], sometimes:['manchmal','gelegentlich'], together:['zusammen','gemeinsam'], alone:['allein','alleine'],
+      man:['Mann','Mensch'], woman:['Frau','weibliche Person'], people:['Menschen','Leute'], person:['Person','Mensch'], family:['Familie','Angehörige'], house:['Haus','Gebäude'], home:['Zuhause','Heim'], day:['Tag','Tageszeit'], night:['Nacht','Abend'], time:['Zeit','Mal'], way:['Weg','Art'], life:['Leben','Lebensweise'], hand:['Hand','Hilfe'], eye:['Auge','Blick'], face:['Gesicht','Vorderseite'], voice:['Stimme','Äußerung'], heart:['Herz','Inneres'], mind:['Geist','Meinung'], body:['Körper','Leib'], name:['Name','Bezeichnung'], place:['Ort','Stelle'],
+      small:['klein','gering'], big:['groß','wichtig'], long:['lang','lange'], short:['kurz','knapp'], old:['alt','früher'], new:['neu','frisch'], young:['jung','jugendlich'], high:['hoch','groß'], low:['niedrig','gering'], right:['richtig','rechts'], wrong:['falsch','verkehrt'], same:['gleich','derselbe'], different:['anders','verschieden'], important:['wichtig','bedeutend'], beautiful:['schön','wunderschön'], strange:['seltsam','fremd']
+    };
+
+    const FR_LEMMA_OVERRIDES = {
+      certainement:{ display:'certain, certaine', lookup:'certain', pos:'adj' }, directement:{ display:'direct, directe', lookup:'direct', pos:'adj' }, vraiment:{ display:'vrai, vraie', lookup:'vrai', pos:'adj' }, simplement:{ display:'simple', lookup:'simple', pos:'adj' }, rapidement:{ display:'rapide', lookup:'rapide', pos:'adj' }, lentement:{ display:'lent, lente', lookup:'lent', pos:'adj' }, complètement:{ display:'complet, complète', lookup:'complet', pos:'adj' }, absolument:{ display:'absolu, absolue', lookup:'absolu', pos:'adj' }, clairement:{ display:'clair, claire', lookup:'clair', pos:'adj' }, normalement:{ display:'normal, normale', lookup:'normal', pos:'adj' }, seulement:{ display:'seul, seule', lookup:'seul', pos:'adj' }, heureusement:{ display:'heureux, heureuse', lookup:'heureux', pos:'adj' }, malheureusement:{ display:'malheureux, malheureuse', lookup:'malheureux', pos:'adj' },
+      suis:{ display:'être', lookup:'être', pos:'verb' }, es:{ display:'être', lookup:'être', pos:'verb' }, est:{ display:'être', lookup:'être', pos:'verb' }, sommes:{ display:'être', lookup:'être', pos:'verb' }, êtes:{ display:'être', lookup:'être', pos:'verb' }, sont:{ display:'être', lookup:'être', pos:'verb' }, étais:{ display:'être', lookup:'être', pos:'verb' }, était:{ display:'être', lookup:'être', pos:'verb' }, été:{ display:'être', lookup:'être', pos:'verb' },
+      ai:{ display:'avoir', lookup:'avoir', pos:'verb' }, as:{ display:'avoir', lookup:'avoir', pos:'verb' }, a:{ display:'avoir', lookup:'avoir', pos:'verb' }, avons:{ display:'avoir', lookup:'avoir', pos:'verb' }, avez:{ display:'avoir', lookup:'avoir', pos:'verb' }, ont:{ display:'avoir', lookup:'avoir', pos:'verb' }, avait:{ display:'avoir', lookup:'avoir', pos:'verb' }, avais:{ display:'avoir', lookup:'avoir', pos:'verb' }, eu:{ display:'avoir', lookup:'avoir', pos:'verb' },
+      vais:{ display:'aller', lookup:'aller', pos:'verb' }, vas:{ display:'aller', lookup:'aller', pos:'verb' }, va:{ display:'aller', lookup:'aller', pos:'verb' }, allons:{ display:'aller', lookup:'aller', pos:'verb' }, allez:{ display:'aller', lookup:'aller', pos:'verb' }, vont:{ display:'aller', lookup:'aller', pos:'verb' }, allé:{ display:'aller', lookup:'aller', pos:'verb' }, allée:{ display:'aller', lookup:'aller', pos:'verb' }, allés:{ display:'aller', lookup:'aller', pos:'verb' }, allées:{ display:'aller', lookup:'aller', pos:'verb' },
+      fait:{ display:'faire', lookup:'faire', pos:'verb' }, fais:{ display:'faire', lookup:'faire', pos:'verb' }, faisons:{ display:'faire', lookup:'faire', pos:'verb' }, font:{ display:'faire', lookup:'faire', pos:'verb' }, dit:{ display:'dire', lookup:'dire', pos:'verb' }, dis:{ display:'dire', lookup:'dire', pos:'verb' }, disent:{ display:'dire', lookup:'dire', pos:'verb' }, pris:{ display:'prendre', lookup:'prendre', pos:'verb' }, prend:{ display:'prendre', lookup:'prendre', pos:'verb' }, prends:{ display:'prendre', lookup:'prendre', pos:'verb' }, venu:{ display:'venir', lookup:'venir', pos:'verb' }, vient:{ display:'venir', lookup:'venir', pos:'verb' }, peux:{ display:'pouvoir', lookup:'pouvoir', pos:'verb' }, peut:{ display:'pouvoir', lookup:'pouvoir', pos:'verb' }, veux:{ display:'vouloir', lookup:'vouloir', pos:'verb' }, veut:{ display:'vouloir', lookup:'vouloir', pos:'verb' }, dois:{ display:'devoir', lookup:'devoir', pos:'verb' }, doit:{ display:'devoir', lookup:'devoir', pos:'verb' }, sais:{ display:'savoir', lookup:'savoir', pos:'verb' }, sait:{ display:'savoir', lookup:'savoir', pos:'verb' }
+    };
+
+    const FR_DE_TRANSLATIONS = {
+      certain:['sicher','gewiss'], direct:['direkt','unmittelbar'], vrai:['wahr','echt'], simple:['einfach','schlicht'], rapide:['schnell','rasch'], lent:['langsam','träge'], complet:['vollständig','komplett'], absolu:['absolut','völlig'], clair:['klar','deutlich'], normal:['normal','üblich'], seul:['allein','einzig'], heureux:['glücklich','froh'], malheureux:['unglücklich','bedauerlich'],
+      être:['sein','sich befinden'], avoir:['haben','besitzen'], aller:['gehen','fahren'], faire:['machen','tun'], dire:['sagen','meinen'], prendre:['nehmen','ergreifen'], venir:['kommen','stammen'], pouvoir:['können','dürfen'], vouloir:['wollen','möchten'], devoir:['müssen','sollen'], savoir:['wissen','können'], parler:['sprechen','reden'], demander:['fragen','bitten'], regarder:['anschauen','betrachten'], penser:['denken','glauben'], aimer:['lieben','mögen'], trouver:['finden','meinen'], donner:['geben','schenken'], comprendre:['verstehen','begreifen'], attendre:['warten','erwarten'], vivre:['leben','wohnen'], lire:['lesen','ablesen'], écrire:['schreiben','verfassen'],
+      solution:['Lösung','Antwort'], problème:['Problem','Aufgabe'], question:['Frage','Thema'], réponse:['Antwort','Reaktion'], mot:['Wort','Begriff'], phrase:['Satz','Ausdruck'], sens:['Sinn','Bedeutung'], maison:['Haus','Zuhause'], chambre:['Zimmer','Schlafzimmer'], temps:['Zeit','Wetter'], jour:['Tag','Tageszeit'], nuit:['Nacht','Abend'], personne:['Person','Mensch'], homme:['Mann','Mensch'], femme:['Frau','Ehefrau'], ami:['Freund','Bekannter'], amie:['Freundin','Bekannte'], histoire:['Geschichte','Erzählung'], chapitre:['Kapitel','Abschnitt']
+    };
+
+    const DE_LEMMA_OVERRIDES = {
+      gehe:{ display:'gehen', lookup:'gehen', pos:'verb' }, gehst:{ display:'gehen', lookup:'gehen', pos:'verb' }, geht:{ display:'gehen', lookup:'gehen', pos:'verb' }, ging:{ display:'gehen', lookup:'gehen', pos:'verb' }, gingen:{ display:'gehen', lookup:'gehen', pos:'verb' }, gegangen:{ display:'gehen', lookup:'gehen', pos:'verb' },
+      bin:{ display:'sein', lookup:'sein', pos:'verb' }, bist:{ display:'sein', lookup:'sein', pos:'verb' }, ist:{ display:'sein', lookup:'sein', pos:'verb' }, sind:{ display:'sein', lookup:'sein', pos:'verb' }, seid:{ display:'sein', lookup:'sein', pos:'verb' }, war:{ display:'sein', lookup:'sein', pos:'verb' }, waren:{ display:'sein', lookup:'sein', pos:'verb' }, gewesen:{ display:'sein', lookup:'sein', pos:'verb' },
+      habe:{ display:'haben', lookup:'haben', pos:'verb' }, hast:{ display:'haben', lookup:'haben', pos:'verb' }, hat:{ display:'haben', lookup:'haben', pos:'verb' }, haben:{ display:'haben', lookup:'haben', pos:'verb' }, hatte:{ display:'haben', lookup:'haben', pos:'verb' }, hatten:{ display:'haben', lookup:'haben', pos:'verb' }, gehabt:{ display:'haben', lookup:'haben', pos:'verb' },
+      werde:{ display:'werden', lookup:'werden', pos:'verb' }, wirst:{ display:'werden', lookup:'werden', pos:'verb' }, wird:{ display:'werden', lookup:'werden', pos:'verb' }, wurde:{ display:'werden', lookup:'werden', pos:'verb' }, geworden:{ display:'werden', lookup:'werden', pos:'verb' },
+      mache:{ display:'machen', lookup:'machen', pos:'verb' }, machst:{ display:'machen', lookup:'machen', pos:'verb' }, macht:{ display:'machen', lookup:'machen', pos:'verb' }, machte:{ display:'machen', lookup:'machen', pos:'verb' }, gemacht:{ display:'machen', lookup:'machen', pos:'verb' },
+      sehe:{ display:'sehen', lookup:'sehen', pos:'verb' }, siehst:{ display:'sehen', lookup:'sehen', pos:'verb' }, sieht:{ display:'sehen', lookup:'sehen', pos:'verb' }, sah:{ display:'sehen', lookup:'sehen', pos:'verb' }, gesehen:{ display:'sehen', lookup:'sehen', pos:'verb' },
+      komme:{ display:'kommen', lookup:'kommen', pos:'verb' }, kommst:{ display:'kommen', lookup:'kommen', pos:'verb' }, kommt:{ display:'kommen', lookup:'kommen', pos:'verb' }, kam:{ display:'kommen', lookup:'kommen', pos:'verb' }, gekommen:{ display:'kommen', lookup:'kommen', pos:'verb' },
+      sagte:{ display:'sagen', lookup:'sagen', pos:'verb' }, gesagt:{ display:'sagen', lookup:'sagen', pos:'verb' }, fragte:{ display:'fragen', lookup:'fragen', pos:'verb' }, gefragt:{ display:'fragen', lookup:'fragen', pos:'verb' }, wollte:{ display:'wollen', lookup:'wollen', pos:'verb' }, gewollt:{ display:'wollen', lookup:'wollen', pos:'verb' }, konnte:{ display:'können', lookup:'können', pos:'verb' }, gekonnt:{ display:'können', lookup:'können', pos:'verb' }, musste:{ display:'müssen', lookup:'müssen', pos:'verb' }, gemusst:{ display:'müssen', lookup:'müssen', pos:'verb' },
+      lösungen:{ display:'Lösung', lookup:'Lösung', pos:'noun' }, menschen:{ display:'Mensch', lookup:'Mensch', pos:'noun' }, kinder:{ display:'Kind', lookup:'Kind', pos:'noun' }, frauen:{ display:'Frau', lookup:'Frau', pos:'noun' }, männer:{ display:'Mann', lookup:'Mann', pos:'noun' }
+    };
+
+    const DE_DE_TRANSLATIONS = {
+      gehen:['gehen','laufen'], sein:['sein','existieren'], haben:['haben','besitzen'], werden:['werden','entstehen'], machen:['machen','tun'], sehen:['sehen','erkennen'], kommen:['kommen','ankommen'], sagen:['sagen','äußern'], fragen:['fragen','bitten'], wollen:['wollen','möchten'], können:['können','vermögen'], müssen:['müssen','verpflichtet sein'], gut:['gut','geeignet'], schlecht:['schlecht','ungünstig'], schön:['schön','hübsch'], groß:['groß','bedeutend'], klein:['klein','gering'], Lösung:['Lösung','Antwort'], Mensch:['Mensch','Person'], Kind:['Kind','Nachwuchs'], Frau:['Frau','weibliche Person'], Mann:['Mann','männliche Person']
+    };
+
+    function singleWordToken(value) {
+      const tokens = normalizeText(value).match(/[A-Za-zÀ-ÖØ-öø-ÿÄÖÜäöüß]+(?:[’'-][A-Za-zÀ-ÖØ-öø-ÿÄÖÜäöüß]+)?/g) || [];
+      return tokens.length === 1 ? tokens[0] : '';
+    }
+
+    function stripWord(value) {
+      return normalizeText(value).toLowerCase().replace(/^[^a-zà-öø-ÿäöüß0-9]+|[^a-zà-öø-ÿäöüß0-9]+$/gi, '');
+    }
+
+    function result(display, lookup, pos = 'word') {
+      return { display, lookup: lookup || display, pos };
+    }
+
+    function inferEnglishLemmaResult(value) {
+      const token = singleWordToken(value);
+      if (!token) return result(normalizeText(value), normalizeText(value));
+      const lower = stripWord(token).replace(/[’']/g, "'");
+      if (EN_LEMMA_OVERRIDES[lower]) return EN_LEMMA_OVERRIDES[lower];
+      if (EN_DE_TRANSLATIONS[lower]) return result(lower, lower, 'base');
+      let base = lower;
+      if (base.endsWith('ies') && base.length > 4) return result(base.slice(0, -3) + 'y', base.slice(0, -3) + 'y', 'noun');
+      if (base.endsWith('ves') && base.length > 4) return result(base.slice(0, -3) + 'f', base.slice(0, -3) + 'f', 'noun');
+      if (base.endsWith('ily') && base.length > 5) return result(base.slice(0, -3) + 'y', base.slice(0, -3) + 'y', 'adj');
+      if (base.endsWith('ally') && base.length > 6) return result(base.slice(0, -4), base.slice(0, -4), 'adj');
+      if (base.endsWith('ly') && base.length > 4) return result(base.slice(0, -2), base.slice(0, -2), 'adj');
+      if (base.endsWith('ing') && base.length > 5) {
+        let stem = base.slice(0, -3);
+        if (/([b-df-hj-np-tv-z])\1$/i.test(stem)) stem = stem.slice(0, -1);
+        if (EN_DE_TRANSLATIONS[stem + 'e']) stem += 'e';
+        return result(`to ${stem}`, stem, 'verb');
+      }
+      if (base.endsWith('ed') && base.length > 4) {
+        let stem = base.slice(0, -2);
+        if (/([b-df-hj-np-tv-z])\1$/i.test(stem)) stem = stem.slice(0, -1);
+        if (EN_DE_TRANSLATIONS[stem + 'e'] || /g$/i.test(stem)) stem += 'e';
+        return result(`to ${stem}`, stem, 'verb');
+      }
+      if (base.endsWith('es') && base.length > 4) {
+        const stem = /(?:ches|shes|xes|zes|ses)$/i.test(base) ? base.slice(0, -2) : base.slice(0, -1);
+        return result(stem, stem, 'noun');
+      }
+      if (base.endsWith('s') && !base.endsWith('ss') && base.length > 3) return result(base.slice(0, -1), base.slice(0, -1), 'noun');
+      return result(lower, lower, 'word');
+    }
+
+    function inferFrenchLemmaResult(value) {
+      const token = singleWordToken(value);
+      if (!token) return result(normalizeText(value), normalizeText(value));
+      const lower = stripWord(token);
+      if (FR_LEMMA_OVERRIDES[lower]) return FR_LEMMA_OVERRIDES[lower];
+      if (FR_DE_TRANSLATIONS[lower]) return result(lower, lower, 'base');
+      if (lower.endsWith('ment') && lower.length > 6) {
+        let fem = lower.slice(0, -4);
+        if (fem.endsWith('e')) {
+          let masc = fem.slice(0, -1);
+          if (masc.endsWith('iv')) masc += 'f';
+          return result(`${masc}, ${fem}`, masc, 'adj');
+        }
+        return result(fem, fem, 'adj');
+      }
+      if (lower.endsWith('ées') && lower.length > 5) return result(lower.slice(0, -3) + 'er', lower.slice(0, -3) + 'er', 'verb');
+      if (lower.endsWith('ée') && lower.length > 4) return result(lower.slice(0, -2) + 'er', lower.slice(0, -2) + 'er', 'verb');
+      if (lower.endsWith('és') && lower.length > 4) return result(lower.slice(0, -2) + 'er', lower.slice(0, -2) + 'er', 'verb');
+      if (lower.endsWith('é') && lower.length > 3) return result(lower.slice(0, -1) + 'er', lower.slice(0, -1) + 'er', 'verb');
+      const erCandidates = [
+        ['ent', 'er'], ['es', 'er'], ['e', 'er'], ['ons', 'er'], ['ez', 'er'], ['ais', 'er'], ['ait', 'er'], ['aient', 'er']
+      ];
+      for (const [suffix, repl] of erCandidates) {
+        if (lower.endsWith(suffix) && lower.length > suffix.length + 2) {
+          const candidate = lower.slice(0, -suffix.length) + repl;
+          if (FR_DE_TRANSLATIONS[candidate]) return result(candidate, candidate, 'verb');
+        }
+      }
+      if (lower.endsWith('es') && lower.length > 4) {
+        const fem = lower.slice(0, -1);
+        const masc = fem.endsWith('e') ? fem.slice(0, -1) : fem;
+        return result(`${masc}, ${fem}`, masc, 'adj');
+      }
+      if (lower.endsWith('e') && lower.length > 4) {
+        const masc = lower.slice(0, -1);
+        if (FR_DE_TRANSLATIONS[masc]) return result(`${masc}, ${lower}`, masc, 'adj');
+      }
+      if (lower.endsWith('s') && lower.length > 3) return result(lower.slice(0, -1), lower.slice(0, -1), 'noun');
+      return result(lower, lower, 'word');
+    }
+
+    function inferGermanLemmaResult(value) {
+      const token = singleWordToken(value);
+      if (!token) return result(normalizeText(value), normalizeText(value));
+      const lower = stripWord(token);
+      if (DE_LEMMA_OVERRIDES[lower]) return DE_LEMMA_OVERRIDES[lower];
+      const originalCapitalized = token[0] === token[0].toUpperCase();
+      if (DE_DE_TRANSLATIONS[token]) return result(token, token, 'base');
+      if (DE_DE_TRANSLATIONS[lower]) return result(lower, lower, 'base');
+
+      const verbCandidates = [];
+      if (lower.endsWith('e') && lower.length > 3) verbCandidates.push(lower.slice(0, -1) + 'en');
+      if (lower.endsWith('st') && lower.length > 4) verbCandidates.push(lower.slice(0, -2) + 'en');
+      if (lower.endsWith('t') && lower.length > 4) verbCandidates.push(lower.slice(0, -1) + 'en');
+      if (lower.startsWith('ge') && lower.endsWith('t') && lower.length > 5) verbCandidates.push(lower.slice(2, -1) + 'en');
+      for (const candidate of verbCandidates) {
+        if (DE_DE_TRANSLATIONS[candidate]) return result(candidate, candidate, 'verb');
+      }
+
+      const adjectiveEndings = ['eren', 'ere', 'em', 'en', 'er', 'es', 'e'];
+      for (const suffix of adjectiveEndings) {
+        if (lower.endsWith(suffix) && lower.length > suffix.length + 2) {
+          const stem = lower.slice(0, -suffix.length);
+          if (DE_DE_TRANSLATIONS[stem]) return result(stem, stem, 'adj');
+        }
+      }
+
+      if (originalCapitalized) {
+        if (lower.endsWith('en') && lower.length > 5) return result(token.slice(0, -2), token.slice(0, -2), 'noun');
+        if (lower.endsWith('e') && lower.length > 4) return result(token.slice(0, -1), token.slice(0, -1), 'noun');
+        if (lower.endsWith('s') && lower.length > 4) return result(token.slice(0, -1), token.slice(0, -1), 'noun');
+      }
+      return result(token, token, 'word');
+    }
+
+    function inferLemmaResult(value, lang = state.settings.lang) {
+      if (lang === 'fr') return inferFrenchLemmaResult(value);
+      if (lang === 'de') return inferGermanLemmaResult(value);
+      return inferEnglishLemmaResult(value);
+    }
+
+    function frontForVocabSelection(value) {
+      const original = normalizeText(value);
+      const token = singleWordToken(original);
+      if (!token) return original;
+      const lemma = inferLemmaResult(original);
+      if (!lemma?.display) return original;
+      if (lemma.display.toLowerCase() === token.toLowerCase()) return original;
+      return `${lemma.display}\n${original}`;
+    }
+
+    function translationLookupKey(front) {
+      const firstLine = normalizeText(front).split(/\n+/)[0] || front;
+      const clean = firstLine.replace(/^to\s+/i, '').split(',')[0].trim();
+      const lemma = inferLemmaResult(clean);
+      return normalizeText(lemma.lookup || clean).replace(/^to\s+/i, '').trim();
+    }
+
     function translateToGerman(front) {
-      const extra = {
-        later:'später', room:'Zimmer', bathroom:'Badezimmer', kitchen:'Küche', kitchenette:'kleine Küche',
-        subject:'Thema', change:'ändern / Veränderung', changing:'wechselnd / ändern', moment:'Moment',
-        however:'jedoch', although:'obwohl', because:'weil', through:'durch', between:'zwischen', own:'eigen',
-        easy:'leicht', hard:'schwer', friend:'Freund:in', friends:'Freund:innen', chapter:'Kapitel',
-        story:'Geschichte', truth:'Wahrheit', draft:'Entwurf', write:'schreiben', wrote:'schrieb', read:'lesen',
-        discovered:'entdeckt', experience:'Erlebnis / Erfahrung', decision:'Entscheidung', decide:'entscheiden'
-      };
-      const key = normalizeText(front).toLowerCase().replace(/^[^a-zà-öø-ÿ0-9]+|[^a-zà-öø-ÿ0-9]+$/gi, '');
-      return extra[key] || DE_DICT[key] || '';
+      const key = translationLookupKey(front);
+      const lowerKey = stripWord(key);
+      const lang = state.settings.lang;
+      let translations = [];
+      if (lang === 'fr') translations = FR_DE_TRANSLATIONS[key] || FR_DE_TRANSLATIONS[lowerKey] || [];
+      else if (lang === 'de') translations = DE_DE_TRANSLATIONS[key] || DE_DE_TRANSLATIONS[lowerKey] || [];
+      else translations = EN_DE_TRANSLATIONS[lowerKey] || [];
+      if (Array.isArray(translations) && translations.length) return translations.slice(0, 2).join(' / ');
+      const old = DE_DICT[lowerKey] || '';
+      return old ? old.split('/').map(part => part.trim()).filter(Boolean).slice(0, 2).join(' / ') : '';
     }
 
     function defaultBackForType(type, front) {
@@ -3187,6 +3385,7 @@ FLUENT_JSON_END`;
         speak: { ...fresh.speak, ...(raw.speak || {}) }
       };
       merged.settings.srsSteps = { ...fresh.settings.srsSteps, ...(raw.settings?.srsSteps || {}) };
+      if (!merged.settings.studyDirection) merged.settings.studyDirection = 'front';
       if (!merged.settings.bookTheme) merged.settings.bookTheme = 'original';
       merged.reader.tabs = (merged.reader.tabs || []).map(tab => makeReaderTab(tab));
       if (!merged.reader.tabs.length) merged.reader.tabs = [makeReaderTab()];
@@ -3207,6 +3406,7 @@ FLUENT_JSON_END`;
       $('#stepHardInput').value = state.settings.srsSteps.hardDays;
       $('#stepGoodInput').value = state.settings.srsSteps.goodDays;
       $('#stepEasyInput').value = state.settings.srsSteps.easyDays;
+      if ($('#studyDirectionSelect')) $('#studyDirectionSelect').value = state.settings.studyDirection || 'front';
       $('#promptCategorySelect').value = state.speak.category || 'mixed';
       $('#dockNav').classList.toggle('collapsed', !!state.settings.dockCollapsed);
       $('#dockToggleBtn').textContent = state.settings.dockCollapsed ? '☰' : '⌄';
@@ -3455,8 +3655,9 @@ FLUENT_JSON_END`;
 
     function openSaveCardModal(type = 'chunk') {
       const bookSelection = currentBookSelectionForCard();
-      const front = normalizeText(bookSelection?.text || selectedText || '');
-      const context = normalizeText(bookSelection?.context || selectedContext || front);
+      const rawFront = normalizeText(bookSelection?.text || selectedText || '');
+      const front = type === 'vocab' ? frontForVocabSelection(rawFront) : rawFront;
+      const context = normalizeText(bookSelection?.context || selectedContext || rawFront);
       pendingSaveType = type;
       $('#saveTypeSelect').value = type;
       $('#saveFrontInput').value = front;
@@ -3796,6 +3997,10 @@ FLUENT_JSON_END`;
       $('#clearSessionBtn').addEventListener('click', clearSession);
       $('#clearAllCardsBtn').addEventListener('click', clearAllCards);
       ['stepAgainInput', 'stepHardInput', 'stepGoodInput', 'stepEasyInput'].forEach(id => $("#" + id).addEventListener('change', updateSrsStepsFromInputs));
+      $('#studyDirectionSelect')?.addEventListener('change', event => {
+        state.settings.studyDirection = event.target.value === 'back' ? 'back' : 'front';
+        saveState();
+      });
       $('#closeStudyBtn').addEventListener('click', closeStudy);
       $('#revealStudyBtn').addEventListener('click', revealStudyAnswer);
       $$('#gradeButtons button').forEach(button => button.addEventListener('click', () => applyStudyGrade(button.dataset.grade)));
