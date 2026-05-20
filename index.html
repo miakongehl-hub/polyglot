@@ -3153,7 +3153,7 @@ FLUENT_JSON_END`;
     };
 
     const EN_DE_TRANSLATIONS = {
-      direct:['direkt','unmittelbar'], immediate:['sofortig','unmittelbar'], quick:['schnell','rasch'], slow:['langsam','träge'], easy:['leicht','einfach'], hard:['schwer','hart'], good:['gut','geeignet'], bad:['schlecht','übel'], true:['wahr','richtig'], full:['voll','vollständig'], real:['wirklich','echt'], simple:['einfach','schlicht'], possible:['möglich','denkbar'], probable:['wahrscheinlich','vermutlich'], actual:['tatsächlich','wirklich'], complete:['vollständig','komplett'], absolute:['absolut','völlig'], clear:['klar','deutlich'], near:['nahe','in der Nähe'], late:['spät','verspätet'], final:['endgültig','abschließend'], usual:['üblich','gewöhnlich'], sudden:['plötzlich','unvermittelt'], basic:['grundlegend','einfach'], special:['besonders','speziell'], close:['nah','eng'], far:['weit','entfernt'], happy:['glücklich','froh'],
+      direct:['direkt','unmittelbar'], amiss:['falsch','nicht in Ordnung'], immediate:['sofortig','unmittelbar'], quick:['schnell','rasch'], slow:['langsam','träge'], easy:['leicht','einfach'], hard:['schwer','hart'], good:['gut','geeignet'], bad:['schlecht','übel'], true:['wahr','richtig'], full:['voll','vollständig'], real:['wirklich','echt'], simple:['einfach','schlicht'], possible:['möglich','denkbar'], probable:['wahrscheinlich','vermutlich'], actual:['tatsächlich','wirklich'], complete:['vollständig','komplett'], absolute:['absolut','völlig'], clear:['klar','deutlich'], near:['nahe','in der Nähe'], late:['spät','verspätet'], final:['endgültig','abschließend'], usual:['üblich','gewöhnlich'], sudden:['plötzlich','unvermittelt'], basic:['grundlegend','einfach'], special:['besonders','speziell'], close:['nah','eng'], far:['weit','entfernt'], happy:['glücklich','froh'],
       be:['sein','sich befinden'], have:['haben','besitzen'], do:['tun','machen'], go:['gehen','fahren'], come:['kommen','ankommen'], see:['sehen','verstehen'], make:['machen','herstellen'], take:['nehmen','dauern'], give:['geben','reichen'], find:['finden','entdecken'], think:['denken','glauben'], know:['wissen','kennen'], say:['sagen','meinen'], tell:['erzählen','sagen'], feel:['fühlen','empfinden'], leave:['verlassen','lassen'], begin:['beginnen','anfangen'], become:['werden','sich entwickeln'], keep:['behalten','weiterhin tun'], hear:['hören','erfahren'], write:['schreiben','verfassen'], read:['lesen','ablesen'], purge:['säubern','reinigen'], create:['erschaffen','erstellen'], change:['ändern','wechseln'], use:['benutzen','verwenden'], move:['bewegen','umziehen'], turn:['drehen','werden'], live:['leben','wohnen'], believe:['glauben','meinen'], hold:['halten','festhalten'], bring:['bringen','mitbringen'], happen:['passieren','geschehen'], wait:['warten','abwarten'], speak:['sprechen','reden'], talk:['reden','sprechen'], understand:['verstehen','begreifen'], remember:['erinnern','sich merken'], forget:['vergessen','verlernen'], decide:['entscheiden','beschließen'], try:['versuchen','probieren'], ask:['fragen','bitten'], look:['schauen','aussehen'], seem:['scheinen','wirken'], want:['wollen','möchten'], need:['brauchen','müssen'], like:['mögen','wie'], love:['lieben','sehr mögen'], work:['arbeiten','funktionieren'],
       solution:['Lösung','Antwort'], problem:['Problem','Aufgabe'], question:['Frage','befragen'], answer:['Antwort','antworten'], word:['Wort','Begriff'], sentence:['Satz','Urteil'], meaning:['Bedeutung','Sinn'], later:['später','nachher'], room:['Zimmer','Raum'], bathroom:['Badezimmer','Bad'], kitchen:['Küche','Kochbereich'], kitchenette:['kleine Küche','Kochnische'], subject:['Thema','Fach'], moment:['Moment','Augenblick'], however:['jedoch','allerdings'], although:['obwohl','wenngleich'], because:['weil','da'], through:['durch','hindurch'], between:['zwischen','dazwischen'], own:['eigen','besitzen'], friend:['Freund:in','Bekannte:r'], chapter:['Kapitel','Abschnitt'], story:['Geschichte','Erzählung'], truth:['Wahrheit','Tatsache'], draft:['Entwurf','Skizze'], experience:['Erfahrung','Erlebnis'], decision:['Entscheidung','Beschluss'], before:['bevor','vorher'], after:['nachdem','danach'], while:['während','solange'], still:['immer noch','trotzdem'], even:['sogar','selbst'], almost:['fast','beinahe'], enough:['genug','ausreichend'], again:['wieder','noch einmal'], maybe:['vielleicht','möglicherweise'], never:['nie','niemals'], always:['immer','stets'], often:['oft','häufig'], sometimes:['manchmal','gelegentlich'], together:['zusammen','gemeinsam'], alone:['allein','alleine'],
       man:['Mann','Mensch'], woman:['Frau','weibliche Person'], people:['Menschen','Leute'], person:['Person','Mensch'], family:['Familie','Angehörige'], house:['Haus','Gebäude'], home:['Zuhause','Heim'], day:['Tag','Tageszeit'], night:['Nacht','Abend'], time:['Zeit','Mal'], way:['Weg','Art'], life:['Leben','Lebensweise'], hand:['Hand','Hilfe'], eye:['Auge','Blick'], face:['Gesicht','Vorderseite'], voice:['Stimme','Äußerung'], heart:['Herz','Inneres'], mind:['Geist','Meinung'], body:['Körper','Leib'], name:['Name','Bezeichnung'], place:['Ort','Stelle'],
@@ -3310,10 +3310,13 @@ FLUENT_JSON_END`;
       return result(token, token, 'word');
     }
 
+    function activeSourceLanguage(preferred = state.settings.lang) {
+      return ['en', 'fr', 'de'].includes(preferred) ? preferred : 'en';
+    }
+
     function languageOrder(preferred = state.settings.lang) {
-      const all = ['en', 'fr', 'de'];
-      const first = all.includes(preferred) ? preferred : 'en';
-      return [first, ...all.filter(lang => lang !== first)];
+      // Keine automatische Sprach-Rotation mehr: Vokabeln werden strikt aus der eingestellten Lernsprache interpretiert.
+      return [activeSourceLanguage(preferred)];
     }
 
     function lemmaResultForLanguage(value, lang) {
@@ -3348,22 +3351,17 @@ FLUENT_JSON_END`;
 
     function bestLemmaCandidate(value, preferred = state.settings.lang) {
       const original = normalizeText(value);
+      const lang = activeSourceLanguage(preferred);
       const token = singleWordToken(original);
-      if (!token) return { lang: preferred || 'en', lemma: result(original, original), translations: [], score: 0 };
-      const lowerToken = stripWord(token);
-      const candidates = languageOrder(preferred).map((lang, idx) => {
-        const lemma = lemmaResultForLanguage(original, lang);
-        const translations = translationsForLemma(lemma, lang);
-        const display = normalizeText(lemma.display || '');
-        let score = 0;
-        if (translations.length) score += 100;
-        if (display && stripWord(display.split(',')[0]) !== lowerToken) score += 20;
-        if (lemma.pos && !['word', 'base'].includes(lemma.pos)) score += 5;
-        if (idx === 0) score += 2;
-        return { lang, lemma, translations, score };
-      });
-      candidates.sort((a, b) => b.score - a.score);
-      return candidates[0];
+      if (!token) return { lang, lemma: result(original, original), translations: [], score: 0 };
+      const lemma = lemmaResultForLanguage(original, lang);
+      const translations = translationsForLemma(lemma, lang);
+      const display = normalizeText(lemma.display || '');
+      let score = 2;
+      if (translations.length) score += 100;
+      if (display && stripWord(display.split(',')[0]) !== stripWord(token)) score += 20;
+      if (lemma.pos && !['word', 'base'].includes(lemma.pos)) score += 5;
+      return { lang, lemma, translations, score };
     }
 
     function inferLemmaResult(value, lang = state.settings.lang) {
@@ -3398,29 +3396,14 @@ FLUENT_JSON_END`;
     function translateToGerman(front) {
       const clean = firstMeaningLine(front);
       if (!clean) return '';
-      const candidates = languageOrder(state.settings.lang).map(lang => {
-        const lemma = lemmaResultForLanguage(clean, lang);
-        const translations = translationsForLemma(lemma, lang);
-        let score = translations.length ? 100 : 0;
-        if (stripWord(lemma.display || '') !== stripWord(clean)) score += 10;
-        if (lang === state.settings.lang) score += 2;
-        return { lang, lemma, translations, score };
-      }).sort((a, b) => b.score - a.score);
-      const best = candidates.find(item => item.translations.length);
-      return best ? best.translations.slice(0, 2).join(' / ') : '';
+      const lang = activeSourceLanguage(state.settings.lang);
+      const lemma = lemmaResultForLanguage(clean, lang);
+      const translations = translationsForLemma(lemma, lang);
+      return translations.length ? translations.slice(0, 2).join(' / ') : '';
     }
 
     function sourceLangForFront(front) {
-      const clean = firstMeaningLine(front);
-      const local = languageOrder(state.settings.lang).map(lang => {
-        const lemma = lemmaResultForLanguage(clean, lang);
-        const translations = translationsForLemma(lemma, lang);
-        let score = translations.length ? 100 : 0;
-        if (stripWord(lemma.display || '') !== stripWord(clean)) score += 10;
-        if (lang === state.settings.lang) score += 2;
-        return { lang, score };
-      }).sort((a, b) => b.score - a.score)[0];
-      return local?.lang || state.settings.lang || 'en';
+      return activeSourceLanguage(state.settings.lang);
     }
 
     function defaultBackForType(type, front) {
@@ -3434,30 +3417,27 @@ FLUENT_JSON_END`;
       if (!query) return '';
       const local = translateToGerman(front);
       if (local) return local;
-      const first = sourceLangForFront(front);
-      const langs = [first, ...['en', 'fr'].filter(lang => lang !== first)];
-      for (const lang of langs) {
-        if (lang === 'de') continue;
-        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(query)}&langpair=${encodeURIComponent(lang + '|de')}`;
-        try {
-          const response = await fetch(url, { cache: 'no-store' });
-          if (!response.ok) continue;
-          const data = await response.json();
-          const values = [];
-          const pushValue = value => {
-            const clean = normalizeText(value || '').replace(/<[^>]+>/g, '');
-            if (!clean || clean.toLowerCase() === query.toLowerCase()) return;
-            if (!values.some(existing => existing.toLowerCase() === clean.toLowerCase())) values.push(clean);
-          };
-          pushValue(data?.responseData?.translatedText);
-          (data?.matches || [])
-            .sort((a, b) => Number(b.match || 0) - Number(a.match || 0))
-            .forEach(match => pushValue(match.translation));
-          const found = values.slice(0, 2).join(' / ');
-          if (found) return found;
-        } catch (error) {
-          console.warn('Online-Übersetzung fehlgeschlagen', error);
-        }
+      const lang = sourceLangForFront(front);
+      if (lang === 'de') return '';
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(query)}&langpair=${encodeURIComponent(lang + '|de')}`;
+      try {
+        const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) return '';
+        const data = await response.json();
+        const values = [];
+        const pushValue = value => {
+          const clean = normalizeText(value || '').replace(/<[^>]+>/g, '');
+          if (!clean || clean.toLowerCase() === query.toLowerCase()) return;
+          if (!values.some(existing => existing.toLowerCase() === clean.toLowerCase())) values.push(clean);
+        };
+        pushValue(data?.responseData?.translatedText);
+        (data?.matches || [])
+          .filter(match => String(match?.source || '').toLowerCase().startsWith(lang))
+          .sort((a, b) => Number(b.match || 0) - Number(a.match || 0))
+          .forEach(match => pushValue(match.translation));
+        return values.slice(0, 2).join(' / ');
+      } catch (error) {
+        console.warn('Online-Übersetzung fehlgeschlagen', error);
       }
       return '';
     }
