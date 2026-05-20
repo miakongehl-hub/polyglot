@@ -2434,6 +2434,7 @@
       $('#saveContextInput').value = selectedContext || selectedText;
       $('#saveTagsInput').value = `${LANGS[state.settings.lang].short.toLowerCase()},reader`;
       openModal('saveCardModal');
+      autoFillSaveBackForVocabulary(type, front);
     }
 
     function addCard(payload) {
@@ -3309,10 +3310,68 @@ FLUENT_JSON_END`;
       return result(token, token, 'word');
     }
 
-    function inferLemmaResult(value, lang = state.settings.lang) {
+    function languageOrder(preferred = state.settings.lang) {
+      const all = ['en', 'fr', 'de'];
+      const first = all.includes(preferred) ? preferred : 'en';
+      return [first, ...all.filter(lang => lang !== first)];
+    }
+
+    function lemmaResultForLanguage(value, lang) {
       if (lang === 'fr') return inferFrenchLemmaResult(value);
       if (lang === 'de') return inferGermanLemmaResult(value);
       return inferEnglishLemmaResult(value);
+    }
+
+    function translationsForLemma(lemma, lang) {
+      const keys = [lemma?.lookup, lemma?.display]
+        .filter(Boolean)
+        .flatMap(key => {
+          const clean = normalizeText(key).replace(/^to\s+/i, '').split(',')[0].trim();
+          return [clean, stripWord(clean)];
+        })
+        .filter(Boolean);
+      for (const key of keys) {
+        let values = [];
+        if (lang === 'fr') values = FR_DE_TRANSLATIONS[key] || [];
+        else if (lang === 'de') values = DE_DE_TRANSLATIONS[key] || [];
+        else values = EN_DE_TRANSLATIONS[key] || [];
+        if (Array.isArray(values) && values.length) return values.slice(0, 2);
+      }
+      if (lang === 'en') {
+        for (const key of keys) {
+          const old = DE_DICT[stripWord(key)] || '';
+          if (old) return old.split('/').map(part => part.trim()).filter(Boolean).slice(0, 2);
+        }
+      }
+      return [];
+    }
+
+    function bestLemmaCandidate(value, preferred = state.settings.lang) {
+      const original = normalizeText(value);
+      const token = singleWordToken(original);
+      if (!token) return { lang: preferred || 'en', lemma: result(original, original), translations: [], score: 0 };
+      const lowerToken = stripWord(token);
+      const candidates = languageOrder(preferred).map((lang, idx) => {
+        const lemma = lemmaResultForLanguage(original, lang);
+        const translations = translationsForLemma(lemma, lang);
+        const display = normalizeText(lemma.display || '');
+        let score = 0;
+        if (translations.length) score += 100;
+        if (display && stripWord(display.split(',')[0]) !== lowerToken) score += 20;
+        if (lemma.pos && !['word', 'base'].includes(lemma.pos)) score += 5;
+        if (idx === 0) score += 2;
+        return { lang, lemma, translations, score };
+      });
+      candidates.sort((a, b) => b.score - a.score);
+      return candidates[0];
+    }
+
+    function inferLemmaResult(value, lang = state.settings.lang) {
+      return bestLemmaCandidate(value, lang).lemma;
+    }
+
+    function inferLanguageForVocab(value, preferred = state.settings.lang) {
+      return bestLemmaCandidate(value, preferred).lang;
     }
 
     function frontForVocabSelection(value) {
@@ -3325,30 +3384,111 @@ FLUENT_JSON_END`;
       return `${lemma.display}\n${original}`;
     }
 
-    function translationLookupKey(front) {
+    function firstMeaningLine(front) {
       const firstLine = normalizeText(front).split(/\n+/)[0] || front;
-      const clean = firstLine.replace(/^to\s+/i, '').split(',')[0].trim();
-      const lemma = inferLemmaResult(clean);
-      return normalizeText(lemma.lookup || clean).replace(/^to\s+/i, '').trim();
+      return normalizeText(firstLine.replace(/^to\s+/i, '').split(',')[0].trim());
+    }
+
+    function translationLookupKey(front) {
+      const clean = firstMeaningLine(front);
+      const candidate = bestLemmaCandidate(clean, state.settings.lang);
+      return normalizeText(candidate.lemma.lookup || clean).replace(/^to\s+/i, '').trim();
     }
 
     function translateToGerman(front) {
-      const key = translationLookupKey(front);
-      const lowerKey = stripWord(key);
-      const lang = state.settings.lang;
-      let translations = [];
-      if (lang === 'fr') translations = FR_DE_TRANSLATIONS[key] || FR_DE_TRANSLATIONS[lowerKey] || [];
-      else if (lang === 'de') translations = DE_DE_TRANSLATIONS[key] || DE_DE_TRANSLATIONS[lowerKey] || [];
-      else translations = EN_DE_TRANSLATIONS[lowerKey] || [];
-      if (Array.isArray(translations) && translations.length) return translations.slice(0, 2).join(' / ');
-      const old = DE_DICT[lowerKey] || '';
-      return old ? old.split('/').map(part => part.trim()).filter(Boolean).slice(0, 2).join(' / ') : '';
+      const clean = firstMeaningLine(front);
+      if (!clean) return '';
+      const candidates = languageOrder(state.settings.lang).map(lang => {
+        const lemma = lemmaResultForLanguage(clean, lang);
+        const translations = translationsForLemma(lemma, lang);
+        let score = translations.length ? 100 : 0;
+        if (stripWord(lemma.display || '') !== stripWord(clean)) score += 10;
+        if (lang === state.settings.lang) score += 2;
+        return { lang, lemma, translations, score };
+      }).sort((a, b) => b.score - a.score);
+      const best = candidates.find(item => item.translations.length);
+      return best ? best.translations.slice(0, 2).join(' / ') : '';
+    }
+
+    function sourceLangForFront(front) {
+      const clean = firstMeaningLine(front);
+      const local = languageOrder(state.settings.lang).map(lang => {
+        const lemma = lemmaResultForLanguage(clean, lang);
+        const translations = translationsForLemma(lemma, lang);
+        let score = translations.length ? 100 : 0;
+        if (stripWord(lemma.display || '') !== stripWord(clean)) score += 10;
+        if (lang === state.settings.lang) score += 2;
+        return { lang, score };
+      }).sort((a, b) => b.score - a.score)[0];
+      return local?.lang || state.settings.lang || 'en';
     }
 
     function defaultBackForType(type, front) {
-      if (type === 'vocab') return translateToGerman(front) || '';
+      if (type === 'vocab') return translateToGerman(front) || 'Übersetzung wird gesucht …';
       if (type === 'grammar') return '';
       return '';
+    }
+
+    async function fetchOnlineGermanTranslations(front) {
+      const query = translationLookupKey(front) || firstMeaningLine(front);
+      if (!query) return '';
+      const local = translateToGerman(front);
+      if (local) return local;
+      const first = sourceLangForFront(front);
+      const langs = [first, ...['en', 'fr'].filter(lang => lang !== first)];
+      for (const lang of langs) {
+        if (lang === 'de') continue;
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(query)}&langpair=${encodeURIComponent(lang + '|de')}`;
+        try {
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) continue;
+          const data = await response.json();
+          const values = [];
+          const pushValue = value => {
+            const clean = normalizeText(value || '').replace(/<[^>]+>/g, '');
+            if (!clean || clean.toLowerCase() === query.toLowerCase()) return;
+            if (!values.some(existing => existing.toLowerCase() === clean.toLowerCase())) values.push(clean);
+          };
+          pushValue(data?.responseData?.translatedText);
+          (data?.matches || [])
+            .sort((a, b) => Number(b.match || 0) - Number(a.match || 0))
+            .forEach(match => pushValue(match.translation));
+          const found = values.slice(0, 2).join(' / ');
+          if (found) return found;
+        } catch (error) {
+          console.warn('Online-Übersetzung fehlgeschlagen', error);
+        }
+      }
+      return '';
+    }
+
+    async function autoFillSaveBackForVocabulary(type, front) {
+      if (type !== 'vocab') return;
+      const backInput = $('#saveBackInput');
+      if (!backInput) return;
+      const local = translateToGerman(front);
+      if (local) {
+        backInput.value = local;
+        return;
+      }
+      const marker = 'Übersetzung wird gesucht …';
+      if (!normalizeText(backInput.value)) backInput.value = marker;
+      const online = await fetchOnlineGermanTranslations(front);
+      const current = normalizeText(backInput.value);
+      if (online && (!current || current === marker || current === 'Übersetzung ergänzen')) backInput.value = online;
+      else if (!online && current === marker) backInput.value = 'Übersetzung ergänzen';
+    }
+
+    function refreshSaveCardTranslation() {
+      const type = $('#saveTypeSelect')?.value || pendingSaveType;
+      const raw = normalizeText($('#saveFrontInput')?.value || '');
+      if (!raw) return;
+      if (type === 'vocab') {
+        const normalizedFront = frontForVocabSelection(raw);
+        if (normalizedFront && normalizedFront !== raw && !raw.includes('\n')) $('#saveFrontInput').value = normalizedFront;
+        $('#saveBackInput').value = defaultBackForType(type, $('#saveFrontInput').value);
+        autoFillSaveBackForVocabulary(type, $('#saveFrontInput').value);
+      }
     }
 
     function activeBookTheme() {
@@ -3665,6 +3805,7 @@ FLUENT_JSON_END`;
       $('#saveContextInput').value = context;
       $('#saveTagsInput').value = `${LANGS[state.settings.lang].short.toLowerCase()},reader`;
       openModal('saveCardModal');
+      autoFillSaveBackForVocabulary(type, front);
     }
 
     function openManualCardModal() {
@@ -3956,6 +4097,11 @@ FLUENT_JSON_END`;
       $$('#selectionBar [data-save-type]').forEach(button => button.addEventListener('click', () => openSaveCardModal(button.dataset.saveType)));
       $('#speakSelectionBtn').addEventListener('click', () => speakText(selectedText, 1));
       $('#saveCardBtn').addEventListener('click', saveCardFromModal);
+      $('#saveTypeSelect')?.addEventListener('change', refreshSaveCardTranslation);
+      $('#saveFrontInput')?.addEventListener('blur', refreshSaveCardTranslation);
+      $('#saveFrontInput')?.addEventListener('input', () => {
+        if (($('#saveTypeSelect')?.value || pendingSaveType) === 'vocab') $('#saveBackInput').value = defaultBackForType('vocab', $('#saveFrontInput').value);
+      });
       $('#saveOcrBtn').addEventListener('click', saveOcrCard);
       $$('[data-close]').forEach(button => button.addEventListener('click', () => closeModal(button.dataset.close)));
       $$('.modal-backdrop').forEach(backdrop => backdrop.addEventListener('click', event => { if (event.target === backdrop) backdrop.classList.remove('visible'); }));
